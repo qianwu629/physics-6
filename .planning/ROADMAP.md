@@ -32,7 +32,7 @@ Plans:
 - [x] 01-01-PLAN.md — 项目初始化与基础设施（Vite + React + Tailwind + 依赖）
 - [x] 01-02-PLAN.md — 仿真核心与 3D 场景（Zustand store + Rapier Physics + R3F 渲染）
 - [x] 01-03-PLAN.md — UI 控制与集成（工具栏 + 加载/错误状态 + 键盘快捷键）
-- [ ] 01-04-PLAN.md — Gap Closure: 修复Reset无效 + WASM依赖不匹配 + objectCount语义 + 类型断言
+- [x] 01-04-PLAN.md — Gap Closure: 修复Reset无效 + WASM依赖不匹配 + objectCount语义 + 类型断言 (complete + verified)
 **UI hint**: yes
 
 ### Phase 2: 组件化实体系统与属性编辑
@@ -80,7 +80,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. 仿真核心与基础3D渲染 | 3/4 | Gap closure pending | 2026-05-01 |
+| 1. 仿真核心与基础3D渲染 | 4/4 | Complete ✓ | 2026-05-01 |
 | 2. 组件化实体系统与属性编辑 | 0/TBD | Not started | - |
 | 3. 约束系统与环境配置 | 0/TBD | Not started | - |
 | 4. 轨迹与矢量可视化 | 0/TBD | Not started | - |

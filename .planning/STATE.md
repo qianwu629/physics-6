@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: building
-stopped_at: Completed 01-03-PLAN.md (2026-05-01)
-last_updated: "2026-05-01T07:43:36Z"
-last_activity: 2026-05-01 — Phase 1 complete: full interactive 3D physics sandbox with play/pause/reset controls, WASM loading screen, error handling, keyboard shortcuts, and state orchestration
+stopped_at: Phase 1 verified — 5/5 must-haves passed, all gaps closed (2026-05-01)
+last_updated: "2026-05-01T11:24:00Z"
+last_activity: 2026-05-01 — Phase 1 verified (5/5). Gap closure plan 01-04 resolved: reset via Physics key, WASM cleanup, type safety, objectCount fix.
 progress:
   percent: 25
 ---
@@ -23,8 +23,8 @@ See: .planning/PROJECT.md (updated 2026-04-30)
 
 Phase: 1 of 4 (仿真核心与基础3D渲染)
 Plan: 3 of 3 in current phase
-Status: Phase 1 complete — transitioning to Phase 2
-Last activity: 2026-05-01 — Plan 01-03 executed: UI components + App assembly (Toolbar, LoadingScreen, ErrorFallback, App root)
+Status: Phase 1 verified — all 4 plans complete, 5/5 must-haves passed
+Last activity: 2026-05-01 — Plan 01-04 executed (gap closure): reset fix, WASM cleanup, type guard, objectCount semantics
 
 Progress: [████████░░] 25%
 
