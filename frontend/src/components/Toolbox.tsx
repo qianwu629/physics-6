@@ -1,6 +1,5 @@
 import { Circle, Square, Database, TriangleAlert, Plus, X } from 'lucide-react';
 import { useSimulationStore } from '../store';
-import { cn } from '../lib/utils';
 import type { ShapeType } from '../store/uiSlice';
 
 const SHAPES: { type: ShapeType; label: string; tooltip: string; shortcut: string; Icon: typeof Circle }[] = [

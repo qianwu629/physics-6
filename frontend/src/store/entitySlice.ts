@@ -82,7 +82,7 @@ export const createEntitySlice: StateCreator<EntitySlice, [], [], EntitySlice> =
     }),
 
   resetEntities: () =>
-    set((state) => ({
+    set(() => ({
       entities: new Map(),
       selectedEntityId: null,
       objectCount: 0,

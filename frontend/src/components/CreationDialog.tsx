@@ -127,7 +127,7 @@ export default function CreationDialog() {
     defaultValues: getDefaultFormValues(dialogDefaultShape),
   });
 
-  const { watch, setValue, handleSubmit, formState, control, reset, setError } = form;
+  const { watch, handleSubmit: rhfHandleSubmit, formState, control, reset, setError } = form;
   const selectedShape = watch('shape');
 
   // Reset form each time dialog opens with the pre-selected shape
@@ -147,7 +147,7 @@ export default function CreationDialog() {
   );
 
   // Confirm handler
-  const onConfirm = useCallback(
+  const handleConfirm = useCallback(
     (data: CreationFormData) => {
       let entity: Entity;
       const velocity: [number, number, number] = [data.velocityX, data.velocityY, data.velocityZ];
@@ -266,7 +266,6 @@ export default function CreationDialog() {
     label: string,
     min = 0.1,
     step = 0.1,
-    unit = '米',
   ) => (
     <div className="space-y-1.5">
       <Label className="text-sm text-[#a0a0a0]">{label}</Label>
@@ -322,7 +321,7 @@ export default function CreationDialog() {
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onConfirm)} className="flex flex-col gap-6">
+        <form onSubmit={rhfHandleSubmit(handleConfirm)} className="flex flex-col gap-6">
           {/* Section 1: 形状选择器 */}
           <div className="space-y-2">
             <Label className="text-sm text-[#a0a0a0] font-semibold tracking-wider uppercase">形状</Label>

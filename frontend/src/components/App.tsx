@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSimulationStore } from '../store';
 import Scene3D from './Scene3D';
 import Toolbar from './Toolbar';
+import Toolbox from './Toolbox';
+import CreationDialog from './CreationDialog';
 import LoadingScreen from './LoadingScreen';
 import ErrorFallback from './ErrorFallback';
 import type { ErrorType } from './ErrorFallback';
@@ -123,6 +125,8 @@ export default function App() {
         <Scene3D />
       </Suspense>
       <Toolbar />
+      <Toolbox />
+      <CreationDialog />
     </>
   );
 }
