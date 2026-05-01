@@ -61,7 +61,6 @@ describe('ECS Entity Factory', () => {
     const e1 = createSphereEntity(1.0, 1.0, 0.5, 0.3, '#ff0000');
     const e2 = createBoxEntity(0.5, 0.5, 0.5, 2.0, 0.3, 0.1, '#00ff00');
     const t1 = e1.components.get('transform') as TransformComponent;
-    const t2 = e2.components.get('transform') as TransformComponent;
     // Modify e1's position should not affect e2
     t1.position[1] = 999;
     expect((e2.components.get('transform') as TransformComponent).position[1]).toBe(5);

@@ -1,4 +1,5 @@
-export type { TransformComponent } from '../types';
+import type { TransformComponent } from '../types';
+export type { TransformComponent };
 
 export const DEFAULT_TRANSFORM: Omit<TransformComponent, 'type'> = {
   position: [0, 5, 0],     // D-05: 默认生成于场景中心

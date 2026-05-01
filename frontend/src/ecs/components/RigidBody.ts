@@ -1,4 +1,5 @@
-export type { RigidBodyComponent, RigidBodyKind } from '../types';
+import type { RigidBodyComponent, RigidBodyKind } from '../types';
+export type { RigidBodyComponent, RigidBodyKind };
 
 export const DEFAULT_RIGID_BODY: Omit<RigidBodyComponent, 'type'> = {
   kind: 'dynamic',

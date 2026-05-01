@@ -1,4 +1,5 @@
-export type { MaterialComponent } from '../types';
+import type { MaterialComponent } from '../types';
+export type { MaterialComponent };
 
 /** Phase 2 默认实体颜色 — 柔和调色板 (UI-SPEC + Phase 1 延续) */
 export const DEFAULT_COLORS: Record<string, string> = {

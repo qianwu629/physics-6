@@ -8,10 +8,6 @@ import type {
   ColliderComponent,
   VelocityComponent,
   MaterialComponent,
-  AnyComponent,
-  RigidBodyKind,
-  ColliderShape,
-  ColliderParams,
 } from '../types';
 
 describe('ECS Component Types', () => {
