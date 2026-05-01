@@ -3,11 +3,11 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: building
-stopped_at: Completed 01-01-PLAN.md (2026-05-01)
-last_updated: "2026-05-01T07:04:52Z"
-last_activity: 2026-05-01 — Plan 01-01 executed: project skeleton initialized (Vite + React 19 + TS 5.7 + Tailwind CSS v4 + Rapier WASM)
+stopped_at: Completed 01-02-PLAN.md (2026-05-01)
+last_updated: "2026-05-01T07:25:08Z"
+last_activity: 2026-05-01 — Plan 01-02 executed: physics core + 3D rendering (Zustand store + 14-object scene + Scene3D R3F canvas with Rapier Physics)
 progress:
-  percent: 8
+  percent: 17
 ---
 
 # Project State
@@ -22,30 +22,30 @@ See: .planning/PROJECT.md (updated 2026-04-30)
 ## Current Position
 
 Phase: 1 of 4 (仿真核心与基础3D渲染)
-Plan: 1 of 3 in current phase
-Status: Building (Plan 01 complete, 01-02 pending)
-Last activity: 2026-05-01 — Plan 01-01 executed: project skeleton initialized
+Plan: 2 of 3 in current phase
+Status: Building (Plans 01-01, 01-02 complete, 01-03 pending)
+Last activity: 2026-05-01 — Plan 01-02 executed: physics core + 3D rendering pipeline complete
 
-Progress: [█░░░░░░░░░] 8%
+Progress: [██░░░░░░░░] 17%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 1
-- Average duration: ~12.5 min
-- Total execution time: ~0.2 hours
+- Total plans completed: 2
+- Average duration: ~13.4 min
+- Total execution time: ~0.4 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1 | 1 | ~12.5 min | ~12.5 min |
+| 1 | 2 | ~26.7 min | ~13.4 min |
 
 **Recent Trend:**
 
-- Last 5 plans: ~12.5 min (only 1 plan executed)
-- Trend: N/A (insufficient data)
+- Last 5 plans: ~13.4 min (2 plans executed)
+- Trend: Stable
 
 *Updated after each plan completion*
 
@@ -62,6 +62,10 @@ Recent decisions affecting current work:
 - (01-01) @react-three/drei version bumped from ^9.120.0 to ^10.7.0 — peer dep compatibility with @react-three/fiber ^9.
 - (01-01) CSS @import ordering — Google Fonts @import placed before @import "tailwindcss" for Tailwind v4 Vite plugin compilation.
 - (01-01) Minimal App.tsx placeholder created — required by main.tsx import, intentionally renders empty div (blank dark page per plan spec).
+- (01-02) Physics frame data bypasses Zustand — only simulation metadata (isRunning, showDebug, fps, objectCount) stored in Zustand; per-frame physics transforms sync directly from Rapier to Three.js Object3D via @react-three/rapier internal bridge (PITFALLS #6 guard).
+- (01-02) FPS tracking uses requestAnimationFrame + ref — writes to Zustand at ~2Hz (every 500ms) to avoid re-render storms. Not using useFrame to stay outside React reconciliation.
+- (01-02) Ground is implicit infrastructure — created directly in Scene3D component, not part of INITIAL_SCENE_OBJECTS array (D-02).
+- (01-02) Vitest test infrastructure added — configured in vite.config.ts with jsdom environment; 15 component structure tests for Scene3D.
 
 ### Pending Todos
 
@@ -75,6 +79,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-01T07:04:52Z
-Stopped at: Completed 01-01-PLAN.md
-Resume file: .planning/phases/01-simulation-core-3d-render/01-01-SUMMARY.md
+Last session: 2026-05-01T07:25:08Z
+Stopped at: Completed 01-02-PLAN.md
+Resume file: .planning/phases/01-simulation-core-3d-render/01-02-SUMMARY.md

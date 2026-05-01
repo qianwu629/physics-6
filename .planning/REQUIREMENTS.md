@@ -9,17 +9,17 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Simulation Core
 
-- [ ] **SIM-01**: 系统支持基础刚体形状——球体、方块、圆柱、平面/斜面
+- [x] **SIM-01**: 系统支持基础刚体形状——球体、方块、圆柱、平面/斜面
 - [ ] **SIM-02**: 用户可配置重力强度和方向
-- [ ] **SIM-03**: 物体之间发生物理碰撞并正确响应
+- [x] **SIM-03**: 物体之间发生物理碰撞并正确响应
 - [ ] **SIM-04**: 用户可添加弹簧约束（弹簧振子），配置弹性系数和原长
 - [ ] **SIM-05**: 用户可配置全局环境参数——重力加速度、空气阻力系数、摩擦系数
 - [ ] **SIM-06**: 用户可以播放、暂停和重置模拟
 
 ### Rendering & Interaction
 
-- [ ] **REN-01**: 系统以 WebGL/WebGPU 实时 3D 渲染物理场景
-- [ ] **REN-02**: 用户可通过轨道旋转、平移、缩放控制 3D 摄像机
+- [x] **REN-01**: 系统以 WebGL/WebGPU 实时 3D 渲染物理场景
+- [x] **REN-02**: 用户可通过轨道旋转、平移、缩放控制 3D 摄像机
 - [ ] **REN-03**: 用户可通过属性面板编辑物体的物理参数（质量、速度、位置、摩擦系数、弹性系数）
 
 ### Differentiators
@@ -63,14 +63,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SIM-01 | Phase 1: 仿真核心与基础3D渲染 | Pending |
+| SIM-01 | Phase 1: 仿真核心与基础3D渲染 | Complete (01-02) |
 | SIM-02 | Phase 3: 约束系统与环境配置 | Pending |
-| SIM-03 | Phase 1: 仿真核心与基础3D渲染 | Pending |
+| SIM-03 | Phase 1: 仿真核心与基础3D渲染 | Complete (01-02) |
 | SIM-04 | Phase 3: 约束系统与环境配置 | Pending |
 | SIM-05 | Phase 3: 约束系统与环境配置 | Pending |
 | SIM-06 | Phase 1: 仿真核心与基础3D渲染 | Pending |
-| REN-01 | Phase 1: 仿真核心与基础3D渲染 | Pending |
-| REN-02 | Phase 1: 仿真核心与基础3D渲染 | Pending |
+| REN-01 | Phase 1: 仿真核心与基础3D渲染 | Complete (01-02) |
+| REN-02 | Phase 1: 仿真核心与基础3D渲染 | Complete (01-02) |
 | REN-03 | Phase 2: 组件化实体系统与属性编辑 | Pending |
 | DIF-01 | Phase 2: 组件化实体系统与属性编辑 | Pending |
 | DIF-02 | Phase 4: 轨迹与矢量可视化 | Pending |
