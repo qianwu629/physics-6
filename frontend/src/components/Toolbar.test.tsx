@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import type { ReactNode } from 'react';
+// (ReactNode not needed — type-only used by render)
 
 // Mock lucide-react icons
 vi.mock('lucide-react', () => ({
@@ -197,8 +197,6 @@ describe('Toolbar', () => {
       renderToolbar();
       const toolbar = screen.getByRole('button', { name: '播放仿真' }).closest('div');
       expect(toolbar).not.toBeNull();
-      // Check the outer div has fixed positioning
-      const outerDiv = toolbar?.parentElement;
       // The toolbar itself should be the fixed container
       expect(toolbar).toBeInTheDocument();
     });
