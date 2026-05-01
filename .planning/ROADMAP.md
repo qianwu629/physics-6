@@ -47,8 +47,8 @@ Plans:
 **Plans**: 6 plans
 Plans:
 **Wave 1**
-- [ ] 02-01-PLAN.md — 基础建设: shadcn/ui初始化 + ECS组件类型 + Entity工厂
-- [ ] 02-02-PLAN.md — 状态管理: entitySlice (Map CRUD + 选中) + uiSlice (面板状态) + 单元测试
+- [x] 02-01-PLAN.md — 基础建设: shadcn/ui初始化 + ECS组件类型 + Entity工厂
+- [x] 02-02-PLAN.md — 状态管理: entitySlice (Map CRUD + 选中) + uiSlice (面板状态) + 单元测试
 
 **Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 02-03-PLAN.md — 3D渲染重构: EntityRenderer (ECS→R3F) + Scene3D (空场景 + 点击选中 + Outlines高亮)
@@ -93,6 +93,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. 仿真核心与基础3D渲染 | 4/4 | Complete ✓ | 2026-05-01 |
-| 2. 组件化实体系统与属性编辑 | 0/6 | Planned | - |
+| 2. 组件化实体系统与属性编辑 | 2/6 | In Progress|  |
 | 3. 约束系统与环境配置 | 0/TBD | Not started | - |
 | 4. 轨迹与矢量可视化 | 0/TBD | Not started | - |
