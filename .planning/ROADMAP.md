@@ -51,9 +51,9 @@ Plans:
 - [x] 02-02-PLAN.md — 状态管理: entitySlice (Map CRUD + 选中) + uiSlice (面板状态) + 单元测试
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 02-03-PLAN.md — 3D渲染重构: EntityRenderer (ECS→R3F) + Scene3D (空场景 + 点击选中 + Outlines高亮)
-- [ ] 02-04-PLAN.md — 实体创建: 左侧浮动Toolbox + 创建对话框 (zod验证 + react-hook-form)
-- [ ] 02-05-PLAN.md — 属性编辑: 右侧PropertyPanel (可编辑/只读切换) + EntityList + 删除确认
+- [x] 02-03-PLAN.md — 3D渲染重构: EntityRenderer (ECS→R3F) + Scene3D (空场景 + 点击选中 + Outlines高亮)
+- [x] 02-04-PLAN.md — 实体创建: 左侧浮动Toolbox + 创建对话框 (zod验证 + react-hook-form)
+- [x] 02-05-PLAN.md — 属性编辑: 右侧PropertyPanel (可编辑/只读切换) + EntityList + 删除确认
 
 **Wave 3** *(blocked on Wave 2 completion)*
 - [ ] 02-06-PLAN.md — 应用集成: App布局 + 键盘快捷键(8键) + 清理hardcodedScene
@@ -93,6 +93,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. 仿真核心与基础3D渲染 | 4/4 | Complete ✓ | 2026-05-01 |
-| 2. 组件化实体系统与属性编辑 | 2/6 | In Progress|  |
+| 2. 组件化实体系统与属性编辑 | 5/6 | In Progress|  |
 | 3. 约束系统与环境配置 | 0/TBD | Not started | - |
 | 4. 轨迹与矢量可视化 | 0/TBD | Not started | - |
