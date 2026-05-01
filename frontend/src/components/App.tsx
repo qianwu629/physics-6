@@ -3,29 +3,31 @@ import { useSimulationStore } from '../store';
 import Scene3D from './Scene3D';
 import Toolbar from './Toolbar';
 import Toolbox from './Toolbox';
+import PropertyPanel from './PropertyPanel';
 import CreationDialog from './CreationDialog';
 import LoadingScreen from './LoadingScreen';
 import ErrorFallback from './ErrorFallback';
 import type { ErrorType } from './ErrorFallback';
 
 /**
- * App — Phase 1 应用根组件
+ * App — Phase 2 应用根组件
  *
  * 负责:
  * 1. WASM 引擎初始化协调 (Rapier.init())
  * 2. WebGL 可用性检测 (canvas.getContext('webgl2'))
- * 3. 键盘快捷键注册 (D-08: Space = 播放/暂停, R = 重置)
+ * 3. 键盘快捷键注册 (D-08 + Phase 2: Space, R, B, N, C, S, Delete, Backspace)
  * 4. 页面可见性变化处理 (PITFALLS #1: 切标签页自动暂停)
  * 5. 加载/错误/正常状态的渲染切换
+ * 6. 4 层 z-index 布局 (Toolbar/Canvas/Toolbox+PropertyPanel/Dialogs)
  *
  * 状态机:
- *   init → WebGL 检测 → WASM 加载 → ready (渲染场景 + 工具栏)
+ *   init → WebGL 检测 → WASM 加载 → ready (渲染场景 + 工具栏 + 工具箱 + 属性面板)
  *              ↓ 失败              ↓ 失败
  *         ErrorFallback(webgl)  ErrorFallback(wasm)
  *
  * D-04: 就绪后场景渲染但物理暂停——用户需手动点击播放。
+ * D-06: 初始状态为空场景（无硬编码物体）。
  * D-11: WASM 加载期间显示 LoadingScreen。
- * D-12: 硬编码场景仅为引擎验证——Phase 2 替换为自由添加。
  */
 
 type AppState = 'loading' | 'error' | 'ready';
@@ -36,6 +38,11 @@ export default function App() {
 
   const toggle = useSimulationStore((s) => s.toggle);
   const reset = useSimulationStore((s) => s.reset);
+  // Phase 2: 新增 store 访问器
+  const openDialog = useSimulationStore((s) => s.openDialog);
+  const openDeleteDialog = useSimulationStore((s) => s.openDeleteDialog);
+  const resetEntities = useSimulationStore((s) => s.resetEntities);
+  const selectedEntityId = useSimulationStore((s) => s.selectedEntityId);
 
   // ──── 步骤 1: WebGL 可用性检测 ────
   const checkWebGL = useCallback((): boolean => {
@@ -83,15 +90,58 @@ export default function App() {
         case 'KeyR':
           if (!e.ctrlKey && !e.metaKey && !e.altKey) {
             e.preventDefault();
-            reset();                     // D-08: R = 重置
+            // D-12: 重置 = 空场景 + 暂停
+            // 使用 getState() 避免过期闭包问题 (Phase 1 模式)
+            const state = useSimulationStore.getState();
+            state.resetEntities();
+            state.reset();
           }
           break;
+        // ── Phase 2: 创建对话框快捷键 (D-04) ──
+        case 'KeyB':
+          e.preventDefault();
+          openDialog('sphere');
+          break;
+        case 'KeyN':
+          e.preventDefault();
+          openDialog('box');
+          break;
+        case 'KeyC':
+          e.preventDefault();
+          openDialog('cylinder');
+          break;
+        case 'KeyS':
+          e.preventDefault();
+          openDialog('slope');
+          break;
+        // ── Phase 2: 删除实体快捷键 (D-11) ──
+        case 'Delete':
+        case 'Backspace': {
+          const sid = useSimulationStore.getState().selectedEntityId;
+          if (sid) {
+            e.preventDefault();
+            openDeleteDialog();
+          }
+          break;
+        }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [toggle, reset]);
+  }, [toggle, openDialog, openDeleteDialog, resetEntities, reset]);
+
+  // ──── 重置计数器监听 (D-12: 工具栏重置按钮也需清空实体) ────
+  useEffect(() => {
+    const unsub = useSimulationStore.subscribe(
+      (state, prev) => {
+        if (state.resetCounter > prev.resetCounter) {
+          state.resetEntities();
+        }
+      }
+    );
+    return unsub;
+  }, []);
 
   // ──── 切标签页保护 (PITFALLS #1) ────
   useEffect(() => {
@@ -126,6 +176,7 @@ export default function App() {
       </Suspense>
       <Toolbar />
       <Toolbox />
+      <PropertyPanel />
       <CreationDialog />
     </>
   );
