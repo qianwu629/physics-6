@@ -11,7 +11,7 @@ Physis 从一个可运行的物理沙盒起步（球体和方块在重力下碰�
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
 - [x] **Phase 1: 仿真核心与基础3D渲染** - 可运行的物理沙盒：物体在重力下碰撞堆叠，3D 视角可旋转观察，支持播放/暂停/重置
-- [ ] **Phase 2: 组件化实体系统与属性编辑** - 用户可自由添加实体、组合组件、通过属性面板编辑物理参数
+- [x] **Phase 2: 组件化实体系统与属性编辑** - 用户可自由添加实体、组合组件、通过属性面板编辑物理参数 (completed 2026-05-01)
 - [ ] **Phase 3: 约束系统与环境配置** - 弹簧约束连接物体，全局重力/摩擦/空气阻力可配置
 - [ ] **Phase 4: 轨迹与矢量可视化** - 运动轨迹残影、速度和受力矢量箭头叠加显示
 
@@ -56,7 +56,7 @@ Plans:
 - [x] 02-05-PLAN.md — 属性编辑: 右侧PropertyPanel (可编辑/只读切换) + EntityList + 删除确认
 
 **Wave 3** *(blocked on Wave 2 completion)*
-- [ ] 02-06-PLAN.md — 应用集成: App布局 + 键盘快捷键(8键) + 清理hardcodedScene
+- [x] 02-06-PLAN.md — 应用集成: App布局 + 键盘快捷键(8键) + 清理hardcodedScene
 **UI hint**: yes
 
 ### Phase 3: 约束系统与环境配置
@@ -93,6 +93,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. 仿真核心与基础3D渲染 | 4/4 | Complete ✓ | 2026-05-01 |
-| 2. 组件化实体系统与属性编辑 | 5/6 | In Progress|  |
+| 2. 组件化实体系统与属性编辑 | 6/6 | Complete   | 2026-05-01 |
 | 3. 约束系统与环境配置 | 0/TBD | Not started | - |
 | 4. 轨迹与矢量可视化 | 0/TBD | Not started | - |
