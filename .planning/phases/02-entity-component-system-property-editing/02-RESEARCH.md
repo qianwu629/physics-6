@@ -727,7 +727,7 @@ export function CreationDialog({ open, defaultShape, onConfirm, onCancel }: Prop
 | A4 | crypto.randomUUID()在目标浏览器中可用 [ASSUMED] | Don't Hand-Roll | 所有现代浏览器(chrome 95+, firefox 95+, safari 15.4+)已支持。若需支持更旧浏览器，fallback到nanoid。 |
 | A5 | @react-three/rapier的`<Physics>`组件在paused状态下仍允许添加RigidBody且物理正确初始化 [ASSUMED] | Architecture Patterns | 若paused状态下添加的RigidBody在resume后位置/速度异常，需改为isRunning时短暂暂停+添加+恢复的方案。 |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Rapier运行时属性修改机制**
    - What we know: `restitution`/`friction`/`mass`作为RigidBody props传入，不确定挂载后修改prop是否触发Rapier内部更新

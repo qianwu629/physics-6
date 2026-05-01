@@ -46,11 +46,16 @@ Plans:
   4. 系统架构采用基于组件的实体模型，实体行为由其附加的组件集合决定，而非由硬编码类型模板决定——新实体类型可通过组合现有组件创建
 **Plans**: 6 plans
 Plans:
+**Wave 1**
 - [ ] 02-01-PLAN.md — 基础建设: shadcn/ui初始化 + ECS组件类型 + Entity工厂
 - [ ] 02-02-PLAN.md — 状态管理: entitySlice (Map CRUD + 选中) + uiSlice (面板状态) + 单元测试
+
+**Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 02-03-PLAN.md — 3D渲染重构: EntityRenderer (ECS→R3F) + Scene3D (空场景 + 点击选中 + Outlines高亮)
 - [ ] 02-04-PLAN.md — 实体创建: 左侧浮动Toolbox + 创建对话框 (zod验证 + react-hook-form)
 - [ ] 02-05-PLAN.md — 属性编辑: 右侧PropertyPanel (可编辑/只读切换) + EntityList + 删除确认
+
+**Wave 3** *(blocked on Wave 2 completion)*
 - [ ] 02-06-PLAN.md — 应用集成: App布局 + 键盘快捷键(8键) + 清理hardcodedScene
 **UI hint**: yes
 
