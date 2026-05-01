@@ -50,7 +50,6 @@ Object.defineProperty(window, 'location', {
 
 import LoadingScreen from './LoadingScreen';
 import ErrorFallback from './ErrorFallback';
-import type { ErrorType } from './ErrorFallback';
 
 describe('LoadingScreen', () => {
   it('renders the loading text "正在加载物理引擎..."', () => {
@@ -68,19 +67,21 @@ describe('LoadingScreen', () => {
 
   it('has dark background #0a0a0a', () => {
     render(<LoadingScreen />);
-    // The LoadingScreen is a fixed full-screen div with backgroundColor #0a0a0a
-    const container = screen.getByText('正在加载物理引擎...').closest('div');
+    // The LoadingScreen is a fixed full-screen div — the <p> is its direct child
+    const textElement = screen.getByText('正在加载物理引擎...');
+    const container = textElement.parentElement;
     expect(container).not.toBeNull();
-    // The fixed container should be the one with background
-    expect(container?.parentElement).not.toBeNull();
+    expect(container?.style.backgroundColor).toBe('rgb(10, 10, 10)'); // #0a0a0a
   });
 
   it('has centered layout', () => {
     render(<LoadingScreen />);
-    const container = screen.getByText('正在加载物理引擎...').closest('div');
-    expect(container?.parentElement?.style.display).toBe('flex');
-    expect(container?.parentElement?.style.justifyContent).toBe('center');
-    expect(container?.parentElement?.style.alignItems).toBe('center');
+    // The fixed container div is the direct parent of the <p> element
+    const textElement = screen.getByText('正在加载物理引擎...');
+    const container = textElement.parentElement;
+    expect(container?.style.display).toBe('flex');
+    expect(container?.style.justifyContent).toBe('center');
+    expect(container?.style.alignItems).toBe('center');
   });
 
   it('has spin CSS animation defined', () => {
@@ -111,8 +112,10 @@ describe('ErrorFallback', () => {
 
     it('has dark background #0a0a0a', () => {
       render(<ErrorFallback type="webgl" />);
-      const container = screen.getByText('WebGL 不可用').closest('div');
-      expect(container?.parentElement).not.toBeNull();
+      const heading = screen.getByText('WebGL 不可用');
+      const outerContainer = heading.parentElement?.parentElement;
+      expect(outerContainer).not.toBeNull();
+      expect(outerContainer?.style.backgroundColor).toBe('rgb(10, 10, 10)'); // #0a0a0a
     });
   });
 
@@ -161,10 +164,12 @@ describe('ErrorFallback', () => {
 
     it('error card is centered', () => {
       render(<ErrorFallback type="webgl" />);
-      const container = screen.getByText('WebGL 不可用').closest('div')?.parentElement;
-      expect(container?.style.display).toBe('flex');
-      expect(container?.style.justifyContent).toBe('center');
-      expect(container?.style.alignItems).toBe('center');
+      // The heading is inside the error card div, which is inside the fixed outer div
+      const heading = screen.getByText('WebGL 不可用');
+      const outerContainer = heading.parentElement?.parentElement;
+      expect(outerContainer?.style.display).toBe('flex');
+      expect(outerContainer?.style.justifyContent).toBe('center');
+      expect(outerContainer?.style.alignItems).toBe('center');
     });
   });
 });
