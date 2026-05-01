@@ -1,0 +1,47 @@
+/* Geist 字体 — 从 Google Fonts 加载（必须在 @import "tailwindcss" 之前，避免 CSS @import 顺序警告） */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;600&family=Geist+Mono:wght@400;600&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Geist', 'Geist Fallback', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Geist Mono', 'Geist Mono Fallback', 'Consolas', monospace;
+}
+
+/* 全局暗色主题 — 对应 UI-SPEC 颜色合同 */
+:root {
+  color-scheme: dark;
+  background-color: #0a0a0a;
+  color: #fafafa;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font-sans);
+}
+
+/* 禁止文本选中（沙盒模式 UI 不需要文本选择） */
+body {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* 滚动条暗色主题 */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 3px;
+}
