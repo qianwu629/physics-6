@@ -10,7 +10,7 @@ Physis 从一个可运行的物理沙盒起步（球体和方块在重力下碰�
 - Integer phases (1, 2, 3, 4): Planned milestone work
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
-- [ ] **Phase 1: 仿真核心与基础3D渲染** - 可运行的物理沙盒：物体在重力下碰撞堆叠，3D 视角可旋转观察，支持播放/暂停/重置
+- [x] **Phase 1: 仿真核心与基础3D渲染** - 可运行的物理沙盒：物体在重力下碰撞堆叠，3D 视角可旋转观察，支持播放/暂停/重置
 - [ ] **Phase 2: 组件化实体系统与属性编辑** - 用户可自由添加实体、组合组件、通过属性面板编辑物理参数
 - [ ] **Phase 3: 约束系统与环境配置** - 弹簧约束连接物体，全局重力/摩擦/空气阻力可配置
 - [ ] **Phase 4: 轨迹与矢量可视化** - 运动轨迹残影、速度和受力矢量箭头叠加显示
@@ -31,7 +31,7 @@ Physis 从一个可运行的物理沙盒起步（球体和方块在重力下碰�
 Plans:
 - [x] 01-01-PLAN.md — 项目初始化与基础设施（Vite + React + Tailwind + 依赖）
 - [x] 01-02-PLAN.md — 仿真核心与 3D 场景（Zustand store + Rapier Physics + R3F 渲染）
-- [ ] 01-03-PLAN.md — UI 控制与集成（工具栏 + 加载/错误状态 + 键盘快捷键）
+- [x] 01-03-PLAN.md — UI 控制与集成（工具栏 + 加载/错误状态 + 键盘快捷键）
 **UI hint**: yes
 
 ### Phase 2: 组件化实体系统与属性编辑
@@ -79,7 +79,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. 仿真核心与基础3D渲染 | 2/3 | In progress | 2026-05-01 |
+| 1. 仿真核心与基础3D渲染 | 3/3 | Complete | 2026-05-01 |
 | 2. 组件化实体系统与属性编辑 | 0/TBD | Not started | - |
 | 3. 约束系统与环境配置 | 0/TBD | Not started | - |
 | 4. 轨迹与矢量可视化 | 0/TBD | Not started | - |

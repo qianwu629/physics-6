@@ -14,7 +14,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **SIM-03**: 物体之间发生物理碰撞并正确响应
 - [ ] **SIM-04**: 用户可添加弹簧约束（弹簧振子），配置弹性系数和原长
 - [ ] **SIM-05**: 用户可配置全局环境参数——重力加速度、空气阻力系数、摩擦系数
-- [ ] **SIM-06**: 用户可以播放、暂停和重置模拟
+- [x] **SIM-06**: 用户可以播放、暂停和重置模拟
 
 ### Rendering & Interaction
 
@@ -68,7 +68,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SIM-03 | Phase 1: 仿真核心与基础3D渲染 | Complete (01-02) |
 | SIM-04 | Phase 3: 约束系统与环境配置 | Pending |
 | SIM-05 | Phase 3: 约束系统与环境配置 | Pending |
-| SIM-06 | Phase 1: 仿真核心与基础3D渲染 | Pending |
+| SIM-06 | Phase 1: 仿真核心与基础3D渲染 | Complete (01-03) |
 | REN-01 | Phase 1: 仿真核心与基础3D渲染 | Complete (01-02) |
 | REN-02 | Phase 1: 仿真核心与基础3D渲染 | Complete (01-02) |
 | REN-03 | Phase 2: 组件化实体系统与属性编辑 | Pending |
