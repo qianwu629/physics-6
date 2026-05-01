@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: building
-stopped_at: Phase 2 context gathered — ECS architecture, entity creation UX, property panel design decided (2026-05-01)
-last_updated: "2026-05-01T12:30:00Z"
-last_activity: 2026-05-01 — Phase 2 context captured (302 lines). 9 areas discussed: ECS (5 components), toolbox + creation dialog, property panel (right-side, pause-only editing), delete, reset (empty scene).
+stopped_at: Phase 2 UI-SPEC approved — 6/6 dimensions passed, 3 FLAGs fixed (2026-05-01)
+last_updated: "2026-05-01T13:30:00Z"
+last_activity: 2026-05-01 — UI-SPEC created (745 lines) + checker verified (all PASS). Ready for planning.
 progress:
   percent: 25
 ---
