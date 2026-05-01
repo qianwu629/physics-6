@@ -129,7 +129,7 @@ function SceneInitializer() {
 
   useEffect(() => {
     // 报告物体数量 — D-04 暂停时显示初始场景统计
-    setObjectCount(SCENE_STATS.totalObjects);
+    setObjectCount(SCENE_STATS.dynamicCount);
   }, [setObjectCount]);
 
   return null;
@@ -153,6 +153,7 @@ function SceneInitializer() {
 export default function Scene3D() {
   const isRunning = useSimulationStore((s) => s.isRunning);
   const showDebug = useSimulationStore((s) => s.showDebug);
+  const resetCounter = useSimulationStore((s) => s.resetCounter);
 
   const initialCameraPosition: [number, number, number] = [12, 10, 12];   // D-05: 45° 对角线
   const initialCameraTarget: [number, number, number] = [0, 2, 0];       // 场景中心偏上
@@ -186,6 +187,7 @@ export default function Scene3D() {
 
       {/* ── 物理世界 (Rapier WASM) ── */}
       <Physics
+        key={resetCounter}                  // CR-02: 重置时 key 变化 → React 卸载旧 Physics → 挂载新 Physics → 所有 RigidBody 回到初始位置
         timeStep={1 / 120}                  // ARCHITECTURE.md: 固定 120Hz
         paused={!isRunning}                 // D-04: 初始暂停（isRunning=false）
         debug={showDebug}                   // D-07: 调试线框

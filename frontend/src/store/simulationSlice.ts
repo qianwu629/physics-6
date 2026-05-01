@@ -17,6 +17,8 @@ export interface SimulationSlice {
   fps: number;
   /** 场景中动态物体数量 */
   objectCount: number;
+  /** 重置计数器——递增时触发 Physics 组件 key 变化，强制重新挂载物理世界 */
+  resetCounter: number;
 
   // Actions
   /** 开始仿真 */
@@ -25,7 +27,7 @@ export interface SimulationSlice {
   pause: () => void;
   /** 播放/暂停切换 */
   toggle: () => void;
-  /** 重置仿真 — 恢复初始场景 */
+  /** 重置仿真——递增 resetCounter 触发物理世界重新挂载，恢复所有物体到初始位置/速度 */
   reset: () => void;
   /** 切换物理调试线框显示 */
   setShowDebug: (value: boolean) => void;
@@ -44,11 +46,12 @@ export const createSimulationSlice: StateCreator<SimulationSlice, [], [], Simula
   showDebug: false,
   fps: 0,
   objectCount: 0,
+  resetCounter: 0,
 
   play: () => set({ isRunning: true }),
   pause: () => set({ isRunning: false }),
   toggle: () => set((state) => ({ isRunning: !state.isRunning })),
-  reset: () => set({ isRunning: false }),
+  reset: () => set((state) => ({ isRunning: false, resetCounter: state.resetCounter + 1 })),
   setShowDebug: (value) => set({ showDebug: value }),
   setFps: (fps) => set({ fps }),
   setObjectCount: (count) => set({ objectCount: count }),
