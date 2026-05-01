@@ -28,6 +28,7 @@ vi.mock('@react-three/drei', () => ({
   Grid: () => <div data-testid="grid" />,
   GizmoHelper: ({ children }: { children: React.ReactNode }) => <div data-testid="gizmo-helper">{children}</div>,
   GizmoViewport: () => <div data-testid="gizmo-viewport" />,
+  Outlines: () => <div data-testid="outlines" />,
 }));
 
 vi.mock('three', () => {
@@ -143,16 +144,16 @@ describe('Scene3D', () => {
       const { default: Scene3D } = await import('./Scene3D');
       const { getAllByTestId } = render(<Scene3D />);
       const fixedBodies = getAllByTestId('rigid-body-fixed');
-      // Ground + 2 slopes + 1 platform = 4 fixed rigid bodies
+      // Ground is the only fixed rigid body (INITIAL_SCENE_OBJECTS removed per D-06)
       expect(fixedBodies.length).toBeGreaterThanOrEqual(1);
     });
 
-    it('should render 14 scene objects from INITIAL_SCENE_OBJECTS', async () => {
+    it('should render empty scene with no hardcoded dynamic objects (D-06)', async () => {
       const { default: Scene3D } = await import('./Scene3D');
-      const { getAllByTestId } = render(<Scene3D />);
-      const dynamicBodies = getAllByTestId('rigid-body-dynamic');
-      // 11 dynamic objects from INITIAL_SCENE_OBJECTS
-      expect(dynamicBodies.length).toBe(11);
+      const { queryAllByTestId } = render(<Scene3D />);
+      const dynamicBodies = queryAllByTestId('rigid-body-dynamic');
+      // D-06: Scene starts empty — no dynamic bodies from INITIAL_SCENE_OBJECTS
+      expect(dynamicBodies.length).toBe(0);
     });
   });
 

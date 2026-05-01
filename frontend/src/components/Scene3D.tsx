@@ -1,81 +1,13 @@
 import { Canvas } from '@react-three/fiber';
-import { Physics, RigidBody, CuboidCollider, BallCollider, CylinderCollider } from '@react-three/rapier';
+import { Physics, RigidBody, CuboidCollider } from '@react-three/rapier';
 import { OrbitControls, Grid, GizmoHelper, GizmoViewport } from '@react-three/drei';
-import { useRef, useEffect, useMemo } from 'react';
+import { useRef, useEffect } from 'react';
 import * as THREE from 'three';
-import { INITIAL_SCENE_OBJECTS, SCENE_STATS } from '../simulation/hardcodedScene';
 import { useSimulationStore } from '../store';
-import type { SceneObject } from '../simulation/types';
+import { useShallow } from 'zustand/react/shallow';
+import EntityRenderer from './EntityRenderer';
 
-// ──── 被 @react-three/rapier 驱动的物理网格组件 ────
-
-/**
- * 单个物理物体的 3D 渲染
- *
- * 使用 @react-three/rapier 的声明式组件:
- * - <RigidBody> 注册到 Rapier 世界并接收物理变换
- * - <Collider> 定义碰撞几何
- * - <mesh> 是纯视觉——由 @react-three/rapier 自动同步变换
- */
-function PhysicsObject({ obj }: { obj: SceneObject }) {
-  const colliderProps = useMemo(() => {
-    switch (obj.shape) {
-      case 'sphere':
-        return { type: 'ball' as const, args: [obj.shapeArgs[0]] as [number] };
-      case 'cuboid':
-        return { type: 'cuboid' as const, args: obj.shapeArgs as [number, number, number] };
-      case 'cylinder':
-        return { type: 'cylinder' as const, args: [obj.shapeArgs[0], obj.shapeArgs[1]] as [number, number] };
-    }
-  }, [obj.shape, obj.shapeArgs]);
-
-  const geometry = useMemo(() => {
-    switch (obj.shape) {
-      case 'sphere':
-        return <sphereGeometry args={[obj.shapeArgs[0], 32, 32]} />;
-      case 'cuboid':
-        return <boxGeometry args={[
-          obj.shapeArgs[0] * 2,
-          obj.shapeArgs[1] * 2,
-          obj.shapeArgs[2] * 2,
-        ]} />;
-      case 'cylinder':
-        return <cylinderGeometry args={[
-          obj.shapeArgs[1],  // radiusTop
-          obj.shapeArgs[1],  // radiusBottom
-          obj.shapeArgs[0] * 2,  // height
-          32,
-        ]} />;
-    }
-  }, [obj.shape, obj.shapeArgs]);
-
-  return (
-    <RigidBody
-      type={obj.kind}
-      position={obj.position}
-      rotation={obj.rotation}
-      restitution={obj.restitution}
-      colliders={false}
-    >
-      {/* 碰撞体 —— 决定物理行为 */}
-      {colliderProps.type === 'ball' && <BallCollider args={colliderProps.args as [number]} />}
-      {colliderProps.type === 'cuboid' && <CuboidCollider args={colliderProps.args as [number, number, number]} />}
-      {colliderProps.type === 'cylinder' && <CylinderCollider args={colliderProps.args as [number, number]} />}
-
-      {/* 视觉网格 —— 纯渲染，不参与物理 */}
-      <mesh castShadow receiveShadow>
-        {geometry}
-        <meshStandardMaterial
-          color={obj.color}
-          roughness={0.6}
-          metalness={0.1}
-        />
-      </mesh>
-    </RigidBody>
-  );
-}
-
-// ──── 地面 ────
+// ──── 地面 (Phase 1 遗留 — 保持不变) ────
 // D-02: 地面是隐式基础设施——不属于"物体"，始终存在
 
 function Ground() {
@@ -94,7 +26,7 @@ function Ground() {
   );
 }
 
-// ──── FPS 追踪器 (useFrame-based, 不触发 React re-render) ────
+// ──── FPS 追踪器 (requestAnimationFrame-based, 不触发 React re-render) ────
 
 function FpsTracker() {
   const frameCountRef = useRef(0);
@@ -122,15 +54,15 @@ function FpsTracker() {
   return null; // 无 DOM 输出——纯逻辑组件
 }
 
-// ──── 场景初始化 (设置物体数量) ────
+// ──── 场景物体初始化 — 从 ECS 实体数设置 objectCount ────
 
 function SceneInitializer() {
+  const entities = useSimulationStore((s) => s.entities);
   const setObjectCount = useSimulationStore((s) => s.setObjectCount);
 
   useEffect(() => {
-    // 报告物体数量 — D-04 暂停时显示初始场景统计
-    setObjectCount(SCENE_STATS.dynamicCount);
-  }, [setObjectCount]);
+    setObjectCount(entities.size);
+  }, [entities.size, setObjectCount]);
 
   return null;
 }
@@ -138,22 +70,30 @@ function SceneInitializer() {
 // ──── 主场景组件 ────
 
 /**
- * Scene3D — Phase 1 3D 仿真画布
+ * Scene3D — Phase 2 ECS 驱动 3D 仿真画布
  *
- * 包含:
- * - R3F Canvas（WebGL 渲染器）
- * - Rapier Physics 世界（固定 120Hz 时间步长）
- * - 硬编码初始场景物体（D-01）
- * - 地面（D-02）
- * - 轨道摄像机 45° 对角线（D-05）
- * - 参考网格 + RGB 坐标轴 (D-06)
- * - 环境光 + 平行光 + 阴影 (D-06)
- * - Canvas 自适应窗口 (D-10)
+ * 变化 (vs Phase 1):
+ * - 移除 INITIAL_SCENE_OBJECTS — 空场景初始状态 (D-06)
+ * - ECS 驱动实体渲染 — entities Map → EntityRenderer
+ * - 3D 点击选中 → 蓝色 Outlines 高亮 (D-07)
+ * - 点击空白取消选中 → onPointerMissed
+ *
+ * 保留 (Phase 1):
+ * - Ground, Grid, Gizmo, 光照, OrbitControls, Physics 配置
+ * - 固定 120Hz 时间步长, 暂停/运行控制, 调试模式
+ * - FPS 追踪
  */
 export default function Scene3D() {
   const isRunning = useSimulationStore((s) => s.isRunning);
   const showDebug = useSimulationStore((s) => s.showDebug);
   const resetCounter = useSimulationStore((s) => s.resetCounter);
+
+  // ECS 实体 + 选中状态 (useShallow 避免重渲染风暴 — RESEARCH Pitfall 6)
+  const entityEntries = useSimulationStore(
+    useShallow((s) => Array.from(s.entities.entries())),
+  );
+  const selectedId = useSimulationStore((s) => s.selectedEntityId);
+  const selectEntity = useSimulationStore((s) => s.selectEntity);
 
   const initialCameraPosition: [number, number, number] = [12, 10, 12];   // D-05: 45° 对角线
   const initialCameraTarget: [number, number, number] = [0, 2, 0];       // 场景中心偏上
@@ -187,7 +127,7 @@ export default function Scene3D() {
 
       {/* ── 物理世界 (Rapier WASM) ── */}
       <Physics
-        key={resetCounter}                  // CR-02: 重置时 key 变化 → React 卸载旧 Physics → 挂载新 Physics → 所有 RigidBody 回到初始位置
+        key={resetCounter}                  // CR-02: 重置时 key 变化 → React 卸载旧 Physics → 挂载新 Physics
         timeStep={1 / 120}                  // ARCHITECTURE.md: 固定 120Hz
         paused={!isRunning}                 // D-04: 初始暂停（isRunning=false）
         debug={showDebug}                   // D-07: 调试线框
@@ -197,10 +137,24 @@ export default function Scene3D() {
         {/* 地面 — D-02: 隐式基础设施 */}
         <Ground />
 
-        {/* 场景物体 — D-01, D-03 */}
-        {INITIAL_SCENE_OBJECTS.map((obj) => (
-          <PhysicsObject key={obj.id} obj={obj} />
+        {/* ECS 驱动实体渲染 — 替代 INITIAL_SCENE_OBJECTS.map() */}
+        {entityEntries.map(([id, entity]) => (
+          <EntityRenderer
+            key={id}
+            entity={entity}
+            isSelected={id === selectedId}
+            onSelect={selectEntity}
+          />
         ))}
+
+        {/* 点击空白取消选中 — D-07 */}
+        <mesh
+          visible={false}
+          onPointerMissed={() => selectEntity(null)}
+          position={[0, 0, -500]}
+        >
+          <planeGeometry args={[2000, 2000]} />
+        </mesh>
       </Physics>
 
       {/* ── 摄像机控制 (D-05) ── */}

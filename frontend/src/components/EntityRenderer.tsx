@@ -1,7 +1,6 @@
 import { useRef, useMemo, useCallback } from 'react';
 import { RigidBody, BallCollider, CuboidCollider, CylinderCollider } from '@react-three/rapier';
 import { Outlines } from '@react-three/drei';
-import * as THREE from 'three';
 import type { Entity } from '../ecs/types';
 import type { TransformComponent, RigidBodyComponent, ColliderComponent, VelocityComponent, MaterialComponent } from '../ecs/types';
 
