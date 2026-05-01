@@ -1,18 +1,25 @@
 /**
- * 物理场景类型定义
+ * 物理场景类型定义 — @deprecated
  *
  * Phase 1: 硬编码场景的数据结构。
- * 注意：这些类型在 Phase 2 将被组件化 ECS 系统取代（ARCHITECTURE.md Pattern 1）。
- * 当前设计保持简洁以服务引擎验证目的（D-12: 严禁模板模式）。
+ * Phase 2: 被 ECS 组件化架构取代 (src/ecs/types.ts)。
+ * 此文件仅保留用于向后参考，所有类型应在 Phase 3+ 移除。
+ *
+ * 迁移指南:
+ * - SceneObject → Entity (src/ecs/types.ts)
+ * - SceneObject.shape → ColliderComponent.shape (src/ecs/components/Collider.ts)
+ * - SceneObject.kind → RigidBodyComponent.kind (src/ecs/components/RigidBody.ts)
+ * - SceneObject.position → TransformComponent.position (src/ecs/components/Transform.ts)
+ * - SceneObject.color → MaterialComponent.color (src/ecs/components/Material.ts)
  */
 
-/** 刚体类型 */
+/** @deprecated Use RigidBodyKind from src/ecs/types.ts */
 export type RigidBodyKind = 'dynamic' | 'fixed';
 
-/** 碰撞体形状 */
+/** @deprecated Use ColliderShape from src/ecs/types.ts */
 export type ColliderShape = 'sphere' | 'cuboid' | 'cylinder';
 
-/** 单个场景物体的初始定义 */
+/** @deprecated Use Entity from src/ecs/types.ts */
 export interface SceneObject {
   /** 唯一标识 */
   id: string;
