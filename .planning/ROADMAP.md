@@ -44,7 +44,14 @@ Plans:
   2. 用户可以在场景中选择任意实体，通过属性面板编辑其物理属性（质量、初速度、位置、摩擦系数、弹性系数）
   3. 实体属性修改即时生效——实体在模拟中的行为反映更新后的参数值
   4. 系统架构采用基于组件的实体模型，实体行为由其附加的组件集合决定，而非由硬编码类型模板决定——新实体类型可通过组合现有组件创建
-**Plans**: TBD
+**Plans**: 6 plans
+Plans:
+- [ ] 02-01-PLAN.md — 基础建设: shadcn/ui初始化 + ECS组件类型 + Entity工厂
+- [ ] 02-02-PLAN.md — 状态管理: entitySlice (Map CRUD + 选中) + uiSlice (面板状态) + 单元测试
+- [ ] 02-03-PLAN.md — 3D渲染重构: EntityRenderer (ECS→R3F) + Scene3D (空场景 + 点击选中 + Outlines高亮)
+- [ ] 02-04-PLAN.md — 实体创建: 左侧浮动Toolbox + 创建对话框 (zod验证 + react-hook-form)
+- [ ] 02-05-PLAN.md — 属性编辑: 右侧PropertyPanel (可编辑/只读切换) + EntityList + 删除确认
+- [ ] 02-06-PLAN.md — 应用集成: App布局 + 键盘快捷键(8键) + 清理hardcodedScene
 **UI hint**: yes
 
 ### Phase 3: 约束系统与环境配置
@@ -81,6 +88,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. 仿真核心与基础3D渲染 | 4/4 | Complete ✓ | 2026-05-01 |
-| 2. 组件化实体系统与属性编辑 | 0/TBD | Not started | - |
+| 2. 组件化实体系统与属性编辑 | 0/6 | Planned | - |
 | 3. 约束系统与环境配置 | 0/TBD | Not started | - |
 | 4. 轨迹与矢量可视化 | 0/TBD | Not started | - |
