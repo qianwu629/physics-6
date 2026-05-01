@@ -12,7 +12,8 @@ Physis 是一个基于 Web 的物理模拟平台，允许用户通过组合基�
 
 ### Validated
 
-(None yet — ship to validate)
+- [x] 实时 3D 可视化呈现模拟过程，支持 3D 视角下模拟 2D 物理 — Validated in Phase 1: 仿真核心与基础3D渲染
+- [x] 经典力学模拟准确（基础刚体碰撞、堆叠、重力行为） — Partially validated in Phase 1 (full classical mechanics scope requires Phases 2-4)
 
 ### Active
 
@@ -55,11 +56,9 @@ Physis 是一个基于 Web 的物理模拟平台，允许用户通过组合基�
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| 组件组合架构而非模板模式 | 废案失败的根本原因，模板模式无法自由搭建场景 | — Pending |
-| 力学为第一阶段物理领域 | 高中物理核心内容，运动过程直观可见 | — Pending |
-| Web 平台 | 免安装、跨平台、3D 可视化生态成熟 | — Pending |
-| 物理引擎待调研 | 需要在性能、准确性和集成难度之间权衡 | — Pending |
-| 3D 渲染方案待调研 | Three.js、Babylon.js 等方案待评估 | — Pending |
+| R3F + Rapier + Zustand + Vite | 技术栈调研结论，HIGH confidence | Phase 1 验证通过：52 tests pass，构建 3.50s |
+| 组件组合架构而非模板模式 | 废案失败的根本原因 | Phase 1 物理对象已采用组件式定义（SceneObject type） |
+| @react-three/rapier (3D WASM) | 仅需 3D 引擎，不依赖 rapier2d-compat | Phase 1 已移除 2D WASM 依赖 |
 
 ## Evolution
 
@@ -79,4 +78,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-30 after initialization*
+*Last updated: 2026-05-01 after Phase 1 completion (4/4 plans, 5/5 verified)*
