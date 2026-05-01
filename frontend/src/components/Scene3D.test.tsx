@@ -9,7 +9,7 @@ vi.mock('@react-three/fiber', () => ({
 
 vi.mock('@react-three/rapier', () => ({
   Physics: ({ children }: { children: React.ReactNode }) => <div data-testid="physics-world">{children}</div>,
-  RigidBody: ({ children, type, ...props }: { children: React.ReactNode; type: string; [key: string]: unknown }) => (
+  RigidBody: ({ children, type }: { children: React.ReactNode; type: string; [key: string]: unknown }) => (
     <div data-testid={`rigid-body-${type}`}>{children}</div>
   ),
   CuboidCollider: ({ args }: { args: [number, number, number] }) => (
@@ -25,9 +25,9 @@ vi.mock('@react-three/rapier', () => ({
 
 vi.mock('@react-three/drei', () => ({
   OrbitControls: () => <div data-testid="orbit-controls" />,
-  Grid: (props: Record<string, unknown>) => <div data-testid="grid" />,
+  Grid: () => <div data-testid="grid" />,
   GizmoHelper: ({ children }: { children: React.ReactNode }) => <div data-testid="gizmo-helper">{children}</div>,
-  GizmoViewport: (props: Record<string, unknown>) => <div data-testid="gizmo-viewport" />,
+  GizmoViewport: () => <div data-testid="gizmo-viewport" />,
 }));
 
 vi.mock('three', () => {
