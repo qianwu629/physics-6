@@ -63,24 +63,24 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SIM-01 | — | Pending |
-| SIM-02 | — | Pending |
-| SIM-03 | — | Pending |
-| SIM-04 | — | Pending |
-| SIM-05 | — | Pending |
-| SIM-06 | — | Pending |
-| REN-01 | — | Pending |
-| REN-02 | — | Pending |
-| REN-03 | — | Pending |
-| DIF-01 | — | Pending |
-| DIF-02 | — | Pending |
-| DIF-03 | — | Pending |
+| SIM-01 | Phase 1: 仿真核心与基础3D渲染 | Pending |
+| SIM-02 | Phase 3: 约束系统与环境配置 | Pending |
+| SIM-03 | Phase 1: 仿真核心与基础3D渲染 | Pending |
+| SIM-04 | Phase 3: 约束系统与环境配置 | Pending |
+| SIM-05 | Phase 3: 约束系统与环境配置 | Pending |
+| SIM-06 | Phase 1: 仿真核心与基础3D渲染 | Pending |
+| REN-01 | Phase 1: 仿真核心与基础3D渲染 | Pending |
+| REN-02 | Phase 1: 仿真核心与基础3D渲染 | Pending |
+| REN-03 | Phase 2: 组件化实体系统与属性编辑 | Pending |
+| DIF-01 | Phase 2: 组件化实体系统与属性编辑 | Pending |
+| DIF-02 | Phase 4: 轨迹与矢量可视化 | Pending |
+| DIF-03 | Phase 4: 轨迹与矢量可视化 | Pending |
 
 **Coverage:**
 - v1 requirements: 12 total
-- Mapped to phases: 0
-- Unmapped: 12 ⚠️
+- Mapped to phases: 12
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-04-30*
-*Last updated: 2026-04-30 after initial definition*
+*Last updated: 2026-04-30 after roadmap creation*
