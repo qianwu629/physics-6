@@ -27,7 +27,11 @@ Physis 从一个可运行的物理沙盒起步（球体和方块在重力下碰�
   3. 用户可以通过鼠标/触控操作对 3D 摄像机进行轨道旋转、平移和缩放，从任意角度观察场景
   4. 用户可以通过可见的屏幕控件启动、暂停和重置模拟
   5. 同一场景在不同显示刷新率（60Hz、144Hz）下产生一致的物理行为——模拟速度不随帧率变化
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 01-01-PLAN.md — 项目初始化与基础设施（Vite + React + Tailwind + 依赖）
+- [ ] 01-02-PLAN.md — 仿真核心与 3D 场景（Zustand store + Rapier Physics + R3F 渲染）
+- [ ] 01-03-PLAN.md — UI 控制与集成（工具栏 + 加载/错误状态 + 键盘快捷键）
 **UI hint**: yes
 
 ### Phase 2: 组件化实体系统与属性编辑
@@ -75,7 +79,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. 仿真核心与基础3D渲染 | 0/TBD | Not started | - |
+| 1. 仿真核心与基础3D渲染 | 0/3 | Not started | - |
 | 2. 组件化实体系统与属性编辑 | 0/TBD | Not started | - |
 | 3. 约束系统与环境配置 | 0/TBD | Not started | - |
 | 4. 轨迹与矢量可视化 | 0/TBD | Not started | - |
