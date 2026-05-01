@@ -12,7 +12,7 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    exclude: ['@dimforge/rapier2d-compat'],
+    exclude: ['@dimforge/rapier3d-compat'],
   },
   build: {
     target: 'esnext',

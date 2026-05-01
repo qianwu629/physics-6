@@ -1,5 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
-import Rapier from '@dimforge/rapier2d-compat';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSimulationStore } from '../store';
 import Scene3D from './Scene3D';
 import Toolbar from './Toolbar';
@@ -47,18 +46,6 @@ export default function App() {
     }
   }, []);
 
-  // ──── 步骤 2: WASM 物理引擎初始化 ────
-  const initWasm = useCallback(async () => {
-    try {
-      await Rapier.init();
-      setAppState('ready');
-    } catch (err) {
-      console.error('Rapier WASM 初始化失败:', err);
-      setErrorType('wasm');
-      setAppState('error');
-    }
-  }, []);
-
   // ──── 启动初始化流程 ────
   useEffect(() => {
     if (!checkWebGL()) {
@@ -66,16 +53,17 @@ export default function App() {
       setAppState('error');
       return;
     }
-    // 100ms 延迟让 LoadingScreen DOM 先渲染（避免白屏闪烁）
-    const timer = setTimeout(() => { initWasm(); }, 100);
-    return () => clearTimeout(timer);
-  }, [checkWebGL, initWasm]);
+    // 不再手动初始化 Rapier——@react-three/rapier 的 <Physics> 内部自行处理 WASM 加载。
+    // 使用 Suspense 边界在 Physics 挂起时显示 LoadingScreen。
+    setAppState('ready');
+  }, [checkWebGL]);
 
   // ──── 键盘快捷键 (D-08) ────
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // 忽略输入框内按键
-      const target = e.target as HTMLElement;
+      const target = e.target;
+      if (!(target instanceof HTMLElement)) return;  // WR-04: 类型守卫代替不安全断言
       if (
         target.tagName === 'INPUT' ||
         target.tagName === 'TEXTAREA' ||
@@ -128,9 +116,12 @@ export default function App() {
   }
 
   // appState === 'ready' — 3D 场景 + 工具栏
+  // CR-01 fix: Suspense 边界捕获 @react-three/rapier 的 WASM 加载挂起状态
   return (
     <>
-      <Scene3D />
+      <Suspense fallback={<LoadingScreen />}>
+        <Scene3D />
+      </Suspense>
       <Toolbar />
     </>
   );
