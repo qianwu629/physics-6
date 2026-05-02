@@ -26,6 +26,7 @@ export interface UiSlice {
 
   springCreationStage: SpringCreationStage;
   springEntityAId: string | null;
+  springEntityBId: string | null;
   springDialogOpen: boolean;
   environmentPanelOpen: boolean;
 
@@ -66,6 +67,7 @@ export const createUiSlice: StateCreator<UiSlice, [], [], UiSlice> = (set) => ({
   // Phase 3 弹簧 + 环境
   springCreationStage: 'idle',
   springEntityAId: null,
+  springEntityBId: null,
   springDialogOpen: false,
   environmentPanelOpen: false,
 
@@ -78,12 +80,12 @@ export const createUiSlice: StateCreator<UiSlice, [], [], UiSlice> = (set) => ({
 
   // ── Spring Creation Actions ──
 
-  enterSpringMode: () => set({ springCreationStage: 'pendingA', springEntityAId: null }),
-  exitSpringMode: () => set({ springCreationStage: 'idle', springEntityAId: null }),
+  enterSpringMode: () => set({ springCreationStage: 'pendingA', springEntityAId: null, springEntityBId: null }),
+  exitSpringMode: () => set({ springCreationStage: 'idle', springEntityAId: null, springEntityBId: null }),
   selectSpringEndpointA: (id) => set(id === null ? { springCreationStage: 'idle', springEntityAId: null } : { springCreationStage: 'pendingB', springEntityAId: id }),
-  selectSpringEndpointB: (_id) => set({ springCreationStage: 'dialog', springDialogOpen: true }),
+  selectSpringEndpointB: (id) => set({ springCreationStage: 'dialog', springEntityBId: id, springDialogOpen: true }),
   openSpringDialog: () => set({ springDialogOpen: true }),
-  closeSpringDialog: () => set({ springDialogOpen: false, springCreationStage: 'idle', springEntityAId: null }),
+  closeSpringDialog: () => set({ springDialogOpen: false, springCreationStage: 'idle', springEntityAId: null, springEntityBId: null }),
 
   // ── Environment Panel Actions ──
 

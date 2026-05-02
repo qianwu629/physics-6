@@ -1,11 +1,13 @@
 import { Canvas } from '@react-three/fiber';
 import { Physics, RigidBody, CuboidCollider } from '@react-three/rapier';
 import { OrbitControls, Grid, GizmoHelper, GizmoViewport } from '@react-three/drei';
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 import * as THREE from 'three';
 import { useSimulationStore } from '../store';
 import { useShallow } from 'zustand/react/shallow';
 import EntityRenderer from './EntityRenderer';
+import SpringRenderer from './SpringRenderer';
+import { RigidBodyRefContext } from './RigidBodyRefContext';
 
 // ──── 地面 (Phase 1 遗留 — 保持不变) ────
 // D-02: 地面是隐式基础设施——不属于"物体"，始终存在
@@ -97,6 +99,41 @@ export default function Scene3D() {
   // 在 render 中转换 Map 为 Array——仅在 entities 变化时重建
   const entityEntries = Array.from(entities.entries());
 
+  // ── Spring Creation Click Dispatch (Phase 3) ──
+  const handleEntitySelect = useCallback(
+    (entityId: string) => {
+      const uiStore = useSimulationStore.getState();
+      const stage = uiStore.springCreationStage;
+      const entityAId = uiStore.springEntityAId;
+
+      if (stage === 'pendingA') {
+        uiStore.selectSpringEndpointA(entityId);
+      } else if (stage === 'pendingB') {
+        if (entityId === entityAId) {
+          // Click same entity — cancel selection
+          uiStore.selectSpringEndpointA(null);
+        } else {
+          uiStore.selectSpringEndpointB(entityId);
+        }
+      } else {
+        selectEntity(entityId); // idle → 正常选中
+      }
+    },
+    [selectEntity],
+  );
+
+  // ── RigidBody Ref Registry — enables SpringRenderer to find entity refs ──
+  const rigidBodyRefMap = useRef<Map<string, React.RefObject<any>>>(new Map());
+  const registerRef = useCallback((entityId: string, ref: React.RefObject<any>) => {
+    rigidBodyRefMap.current.set(entityId, ref);
+  }, []);
+  const unregisterRef = useCallback((entityId: string) => {
+    rigidBodyRefMap.current.delete(entityId);
+  }, []);
+  const getRef = useCallback((entityId: string) => {
+    return rigidBodyRefMap.current.get(entityId);
+  }, []);
+
   const initialCameraPosition: [number, number, number] = [12, 10, 12];   // D-05: 45° 对角线
   const initialCameraTarget: [number, number, number] = [0, 2, 0];       // 场景中心偏上
 
@@ -136,30 +173,44 @@ export default function Scene3D() {
         gravity={gravity}                   // Phase 3: 从 store 读取，支持热更新
         interpolate={true}                  // 渲染插值——平滑视觉
       >
-        {/* 地面 — D-02: 隐式基础设施 */}
-        <Ground />
+        <RigidBodyRefContext.Provider value={{ register: registerRef, unregister: unregisterRef, getRef }}>
+          {/* 地面 — D-02: 隐式基础设施 */}
+          <Ground />
 
-        {/* ECS 驱动实体渲染 — 替代 INITIAL_SCENE_OBJECTS.map() */}
-        {/* Phase 3: 约束实体 (spring) 跳过 EntityRenderer，由 SpringRenderer 渲染 */}
-        {entityEntries
-          .filter(([, entity]) => !entity.components.has('constraint'))
-          .map(([id, entity]) => (
-            <EntityRenderer
-              key={id}
-              entity={entity}
-              isSelected={id === selectedId}
-              onSelect={selectEntity}
-            />
-          ))}
+          {/* ECS 驱动实体渲染 — 替代 INITIAL_SCENE_OBJECTS.map() */}
+          {/* Phase 3: 约束实体 (spring) 跳过 EntityRenderer，由 SpringRenderer 渲染 */}
+          {entityEntries
+            .filter(([, entity]) => !entity.components.has('constraint'))
+            .map(([id, entity]) => (
+              <EntityRenderer
+                key={id}
+                entity={entity}
+                isSelected={id === selectedId}
+                onSelect={handleEntitySelect}
+              />
+            ))}
 
-        {/* 点击空白取消选中 — D-07 */}
-        <mesh
-          visible={false}
-          onPointerMissed={() => selectEntity(null)}
-          position={[0, 0, -500]}
-        >
-          <planeGeometry args={[2000, 2000]} />
-        </mesh>
+          {/* Phase 3: Spring 约束实体 — SpringRenderer */}
+          {entityEntries
+            .filter(([, entity]) => entity.components.has('constraint'))
+            .map(([id, entity]) => (
+              <SpringRenderer
+                key={id}
+                entity={entity}
+                isSelected={id === selectedId}
+                onSelect={handleEntitySelect}
+              />
+            ))}
+
+          {/* 点击空白取消选中 — D-07 (also exits spring mode if active) */}
+          <mesh
+            visible={false}
+            onPointerMissed={() => selectEntity(null)}
+            position={[0, 0, -500]}
+          >
+            <planeGeometry args={[2000, 2000]} />
+          </mesh>
+        </RigidBodyRefContext.Provider>
       </Physics>
 
       {/* ── 摄像机控制 (D-05) ── */}
