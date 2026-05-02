@@ -21,6 +21,11 @@ describe('uiSlice - spring creation state machine', () => {
       expect(store.getState().springEntityAId).toBeNull();
     });
 
+    it('springEntityBId starts as null', () => {
+      const store = createTestStore();
+      expect(store.getState().springEntityBId).toBeNull();
+    });
+
     it('springDialogOpen starts as false', () => {
       const store = createTestStore();
       expect(store.getState().springDialogOpen).toBe(false);
@@ -50,12 +55,14 @@ describe('uiSlice - spring creation state machine', () => {
       // pendingB → dialog (select B)
       store.getState().selectSpringEndpointB('entity-2');
       expect(store.getState().springCreationStage).toBe('dialog');
+      expect(store.getState().springEntityBId).toBe('entity-2');
       expect(store.getState().springDialogOpen).toBe(true);
 
       // dialog → idle (close dialog)
       store.getState().closeSpringDialog();
       expect(store.getState().springCreationStage).toBe('idle');
       expect(store.getState().springEntityAId).toBeNull();
+      expect(store.getState().springEntityBId).toBeNull();
       expect(store.getState().springDialogOpen).toBe(false);
     });
   });
@@ -68,6 +75,7 @@ describe('uiSlice - spring creation state machine', () => {
       store.getState().exitSpringMode();
       expect(store.getState().springCreationStage).toBe('idle');
       expect(store.getState().springEntityAId).toBeNull();
+      expect(store.getState().springEntityBId).toBeNull();
     });
 
     it('resets to idle from pendingB', () => {
@@ -78,6 +86,7 @@ describe('uiSlice - spring creation state machine', () => {
       store.getState().exitSpringMode();
       expect(store.getState().springCreationStage).toBe('idle');
       expect(store.getState().springEntityAId).toBeNull();
+      expect(store.getState().springEntityBId).toBeNull();
     });
   });
 
