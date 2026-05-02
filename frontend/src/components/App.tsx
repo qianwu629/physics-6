@@ -6,6 +6,9 @@ import Toolbar from './Toolbar';
 import Toolbox from './Toolbox';
 import PropertyPanel from './PropertyPanel';
 import CreationDialog from './CreationDialog';
+import EnvironmentPanel from './EnvironmentPanel';
+import SpringCreationBanner from './SpringCreationBanner';
+import SpringCreationDialog from './SpringCreationDialog';
 import LoadingScreen from './LoadingScreen';
 import ErrorFallback from './ErrorFallback';
 import type { ErrorType } from './ErrorFallback';
@@ -46,6 +49,10 @@ export default function App() {
   const selectedEntityId = useSimulationStore((s) => s.selectedEntityId);
   const propertyPanelCollapsed = useSimulationStore((s) => s.propertyPanelCollapsed);
   const togglePropertyPanel = useSimulationStore((s) => s.togglePropertyPanel);
+  // Phase 3: spring creation + environment
+  const enterSpringMode = useSimulationStore((s) => s.enterSpringMode);
+  const exitSpringMode = useSimulationStore((s) => s.exitSpringMode);
+  const springCreationStage = useSimulationStore((s) => s.springCreationStage);
 
   // ──── 步骤 1: WebGL 可用性检测 ────
   const checkWebGL = useCallback((): boolean => {
@@ -127,12 +134,33 @@ export default function App() {
           }
           break;
         }
+        // ── Phase 3: 弹簧模式快捷键 ──
+        case 'KeyK':
+          e.preventDefault();
+          {
+            const stage = useSimulationStore.getState().springCreationStage;
+            if (stage === 'idle') {
+              enterSpringMode();
+            } else {
+              exitSpringMode();
+            }
+          }
+          break;
+        case 'Escape':
+          {
+            const stage = useSimulationStore.getState().springCreationStage;
+            if (stage !== 'idle') {
+              e.preventDefault();
+              exitSpringMode();
+            }
+          }
+          break;
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [toggle, openDialog, openDeleteDialog, resetEntities, reset]);
+  }, [toggle, openDialog, openDeleteDialog, resetEntities, reset, enterSpringMode, exitSpringMode]);
 
   // ──── 重置计数器监听 (D-12: 工具栏重置按钮也需清空实体) ────
   useEffect(() => {
@@ -174,9 +202,7 @@ export default function App() {
   // CR-01 fix: Suspense 边界捕获 @react-three/rapier 的 WASM 加载挂起状态
   return (
     <>
-      <Suspense fallback={<LoadingScreen />}>
-        <Scene3D />
-      </Suspense>
+      <Scene3D />
       <Toolbar />
       <Toolbox />
       {!propertyPanelCollapsed && <PropertyPanel />}
@@ -204,6 +230,9 @@ export default function App() {
         </button>
       )}
       <CreationDialog />
+      <EnvironmentPanel />
+      <SpringCreationBanner />
+      <SpringCreationDialog />
     </>
   );
 }
