@@ -1,5 +1,11 @@
-import type { Entity, Component, ComponentType, TransformComponent, RigidBodyComponent, ColliderComponent, VelocityComponent, MaterialComponent } from './types';
+import type { Entity, Component, ComponentType, TransformComponent, RigidBodyComponent, ColliderComponent, VelocityComponent, MaterialComponent, ConstraintComponent, SpringConstraintParams } from './types';
 import { DEFAULT_COLORS, DEFAULT_MATERIAL } from './components/Material';
+
+export const DEFAULT_SPRING_PARAMS: SpringConstraintParams = {
+  stiffness: 100,
+  restLength: 2.0,
+  damping: 0.1,
+};
 
 /**
  * ECS Entity 工厂 (D-01)
@@ -140,4 +146,24 @@ export function createSlopeEntity(
 /** 重置全局计数器（仅用于测试） */
 export function resetEntityCounter(): void {
   entityCounter = 0;
+}
+
+export function createSpringEntity(
+  entityAId: string,
+  entityBId: string,
+  params?: Partial<SpringConstraintParams>,
+): Entity {
+  const n = nextNumber();
+  const mergedParams: SpringConstraintParams = {
+    ...DEFAULT_SPRING_PARAMS,
+    ...params,
+  };
+  const constraintComp: ConstraintComponent = {
+    type: 'constraint',
+    kind: 'spring',
+    entityAId,
+    entityBId,
+    params: mergedParams,
+  };
+  return createEntity(`spring-${n}`, `弹簧-${n}`, [constraintComp]);
 }
