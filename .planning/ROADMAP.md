@@ -12,7 +12,7 @@ Physis 从一个可运行的物理沙盒起步（球体和方块在重力下碰�
 
 - [x] **Phase 1: 仿真核心与基础3D渲染** - 可运行的物理沙盒：物体在重力下碰撞堆叠，3D 视角可旋转观察，支持播放/暂停/重置
 - [x] **Phase 2: 组件化实体系统与属性编辑** - 用户可自由添加实体、组合组件、通过属性面板编辑物理参数 (completed 2026-05-01)
-- [ ] **Phase 3: 约束系统与环境配置** - 弹簧约束连接物体，全局重力/摩擦/空气阻力可配置
+- [x] **Phase 3: 约束系统与环境配置** - 弹簧约束连接物体，全局重力/摩擦/空气阻力可配置 (completed 2026-05-02)
 - [ ] **Phase 4: 轨迹与矢量可视化** - 运动轨迹残影、速度和受力矢量箭头叠加显示
 
 ## Phase Details
@@ -69,7 +69,13 @@ Plans:
   3. 用户可以通过控制面板配置全局重力强度和方向，修改后对所有动态物体立即生效
   4. 用户可以通过控制面板配置全局摩擦系数和空气阻力（拖拽）系数，其效果在物体运动中可观察——更高摩擦力减慢滑动，更高空气阻力缩短抛体射程
   5. 带约束的多体场景（如弹簧连接的质量块）在不同环境参数组合下行为正确
-**Plans**: TBD
+**Plans**: 5 plans (18 tasks, ~135 min est.)
+Plans:
+- [x] 03-01-PLAN.md — ECS ConstraintComponent + simulationSlice.environment + uiSlice 弹簧状态机 + 单元测试
+- [ ] 03-02-PLAN.md — EnvironmentPanel + 重力 prop 接入 + 倍率叠加 + 暂停只读
+- [ ] 03-03-PLAN.md — SpringRenderer (helix tube) + useSpringJoint + 弹簧创建状态机
+- [ ] 03-04-PLAN.md — PropertyPanel 多态 + 级联删除 + UAT
+- [ ] 03-05-PLAN.md — (可选) 集成测试 + 性能 spike
 **UI hint**: yes
 
 ### Phase 4: 轨迹与矢量可视化
@@ -94,5 +100,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. 仿真核心与基础3D渲染 | 4/4 | Complete ✓ | 2026-05-01 |
 | 2. 组件化实体系统与属性编辑 | 6/6 | Complete   | 2026-05-01 |
-| 3. 约束系统与环境配置 | 0/TBD | Not started | - |
+| 3. 约束系统与环境配置 | 1/1 | Complete   | 2026-05-02 |
 | 4. 轨迹与矢量可视化 | 0/TBD | Not started | - |
