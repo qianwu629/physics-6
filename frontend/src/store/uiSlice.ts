@@ -18,6 +18,8 @@ export interface UiSlice {
   dialogDefaultShape: ShapeType;
   /** 删除确认对话框是否打开 */
   deleteDialogOpen: boolean;
+  /** 右侧属性面板是否折叠 */
+  propertyPanelCollapsed: boolean;
 
   // ── Actions ──
 
@@ -26,6 +28,8 @@ export interface UiSlice {
   closeDialog: () => void;
   openDeleteDialog: () => void;
   closeDeleteDialog: () => void;
+  /** 切换属性面板折叠状态 */
+  togglePropertyPanel: () => void;
 }
 
 export type UiStore = UiSlice;
@@ -35,10 +39,12 @@ export const createUiSlice: StateCreator<UiSlice, [], [], UiSlice> = (set) => ({
   dialogOpen: false,
   dialogDefaultShape: 'sphere',
   deleteDialogOpen: false,
+  propertyPanelCollapsed: false,    // 默认展开 — 引导用户使用属性编辑
 
   toggleToolbox: () => set((s) => ({ toolboxCollapsed: !s.toolboxCollapsed })),
   openDialog: (shape: ShapeType) => set({ dialogOpen: true, dialogDefaultShape: shape }),
   closeDialog: () => set({ dialogOpen: false }),
   openDeleteDialog: () => set({ deleteDialogOpen: true }),
   closeDeleteDialog: () => set({ deleteDialogOpen: false }),
+  togglePropertyPanel: () => set((s) => ({ propertyPanelCollapsed: !s.propertyPanelCollapsed })),
 });

@@ -187,6 +187,7 @@ export default function PropertyPanel() {
   const deleteDialogOpen = useSimulationStore((s) => s.deleteDialogOpen);
   const openDeleteDialog = useSimulationStore((s) => s.openDeleteDialog);
   const closeDeleteDialog = useSimulationStore((s) => s.closeDeleteDialog);
+  const togglePropertyPanel = useSimulationStore((s) => s.togglePropertyPanel);
 
   const selectedEntity = useSimulationStore(
     useShallow((s) =>
@@ -323,7 +324,10 @@ export default function PropertyPanel() {
           <button
             type="button"
             className="rounded hover:bg-white/5 transition-colors p-1"
-            onClick={() => selectEntity(null)}
+            onClick={() => {
+              selectEntity(null);
+              togglePropertyPanel();
+            }}
             aria-label="关闭面板"
           >
             <X size={14} style={{ color: '#a0a0a0' }} />
