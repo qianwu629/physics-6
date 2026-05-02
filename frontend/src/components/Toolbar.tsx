@@ -1,4 +1,4 @@
-import { Play, Pause, RotateCcw, Bug, Gauge, Boxes } from 'lucide-react';
+import { Play, Pause, RotateCcw, Bug, Globe, Gauge, Boxes } from 'lucide-react';
 import { useSimulationStore } from '../store';
 import { cn } from '../lib/utils';
 
@@ -23,6 +23,7 @@ export default function Toolbar() {
   const toggle = useSimulationStore((s) => s.toggle);
   const reset = useSimulationStore((s) => s.reset);
   const setShowDebug = useSimulationStore((s) => s.setShowDebug);
+  const toggleEnvironmentPanel = useSimulationStore((s) => s.toggleEnvironmentPanel);
 
   const isPlaying = isRunning;
 
@@ -123,6 +124,30 @@ export default function Toolbar() {
         onMouseLeave={(e) => { if (!showDebug) e.currentTarget.style.color = '#a0a0a0'; }}
       >
         <Bug size={16} strokeWidth={2} />
+      </button>
+
+      <div style={{ width: 1, height: 20, backgroundColor: 'rgba(255, 255, 255, 0.1)' }} />
+
+      {/* 环境按钮 — Phase 3 D-01 */}
+      <button
+        type="button"
+        aria-label="环境参数"
+        title="环境参数"
+        onClick={toggleEnvironmentPanel}
+        className={cn(
+          'flex items-center gap-1.5',
+          'px-3 py-1.5',
+          'rounded-md',
+          'text-sm font-medium',
+          'transition-all duration-150',
+          'focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3b82f6]',
+        )}
+        style={{ color: '#a0a0a0' }}
+        onMouseEnter={(e) => { e.currentTarget.style.color = '#e0e0e0'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.color = '#a0a0a0'; }}
+      >
+        <Globe size={16} strokeWidth={2} />
+        <span>环境</span>
       </button>
 
       <div style={{ width: 1, height: 20, backgroundColor: 'rgba(255, 255, 255, 0.1)' }} />

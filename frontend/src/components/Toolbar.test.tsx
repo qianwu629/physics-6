@@ -28,6 +28,10 @@ vi.mock('lucide-react', () => ({
     const { size, strokeWidth, ...rest } = props;
     return <svg data-testid="icon-boxes" data-size={size} data-stroke={strokeWidth} {...rest} />;
   },
+  Globe: (props: Record<string, unknown>) => {
+    const { size, strokeWidth, ...rest } = props;
+    return <svg data-testid="icon-globe" data-size={size} data-stroke={strokeWidth} {...rest} />;
+  },
 }));
 
 // Mock cn utility
