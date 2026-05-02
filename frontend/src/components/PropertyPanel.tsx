@@ -1,7 +1,6 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, memo } from 'react';
 import { X } from 'lucide-react';
 import { useSimulationStore } from '../store';
-import { useShallow } from 'zustand/shallow';
 import { Button } from './ui/button';
 import { Slider } from './ui/slider';
 import { Input } from './ui/input';
@@ -24,6 +23,7 @@ import type {
   ColliderComponent,
   VelocityComponent,
   MaterialComponent,
+  ConstraintComponent,
   ColliderParams,
 } from '../ecs/types';
 import { DEFAULT_COLORS } from '../ecs/components/Material';
@@ -189,11 +189,10 @@ export default function PropertyPanel() {
   const closeDeleteDialog = useSimulationStore((s) => s.closeDeleteDialog);
   const togglePropertyPanel = useSimulationStore((s) => s.togglePropertyPanel);
 
-  const selectedEntity = useSimulationStore(
-    useShallow((s) =>
-      selectedEntityId ? (s.entities.get(selectedEntityId) ?? null) : null,
-    ),
-  );
+  const selectedEntity = useSimulationStore((s) => {
+    const id = s.selectedEntityId;
+    return id ? (s.entities.get(id) ?? null) : null;
+  });
 
   // Keyboard shortcut: Delete/Backspace triggers delete confirmation
   useEffect(() => {
@@ -220,6 +219,19 @@ export default function PropertyPanel() {
   const collider = selectedEntity?.components.get('collider') as ColliderComponent | undefined;
   const velocity = selectedEntity?.components.get('velocity') as VelocityComponent | undefined;
   const material = selectedEntity?.components.get('material') as MaterialComponent | undefined;
+  const constraint = selectedEntity?.components.get('constraint') as ConstraintComponent | undefined;
+
+  const isSpring = !!constraint;
+
+  // Resolve endpoint entity names for spring editor
+  const entityAName = useSimulationStore((s) => {
+    if (!constraint?.entityAId) return constraint?.entityAId ?? '?';
+    return s.entities.get(constraint.entityAId)?.name ?? constraint.entityAId;
+  });
+  const entityBName = useSimulationStore((s) => {
+    if (!constraint?.entityBId) return constraint?.entityBId ?? '?';
+    return s.entities.get(constraint.entityBId)?.name ?? constraint.entityBId;
+  });
 
   const disabled = isRunning;
 
@@ -292,6 +304,37 @@ export default function PropertyPanel() {
     closeDeleteDialog();
   }, [selectedEntityId, removeEntity, closeDeleteDialog]);
 
+  // ── Spring property handlers ──
+  const handleSpringStiffnessChange = useCallback(
+    (val: number) => {
+      if (!selectedEntityId || !constraint) return;
+      updateComponent(selectedEntityId, 'constraint', {
+        params: { ...constraint.params, stiffness: val },
+      });
+    },
+    [selectedEntityId, constraint, updateComponent],
+  );
+
+  const handleSpringRestLengthChange = useCallback(
+    (val: number) => {
+      if (!selectedEntityId || !constraint) return;
+      updateComponent(selectedEntityId, 'constraint', {
+        params: { ...constraint.params, restLength: val },
+      });
+    },
+    [selectedEntityId, constraint, updateComponent],
+  );
+
+  const handleSpringDampingChange = useCallback(
+    (val: number) => {
+      if (!selectedEntityId || !constraint) return;
+      updateComponent(selectedEntityId, 'constraint', {
+        params: { ...constraint.params, damping: val },
+      });
+    },
+    [selectedEntityId, constraint, updateComponent],
+  );
+
   // Panel border based on editable/readonly state
   const panelBorder = disabled
     ? '1px solid rgba(255, 255, 255, 0.06)'
@@ -356,6 +399,96 @@ export default function PropertyPanel() {
             <div className="text-sm text-center py-6" style={{ color: '#666' }}>
               点击场景中的实体或从上方列表选择以编辑属性
             </div>
+          ) : isSpring ? (
+            /* ── Spring Property Editor ── */
+            <>
+              {/* Running banner */}
+              {disabled && (
+                <div className="mb-3 px-3 py-2 rounded-lg text-xs text-center bg-[rgba(59,130,246,0.1)] text-[#3b82f6] border border-[rgba(59,130,246,0.2)]">
+                  运行中，请暂停后编辑
+                </div>
+              )}
+
+              <div className="text-sm text-center" style={{ color: '#a0a0a0' }}>
+                当前选中: <span style={{ color: '#3b82f6' }}>{selectedEntity.name}</span>
+              </div>
+
+              <Separator className="bg-white/[0.06]" />
+
+              {/* Endpoints */}
+              <div className="space-y-1 py-1">
+                <div className="text-xs font-medium" style={{ color: '#a0a0a0' }}>端点</div>
+                <div className="flex items-center justify-between text-xs">
+                  <span style={{ color: '#666' }}>A:</span>
+                  <button
+                    type="button"
+                    className="text-[#3b82f6] hover:underline truncate ml-2"
+                    onClick={() => constraint?.entityAId && selectEntity(constraint.entityAId)}
+                    disabled={disabled}
+                  >
+                    {entityAName}
+                  </button>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span style={{ color: '#666' }}>B:</span>
+                  <button
+                    type="button"
+                    className="text-[#3b82f6] hover:underline truncate ml-2"
+                    onClick={() => constraint?.entityBId && selectEntity(constraint.entityBId)}
+                    disabled={disabled}
+                  >
+                    {entityBName}
+                  </button>
+                </div>
+              </div>
+
+              <Separator className="bg-white/[0.06]" />
+
+              {/* Spring parameters */}
+              <PhysicsField
+                label="刚度"
+                value={constraint?.params.stiffness ?? 100}
+                unit="N/m"
+                min={1}
+                max={1000}
+                step={1}
+                disabled={disabled}
+                onChange={handleSpringStiffnessChange}
+              />
+              <PhysicsField
+                label="原长"
+                value={constraint?.params.restLength ?? 2.0}
+                unit="m"
+                min={0.1}
+                max={50}
+                step={0.1}
+                disabled={disabled}
+                onChange={handleSpringRestLengthChange}
+              />
+              <PhysicsField
+                label="阻尼"
+                value={constraint?.params.damping ?? 0.1}
+                unit="N·s/m"
+                min={0}
+                max={50}
+                step={0.1}
+                disabled={disabled}
+                onChange={handleSpringDampingChange}
+              />
+
+              <Separator className="bg-white/[0.06]" />
+
+              {/* 删除按钮 */}
+              <Button
+                variant="destructive"
+                className="w-full"
+                size="default"
+                onClick={openDeleteDialog}
+                style={{ marginBottom: '8px' }}
+              >
+                删除弹簧
+              </Button>
+            </>
           ) : (
             <>
               {/* Status badge */}
@@ -587,25 +720,57 @@ export default function PropertyPanel() {
         </div>
       </div>
 
-      {/* Delete confirmation dialog */}
-      <Dialog open={deleteDialogOpen} onOpenChange={(open) => { if (!open) closeDeleteDialog(); }}>
-        <DialogContent className="sm:max-w-sm" showCloseButton={true}>
-          <DialogHeader>
-            <DialogTitle>确认删除</DialogTitle>
-            <DialogDescription>
-              确定要删除「{selectedEntity?.name ?? '未知'}」吗？此操作不可撤销。
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={closeDeleteDialog}>
-              取消
-            </Button>
-            <Button variant="destructive" onClick={handleDeleteConfirm}>
-              删除
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <DeleteConfirmDialog entityName={selectedEntity?.name ?? '未知'} />
     </>
   );
 }
+
+// ── DeleteConfirmDialog — 独立 memoized 组件，隔离 radix-ui Dialog 重渲染 ──
+
+interface DeleteConfirmDialogProps {
+  entityName: string;
+}
+
+const DeleteConfirmDialog = memo(function DeleteConfirmDialog({
+  entityName,
+}: DeleteConfirmDialogProps) {
+  const deleteDialogOpen = useSimulationStore((s) => s.deleteDialogOpen);
+  const closeDeleteDialog = useSimulationStore((s) => s.closeDeleteDialog);
+  const selectedEntityId = useSimulationStore((s) => s.selectedEntityId);
+  const removeEntity = useSimulationStore((s) => s.removeEntity);
+
+  const handleOpenChange = useCallback(
+    (open: boolean) => {
+      if (!open) closeDeleteDialog();
+    },
+    [closeDeleteDialog],
+  );
+
+  const handleDeleteConfirm = useCallback(() => {
+    if (selectedEntityId) removeEntity(selectedEntityId);
+    closeDeleteDialog();
+  }, [selectedEntityId, removeEntity, closeDeleteDialog]);
+
+  if (!deleteDialogOpen) return null;
+
+  return (
+    <Dialog open={deleteDialogOpen} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-sm" showCloseButton={true}>
+        <DialogHeader>
+          <DialogTitle>确认删除</DialogTitle>
+          <DialogDescription>
+            确定要删除「{entityName}」吗？此操作不可撤销。
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" onClick={closeDeleteDialog}>
+            取消
+          </Button>
+          <Button variant="destructive" onClick={handleDeleteConfirm}>
+            删除
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+});
