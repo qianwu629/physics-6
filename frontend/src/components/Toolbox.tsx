@@ -1,4 +1,4 @@
-import { Circle, Square, Database, TriangleAlert, Plus, X } from 'lucide-react';
+import { Circle, Square, Database, TriangleAlert, Link2, Plus, X } from 'lucide-react';
 import { useSimulationStore } from '../store';
 import type { ShapeType } from '../store/uiSlice';
 
@@ -13,6 +13,11 @@ export default function Toolbox() {
   const toolboxCollapsed = useSimulationStore((s) => s.toolboxCollapsed);
   const toggleToolbox = useSimulationStore((s) => s.toggleToolbox);
   const openDialog = useSimulationStore((s) => s.openDialog);
+  const enterSpringMode = useSimulationStore((s) => s.enterSpringMode);
+  const exitSpringMode = useSimulationStore((s) => s.exitSpringMode);
+  const springCreationStage = useSimulationStore((s) => s.springCreationStage);
+
+  const isSpringMode = springCreationStage !== 'idle';
 
   return (
     <div
@@ -60,6 +65,24 @@ export default function Toolbox() {
               <Icon size={20} strokeWidth={2} />
             </button>
           ))}
+          {/* 弹簧按钮分隔线 */}
+          <div className="w-6 h-px my-1" style={{ background: 'rgba(255,255,255,0.08)' }} />
+
+          {/* 弹簧按钮 — Phase 3 */}
+          <button
+            type="button"
+            aria-label={isSpringMode ? '退出弹簧模式' : '添加弹簧'}
+            title="添加弹簧 (K)"
+            onClick={() => isSpringMode ? exitSpringMode() : enterSpringMode()}
+            className="flex items-center justify-center w-10 h-10 rounded-lg
+              text-[#a0a0a0] hover:bg-[rgba(59,130,246,0.15)] hover:text-[#3b82f6]
+              active:bg-[rgba(59,130,246,0.3)] active:scale-95
+              transition-all duration-150"
+            style={isSpringMode ? { backgroundColor: 'rgba(59,130,246,0.2)', color: '#3b82f6' } : {}}
+          >
+            <Link2 size={20} strokeWidth={2} />
+          </button>
+
           {/* 折叠按钮 */}
           <button
             type="button"
