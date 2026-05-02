@@ -52,6 +52,11 @@ export const creationSchema = z.object({
   velocityY: z.number().default(0),
   velocityZ: z.number().default(0),
 
+  // Position (optional, defaults to [0,5,0])
+  positionX: z.number().default(0),
+  positionY: z.number().default(5),
+  positionZ: z.number().default(0),
+
   // Color
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/, '无效颜色格式').default('#f4a261'),
 });
@@ -90,6 +95,9 @@ function getDefaultFormValues(shape: ShapeType): CreationFormData {
     velocityX: 0,
     velocityY: 0,
     velocityZ: 0,
+    positionX: 0,
+    positionY: 5,
+    positionZ: 0,
     color: getDefaultColor(shape),
   };
 
@@ -151,6 +159,7 @@ export default function CreationDialog() {
     (data: CreationFormData) => {
       let entity: Entity;
       const velocity: [number, number, number] = [data.velocityX, data.velocityY, data.velocityZ];
+      const position: [number, number, number] = [data.positionX, data.positionY, data.positionZ];
 
       switch (data.shape) {
         case 'sphere':
@@ -161,6 +170,7 @@ export default function CreationDialog() {
             data.friction,
             data.color,
             velocity,
+            position,
           );
           break;
         case 'box':
@@ -173,6 +183,7 @@ export default function CreationDialog() {
             data.friction,
             data.color,
             velocity,
+            position,
           );
           break;
         case 'cylinder':
@@ -184,6 +195,7 @@ export default function CreationDialog() {
             data.friction,
             data.color,
             velocity,
+            position,
           );
           break;
         case 'slope':
@@ -192,6 +204,7 @@ export default function CreationDialog() {
             data.slopeHalfDepth!,
             data.friction,
             data.color,
+            position,
           );
           break;
         default:
@@ -467,7 +480,82 @@ export default function CreationDialog() {
             </div>
           </div>
 
-          {/* Section 5: 颜色 */}
+          {/* Section 5: 初始位置 */}
+          <div className="space-y-2">
+            <Label className="text-sm text-[#a0a0a0] font-semibold tracking-wider uppercase">
+              初始位置
+            </Label>
+            <div className="grid grid-cols-3 gap-2">
+              <Controller
+                name="positionX"
+                control={control}
+                render={({ field }) => (
+                  <div className="space-y-1">
+                    <Label className="text-xs text-[#666]" htmlFor="positionX">X</Label>
+                    <Input
+                      id="positionX"
+                      type="number"
+                      step={0.1}
+                      value={field.value}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                      className="text-sm font-mono text-center"
+                      style={{
+                        background: '#222',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        color: '#fafafa',
+                      }}
+                    />
+                  </div>
+                )}
+              />
+              <Controller
+                name="positionY"
+                control={control}
+                render={({ field }) => (
+                  <div className="space-y-1">
+                    <Label className="text-xs text-[#666]" htmlFor="positionY">Y</Label>
+                    <Input
+                      id="positionY"
+                      type="number"
+                      step={0.1}
+                      value={field.value}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                      className="text-sm font-mono text-center"
+                      style={{
+                        background: '#222',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        color: '#fafafa',
+                      }}
+                    />
+                  </div>
+                )}
+              />
+              <Controller
+                name="positionZ"
+                control={control}
+                render={({ field }) => (
+                  <div className="space-y-1">
+                    <Label className="text-xs text-[#666]" htmlFor="positionZ">Z</Label>
+                    <Input
+                      id="positionZ"
+                      type="number"
+                      step={0.1}
+                      value={field.value}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                      className="text-sm font-mono text-center"
+                      style={{
+                        background: '#222',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        color: '#fafafa',
+                      }}
+                    />
+                  </div>
+                )}
+              />
+            </div>
+          </div>
+
+          {/* Section 6: 颜色 */}
           <div className="space-y-2">
             <Label className="text-sm text-[#a0a0a0] font-semibold tracking-wider uppercase">颜色</Label>
             <Controller
