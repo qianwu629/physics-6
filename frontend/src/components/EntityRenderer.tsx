@@ -1,6 +1,8 @@
-import { useRef, useMemo, useCallback } from 'react';
+import { useRef, useMemo, useCallback, useEffect } from 'react';
 import { RigidBody, BallCollider, CuboidCollider, CylinderCollider } from '@react-three/rapier';
 import { Outlines } from '@react-three/drei';
+import { useSimulationStore } from '../store';
+import { useRigidBodyRefRegistry } from './RigidBodyRefContext';
 import type { Entity } from '../ecs/types';
 import type { TransformComponent, RigidBodyComponent, ColliderComponent, VelocityComponent, MaterialComponent } from '../ecs/types';
 
@@ -24,6 +26,18 @@ interface EntityRendererProps {
  */
 export default function EntityRenderer({ entity, isSelected, onSelect }: EntityRendererProps) {
   const rigidBodyRef = useRef<any>(null);
+  const { register, unregister } = useRigidBodyRefRegistry();
+
+  // 注册/注销 RigidBody ref 以供 SpringRenderer 使用
+  useEffect(() => {
+    register(entity.id, rigidBodyRef);
+    return () => unregister(entity.id);
+  }, [entity.id, register, unregister]);
+
+  // ── Phase 3: 全局环境倍率 (D-08) ──
+  const frictionScale = useSimulationStore((s) => s.environment.frictionScale);
+  const restitutionScale = useSimulationStore((s) => s.environment.restitutionScale);
+  const drag = useSimulationStore((s) => s.environment.drag);
 
   // ── Extract components from Entity ──
   const transform = entity.components.get('transform') as TransformComponent | undefined;
@@ -114,10 +128,13 @@ export default function EntityRenderer({ entity, isSelected, onSelect }: EntityR
     <RigidBody
       ref={rigidBodyRef}
       type={rigidBody.kind}
+      mass={rigidBody.mass}
       position={transform.position}
       rotation={transform.rotation as [number, number, number]}
-      restitution={rigidBody.restitution}
-      friction={rigidBody.friction}
+      restitution={Math.min(rigidBody.restitution * restitutionScale, 1.0)}
+      friction={Math.min(rigidBody.friction * frictionScale, 2.0)}
+      linearDamping={drag}
+      angularDamping={drag * 0.5}
       linearVelocity={velocity?.linearVelocity ?? [0, 0, 0]}
       angularVelocity={velocity?.angularVelocity ?? [0, 0, 0]}
       colliders={false} // Manual Collider management — no auto-generation

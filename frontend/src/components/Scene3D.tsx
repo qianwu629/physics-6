@@ -87,13 +87,15 @@ export default function Scene3D() {
   const isRunning = useSimulationStore((s) => s.isRunning);
   const showDebug = useSimulationStore((s) => s.showDebug);
   const resetCounter = useSimulationStore((s) => s.resetCounter);
+  const gravity = useSimulationStore((s) => s.environment.gravity);
+  const springCreationStage = useSimulationStore((s) => s.springCreationStage);
 
-  // ECS 实体 + 选中状态 (useShallow 避免重渲染风暴 — RESEARCH Pitfall 6)
-  const entityEntries = useSimulationStore(
-    useShallow((s) => Array.from(s.entities.entries())),
-  );
+  // ECS 实体 + 选中状态
+  const entities = useSimulationStore((s) => s.entities);
   const selectedId = useSimulationStore((s) => s.selectedEntityId);
   const selectEntity = useSimulationStore((s) => s.selectEntity);
+  // 在 render 中转换 Map 为 Array——仅在 entities 变化时重建
+  const entityEntries = Array.from(entities.entries());
 
   const initialCameraPosition: [number, number, number] = [12, 10, 12];   // D-05: 45° 对角线
   const initialCameraTarget: [number, number, number] = [0, 2, 0];       // 场景中心偏上
@@ -131,21 +133,24 @@ export default function Scene3D() {
         timeStep={1 / 120}                  // ARCHITECTURE.md: 固定 120Hz
         paused={!isRunning}                 // D-04: 初始暂停（isRunning=false）
         debug={showDebug}                   // D-07: 调试线框
-        gravity={[0, -9.81, 0]}            // 标准重力
+        gravity={gravity}                   // Phase 3: 从 store 读取，支持热更新
         interpolate={true}                  // 渲染插值——平滑视觉
       >
         {/* 地面 — D-02: 隐式基础设施 */}
         <Ground />
 
         {/* ECS 驱动实体渲染 — 替代 INITIAL_SCENE_OBJECTS.map() */}
-        {entityEntries.map(([id, entity]) => (
-          <EntityRenderer
-            key={id}
-            entity={entity}
-            isSelected={id === selectedId}
-            onSelect={selectEntity}
-          />
-        ))}
+        {/* Phase 3: 约束实体 (spring) 跳过 EntityRenderer，由 SpringRenderer 渲染 */}
+        {entityEntries
+          .filter(([, entity]) => !entity.components.has('constraint'))
+          .map(([id, entity]) => (
+            <EntityRenderer
+              key={id}
+              entity={entity}
+              isSelected={id === selectedId}
+              onSelect={selectEntity}
+            />
+          ))}
 
         {/* 点击空白取消选中 — D-07 */}
         <mesh
