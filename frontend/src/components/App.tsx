@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, Suspense } from 'react';
+import { PanelRight } from 'lucide-react';
 import { useSimulationStore } from '../store';
 import Scene3D from './Scene3D';
 import Toolbar from './Toolbar';
@@ -43,6 +44,8 @@ export default function App() {
   const openDeleteDialog = useSimulationStore((s) => s.openDeleteDialog);
   const resetEntities = useSimulationStore((s) => s.resetEntities);
   const selectedEntityId = useSimulationStore((s) => s.selectedEntityId);
+  const propertyPanelCollapsed = useSimulationStore((s) => s.propertyPanelCollapsed);
+  const togglePropertyPanel = useSimulationStore((s) => s.togglePropertyPanel);
 
   // ──── 步骤 1: WebGL 可用性检测 ────
   const checkWebGL = useCallback((): boolean => {
@@ -176,7 +179,30 @@ export default function App() {
       </Suspense>
       <Toolbar />
       <Toolbox />
-      <PropertyPanel />
+      {!propertyPanelCollapsed && <PropertyPanel />}
+      {propertyPanelCollapsed && (
+        <button
+          type="button"
+          onClick={togglePropertyPanel}
+          aria-label="展开属性面板"
+          title="展开属性面板"
+          className="fixed z-40 flex items-center justify-center w-10 h-10 rounded-xl
+            text-[#a0a0a0] hover:bg-[rgba(59,130,246,0.15)] hover:text-[#3b82f6]
+            active:bg-[rgba(59,130,246,0.3)] active:scale-95
+            transition-all duration-150"
+          style={{
+            right: '16px',
+            top: '80px',
+            background: 'rgba(26, 26, 26, 0.85)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            boxShadow: '0 4px 24px rgba(0, 0, 0, 0.4)',
+          }}
+        >
+          <PanelRight size={16} strokeWidth={2} />
+        </button>
+      )}
       <CreationDialog />
     </>
   );
