@@ -1,5 +1,5 @@
 import type { StateCreator } from 'zustand';
-import type { Entity, ComponentType, Component } from '../ecs/types';
+import type { Entity, ComponentType, Component, ConstraintComponent } from '../ecs/types';
 
 /**
  * Entity 集合状态切片 (D-03: ECS 作为场景定义数据模型)
@@ -44,7 +44,7 @@ export const createEntitySlice: StateCreator<EntitySlice, [], [], EntitySlice> =
       const next = new Map(state.entities);
       next.set(entity.id, entity);
       success = true;
-      return { entities: next, objectCount: next.size } as Partial<EntitySlice & { objectCount: number }>;
+      return { entities: next };
     });
     return success;
   },
@@ -54,11 +54,24 @@ export const createEntitySlice: StateCreator<EntitySlice, [], [], EntitySlice> =
       if (!state.entities.has(id)) return state;
       const next = new Map(state.entities);
       next.delete(id);
+
+      // ── Phase 3: 级联删除引用了此 id 的 constraint entity ──
+      const cascadeRemove: string[] = [];
+      for (const [eid, entity] of next.entries()) {
+        const constraint = entity.components.get('constraint') as ConstraintComponent | undefined;
+        if (constraint && (constraint.entityAId === id || constraint.entityBId === id)) {
+          cascadeRemove.push(eid);
+        }
+      }
+      cascadeRemove.forEach((eid) => next.delete(eid));
+
       return {
         entities: next,
-        selectedEntityId: state.selectedEntityId === id ? null : state.selectedEntityId,
-        objectCount: next.size,
-      } as Partial<EntitySlice & { objectCount: number }>;
+        selectedEntityId:
+          state.selectedEntityId === id || cascadeRemove.includes(state.selectedEntityId ?? '')
+            ? null
+            : state.selectedEntityId,
+      };
     }),
 
   selectEntity: (id: string | null) => set({ selectedEntityId: id }),
@@ -78,13 +91,12 @@ export const createEntitySlice: StateCreator<EntitySlice, [], [], EntitySlice> =
 
       const nextEntities = new Map(state.entities);
       nextEntities.set(entityId, updatedEntity);
-      return { entities: nextEntities } as Partial<EntitySlice>;
+      return { entities: nextEntities };
     }),
 
   resetEntities: () =>
     set(() => ({
       entities: new Map(),
       selectedEntityId: null,
-      objectCount: 0,
-    } as Partial<EntitySlice & { objectCount: number }>)),
+    })),
 });

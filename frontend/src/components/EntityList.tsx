@@ -1,9 +1,9 @@
-import { Circle, Square, Database, TriangleAlert } from 'lucide-react';
+import { useMemo } from 'react';
+import { Circle, Square, Database, Link2 } from 'lucide-react';
 import { useSimulationStore } from '../store';
-import { useShallow } from 'zustand/shallow';
 import { ScrollArea } from './ui/scroll-area';
 import type { Entity } from '../ecs/types';
-import type { ColliderComponent, MaterialComponent } from '../ecs/types';
+import type { ColliderComponent, MaterialComponent, ConstraintComponent } from '../ecs/types';
 
 const SHAPE_ICONS: Record<string, typeof Circle> = {
   sphere: Circle,
@@ -11,30 +11,39 @@ const SHAPE_ICONS: Record<string, typeof Circle> = {
   cylinder: Database,
 };
 
+function isSpringEntity(entity: Entity): boolean {
+  return entity.components.has('constraint');
+}
+
 function getShapeFromEntity(entity: Entity): string {
+  if (isSpringEntity(entity)) return 'spring';
   const collider = entity.components.get('collider') as ColliderComponent | undefined;
   return collider?.shape ?? 'sphere';
 }
 
 function getColorFromEntity(entity: Entity): string {
+  if (isSpringEntity(entity)) return '#888888';
   const material = entity.components.get('material') as MaterialComponent | undefined;
   return material?.color ?? '#888888';
 }
 
 function getShapeIcon(shape: string) {
+  if (shape === 'spring') return Link2;
   return SHAPE_ICONS[shape] || Circle;
 }
 
 export default function EntityList() {
-  const entityList = useSimulationStore(
-    useShallow((s) =>
-      Array.from(s.entities.values()).map((e) => ({
+  const entities = useSimulationStore((s) => s.entities);
+
+  const entityList = useMemo(
+    () =>
+      Array.from(entities.values()).map((e) => ({
         id: e.id,
         name: e.name,
         shape: getShapeFromEntity(e),
         color: getColorFromEntity(e),
       })),
-    ),
+    [entities],
   );
   const selectedId = useSimulationStore((s) => s.selectedEntityId);
   const selectEntity = useSimulationStore((s) => s.selectEntity);
