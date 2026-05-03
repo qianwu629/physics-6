@@ -25,7 +25,7 @@ export function TrajectoryRenderer() {
   const groupRef = useRef<THREE.Group>(null);
 
   // 创建/更新 trail lines
-  useFrame((_, delta) => {
+  useFrame(() => {
     if (!showTrails) return;
 
     const now = performance.now() / 1000;
