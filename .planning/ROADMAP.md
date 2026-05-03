@@ -88,7 +88,17 @@ Plans:
   3. 速度矢量以彩色箭头形式从每个物体中心发出显示，箭头长度与速率成正比，方向与瞬时速度方向一致
   4. 受力矢量（重力、弹力、接触力、阻力）以彩色箭头形式显示，表示作用在每个物体上的力的方向和相对大小
   5. 用户可以独立切换速度矢量叠加层和受力矢量叠加层的显示开关
-**Plans**: TBD
+**Plans**: 4 plans (14 tasks, ~120 min est.)
+Plans:
+**Wave 1**
+- [ ] 04-01-PLAN.md — 可视化基础层（ECS类型 + visualizationStore + TrajectoryBuffer）
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 04-02-PLAN.md — 轨迹渲染系统（TrajectoryRenderer + Scene3D 挂载）
+- [ ] 04-03-PLAN.md — 矢量箭头渲染系统（Arrow3D + VectorRenderer + 接触力估算）
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 04-04-PLAN.md — UI 控制集成与 UAT（Toolbar + PropertyPanel + 验证）
 **UI hint**: yes
 
 ## Progress
@@ -101,4 +111,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. 仿真核心与基础3D渲染 | 4/4 | Complete ✓ | 2026-05-01 |
 | 2. 组件化实体系统与属性编辑 | 6/6 | Complete   | 2026-05-01 |
 | 3. 约束系统与环境配置 | 1/1 | Complete    | 2026-05-03 |
-| 4. 轨迹与矢量可视化 | 0/TBD | Not started | - |
+| 4. 轨迹与矢量可视化 | 4/4 | Planned | - |
