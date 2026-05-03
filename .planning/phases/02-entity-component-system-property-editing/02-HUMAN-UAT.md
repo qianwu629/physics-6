@@ -1,9 +1,10 @@
 ---
-status: partial
+status: known_issue
 phase: 02-entity-component-system-property-editing
 source: [02-VERIFICATION.md]
 started: 2026-05-02T01:03:00Z
-updated: 2026-05-02T08:30:46Z
+updated: 2026-05-03T14:30:00Z
+last_audit: 2026-05-03T14:30:00Z
 gap_closure: 02-07
 gaps_resolved: 2
 gaps_remaining: 1
@@ -11,34 +12,48 @@ gaps_remaining: 1
 
 ## Current Test
 
-[testing complete — gap closure 02-07 executed]
+[testing complete — 2026-05-03 audit confirms Pitfall 5 unresolved, requires new milestone]
 
 ## Tests
 
 ### 1. 属性编辑即时生效 (SC-3)
 expected: 暂停→编辑弹性/摩擦/质量→恢复播放→实体行为反映参数变更
-result: pending
-note: "Rapier 运行时 API (rigidBodyRef.current.set*()) 未实现，ECS 数据模型更新链路完整但物理引擎层未同步。需要后续专门计划处理。"
+result: known_issue
+audited: 2026-05-03
+finding: "Playwright 自动化验证：暂停→将弹性系数从 0.5 改为 0.95→PropertyPanel 显示新值（store 链路正常）→恢复播放→球体停留地面无高反弹。证实 Pitfall 5：rigidBodyRef.current.set*() 调用缺失"
+note: "Rapier 运行时 API (rigidBodyRef.current.set*()) 未实现，ECS 数据模型更新链路完整但物理引擎层未同步。需新里程碑专门处理。"
 severity: major
 
 ### 2. UI 布局和 z-index (含面板关闭)
 expected: 工具箱(左)、属性面板(右)、工具栏(顶部)、3D 画布正确分层，面板可通过 X 按钮关闭/重新打开
 result: pass
+audited: 2026-05-03
+finding: "Canvas 1249×1225 全屏；Toolbar fixed top-4 left-1/2 z-50, blur(8px), 14px 圆角；Toolbox left=16 top=471 z-40；PropertyPanel right=16 top=80 z-40 width=280 blur(8px)。z 层级 Toolbar(50) > Toolbox/PropertyPanel(40) > Canvas，无遮挡"
 fixed_by: "02-07: uiSlice 新增 propertyPanelCollapsed + togglePropertyPanel；App.tsx 条件渲染面板 + 重新打开按钮；PropertyPanel X 按钮同时取消选中并折叠面板"
 severity: null
 
 ### 3. 完整创建流程 (含初始位置)
 expected: 点击工具箱按钮→弹出创建对话框→配置参数（含初始位置 X/Y/Z）→确认→实体出现在指定 3D 坐标位置并受物理引擎控制
 result: pass
+audited: 2026-05-03
+finding: "Playwright 验证：4 种形状（球/方/圆柱/斜面）依次创建，物体计数 0→1→2→3→4 正确递增；颜色与对话框选择一致（橙色 #f4a261）；启动仿真后所有实体在重力下落并发生碰撞"
 fixed_by: "02-07: creationSchema 新增 positionX/Y/Z 字段（默认 0/5/0）；创建对话框渲染初始位置 section；handleConfirm 将 position 元组传递至全部 4 个工厂函数"
+severity: null
+
+### 4. 输入验证（非法值范围限制）— audit 新增项
+expected: 在创建对话框中输入非法值（如负半径），输入受限或提交受阻
+result: pass
+audited: 2026-05-03
+finding: "Slider 硬限制（mass 0.1-100, restitution/friction 0-1）；半径 input HTML5 min=0.1；输入 -5 时 confirmButton.disabled=true 并显示『值必须大于或等于 0.1』错误"
 severity: null
 
 ## Summary
 
-total: 3
-passed: 2
+total: 4
+passed: 3
+known_issue: 1
 issues: 0
-pending: 1
+pending: 0
 skipped: 0
 blocked: 0
 

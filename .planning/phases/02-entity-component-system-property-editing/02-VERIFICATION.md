@@ -1,29 +1,42 @@
 ---
 phase: 02-entity-component-system-property-editing
 verified: 2026-05-02T00:00:00Z
-status: human_needed
-score: 3/4 roadmap must-haves verified (1 UNCERTAIN)
+last_uat_audit: 2026-05-03T14:30:00Z
+status: partially_verified
+score: 3/4 roadmap must-haves verified (1 KNOWN_ISSUE), 3/4 human UAT items resolved (1 KNOWN_ISSUE)
 overrides_applied: 0
 re_verification: true
 previous_status: human_needed
 previous_score: 3/4
-gaps_closed: []
+gaps_closed: ["UI 布局与 z-index", "实体创建流程", "输入验证"]
 gaps_remaining:
   - "SC-3: 实体属性修改即时生效 — RigidBody ref 声明但无 Rapier 运行时 API 调用（Pitfall 5 推迟项未关闭）"
 regressions: []
 human_verification:
   - test: "暂停状态下编辑实体属性，恢复播放后观察物理行为是否反映更新后的参数值"
     expected: "编辑的属性（质量、弹性系数、摩擦系数、位置、初速度）在恢复播放后应在实体物理行为中观察到"
-    why_human: "Rapier 运行时参数修改（通过 rigidBodyRef.current.setRestitution() 等 API）已在 Plan 05 Pitfall 5 中明确推迟到后续阶段。ECS 数据模型更新链路完整（PropertyPanel → updateComponent → Zustand store → EntityRenderer re-render），但 @react-three/rapier 的 RigidBody 将 position/restitution/friction/mass 视为仅初始化值，挂载后通过 React props 变更可能不生效。代码扫描确认 rigidBodyRef 已声明（EntityRenderer.tsx:26）但整个 src/ 中无任何 rigidBodyRef.current.set*() 调用。需人工验证暂停编辑后恢复播放是否产生可观察的行为变化，或是否需要实体销毁-重建才能生效。"
+    result: "known_issue"
+    audited: "2026-05-03"
+    finding: "ECS 链路完整（PropertyPanel→updateComponent→Zustand→PropertyPanel 显示新值），但 Rapier 运行时未响应：暂停后将弹性系数从 0.5 改为 0.95，恢复播放后球体停留在地面，未按预期高反弹。证实 Pitfall 5 — 整个 src/ 中无 rigidBodyRef.current.set*() 调用"
+    why_human: "Rapier 运行时参数修改（通过 rigidBodyRef.current.setRestitution() 等 API）已在 Plan 05 Pitfall 5 中明确推迟到后续阶段。需新里程碑专门关闭"
   - test: "打开应用，确认工具箱（左侧）、属性面板（右侧）、工具栏（顶部）和 3D 画布均正确显示且 z-index 层级无遮挡"
     expected: "Toolbox 在左中位置（left:16px, top:50%），PropertyPanel 在右侧（right:16px, top:80px, bottom:16px），Toolbar 在顶部居中，Canvas 充满全屏。属性面板可通过 X 按钮折叠/展开。所有面板使用玻璃态样式。"
-    why_human: "视觉布局和 z-index 层级正确性需要实际浏览器渲染验证，无法通过代码扫描确认"
+    result: "passed"
+    audited: "2026-05-03"
+    finding: "Canvas 1249×1225 全屏；Toolbar fixed top-4 left-1/2 z-50, blur(8px), 14px 圆角；Toolbox left=16 top=471 z-40, blur(8px)；PropertyPanel right=16 top=80 z-40 width=280 blur(8px)。z 层级：Toolbar(50) > Toolbox/PropertyPanel(40) > Canvas，无遮挡"
+    why_human: "已通过 Playwright 自动化检查 DOM 位置和样式确认"
   - test: "通过工具箱点击形状按钮 → 配置参数（尺寸、质量、弹性系数、摩擦系数、初速度、颜色）→ 确认添加，验证实体出现在场景中心 (0,5,0)"
     expected: "球体/方块/圆柱/斜面出现在场景中心位置，颜色与创建对话框中选择的一致，在重力下正确运动。工具栏物体计数正确递增。"
-    why_human: "完整的 GUI 交互流程和 3D 渲染正确性需要运行时验证"
+    result: "passed"
+    audited: "2026-05-03"
+    finding: "依次创建球体（默认蓝）、方块、圆柱（橙色 #f4a261）、斜面，物体计数从 0→1→2→3→4 正确递增。播放仿真后所有实体在重力下落并发生碰撞，颜色与对话框选择一致"
+    why_human: "已通过 Playwright + 截图确认"
   - test: "在属性面板输入框中输入非法值（如负数半径），确认输入被限制在有效范围内"
     expected: "Slider 组件限制滑动范围，Input 组件的 min/max 属性阻止超出范围的值。"
-    why_human: "HTML5 表单验证和组件行为需要运行时验证"
+    result: "passed"
+    audited: "2026-05-03"
+    finding: "Slider 硬限制（mass 0.1-100, restitution/friction 0-1）；半径 input min=0.1 HTML5 校验；输入 -5 时确认按钮 disabled 并显示『值必须大于或等于 0.1』错误"
+    why_human: "已通过 Playwright 自动化确认"
 ---
 
 # Phase 2: 组件化实体系统与属性编辑 -- Re-Verification Report
@@ -182,3 +195,47 @@ Or alternatively, force entity re-creation (destroy + re-create `<RigidBody>`) w
 
 _Verified: 2026-05-02_
 _Verifier: Claude (gsd-verifier -- re-verification mode)_
+
+---
+
+## UAT Audit Re-verification (2026-05-03)
+
+**Audited via:** Playwright automation + visual confirmation
+**Auditor:** Claude (gsd-audit-uat workflow)
+**Outcome:** 3/4 items resolved, 1 known issue documented
+
+### Item Results
+
+| # | Test | Result | Evidence |
+|---|------|--------|----------|
+| 1 | UI 布局与 z-index | ✅ PASS | Canvas 1249×1225 全屏；Toolbar fixed top-4 left-1/2 z-50, blur(8px), 14px 圆角；Toolbox left=16 top=471 z-40, blur(8px)；PropertyPanel right=16 top=80 z-40 width=280 blur(8px)。z 层级：Toolbar(50) > Toolbox/PropertyPanel(40) > Canvas，无遮挡 |
+| 2 | 实体创建流程 | ✅ PASS | 4 种形状（球/方/圆柱/斜面）创建成功，物体计数 0→1→2→3→4 正确递增，颜色与对话框选择一致（橙色 #f4a261），播放后在重力下下落并碰撞 |
+| 3 | 输入验证 | ✅ PASS | Slider 硬限制（mass 0.1-100, restitution/friction 0-1）；半径 input HTML5 min=0.1；输入 -5 时确认按钮 disabled 并显示错误『值必须大于或等于 0.1』 |
+| 4 | 属性编辑即时生效 | ⚠️ KNOWN ISSUE | PropertyPanel 显示新值（store 更新链路正常），但 Rapier 运行时未响应：暂停后将弹性系数 0.5→0.95，恢复播放后球体停留地面无反弹。证实 Pitfall 5（rigidBodyRef.current.set*() 调用缺失） |
+
+### Known Issue Detail (Item 4 — SC-3)
+
+**根因**: `@react-three/rapier` 的 RigidBody 把 React props（mass/restitution/friction/position）视为初始化值
+**代码证据**:
+- `rigidBodyRef` 声明于 EntityRenderer.tsx:28
+- `ref={rigidBodyRef}` 挂载于 RigidBody at line 128
+- 整个 `frontend/src/` 中无 `rigidBodyRef.current.set*()` 调用
+- 无 useEffect 监听 component 变化触发 Rapier API
+
+**修复方案**（推迟到新里程碑）:
+```typescript
+// EntityRenderer 添加 useEffect:
+useEffect(() => {
+  if (rigidBodyRef.current) {
+    rigidBodyRef.current.setRestitution(rigidBody.restitution * restitutionScale);
+    rigidBodyRef.current.setFriction(rigidBody.friction * frictionScale);
+    rigidBodyRef.current.setMass(rigidBody.mass);
+  }
+}, [rigidBody.restitution, rigidBody.friction, rigidBody.mass, restitutionScale, frictionScale]);
+```
+
+### Audit Status Summary
+
+- **Resolved**: 3/4 items (UI 布局、实体创建、输入验证)
+- **Known Issue**: 1/4 items (属性编辑即时生效 — Pitfall 5)
+- **Phase Status**: 推进到 partially_verified，未完成项明确归类为已知技术债
