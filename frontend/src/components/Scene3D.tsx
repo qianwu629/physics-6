@@ -14,14 +14,14 @@ import { RigidBodyRefContext } from './RigidBodyRefContext';
 // ──── 地面 (Phase 1 遗留 — 保持不变) ────
 // D-02: 地面是隐式基础设施——不属于"物体"，始终存在
 
-function Ground() {
+function Ground({ friction, restitution }: { friction: number; restitution: number }) {
   return (
-    <RigidBody type="fixed" position={[0, -0.5, 0]} restitution={0.5}>
-      <CuboidCollider args={[50, 0.5, 50]} />
+    <RigidBody type="fixed" position={[0, -0.5, 0]}>
+      <CuboidCollider args={[50, 0.5, 50]} friction={friction} restitution={restitution} />
       <mesh receiveShadow>
         <boxGeometry args={[100, 1, 100]} />
         <meshStandardMaterial
-          color="#1a1a1a"        // secondary 色（UI-SPEC）
+          color="#1a1a1a"
           roughness={0.9}
           metalness={0.0}
         />
@@ -92,6 +92,8 @@ export default function Scene3D() {
   const showDebug = useSimulationStore((s) => s.showDebug);
   const resetCounter = useSimulationStore((s) => s.resetCounter);
   const gravity = useSimulationStore((s) => s.environment.gravity);
+  const frictionScale = useSimulationStore((s) => s.environment.frictionScale);
+  const restitutionScale = useSimulationStore((s) => s.environment.restitutionScale);
   const springCreationStage = useSimulationStore((s) => s.springCreationStage);
 
   // ECS 实体 + 选中状态
@@ -177,7 +179,7 @@ export default function Scene3D() {
       >
         <RigidBodyRefContext.Provider value={{ register: registerRef, unregister: unregisterRef, getRef }}>
           {/* 地面 — D-02: 隐式基础设施 */}
-          <Ground />
+          <Ground friction={0.5 * frictionScale} restitution={0.5 * restitutionScale} />
 
           {/* ECS 驱动实体渲染 — 替代 INITIAL_SCENE_OBJECTS.map() */}
           {/* Phase 3: 约束实体 (spring) 跳过 EntityRenderer，由 SpringRenderer 渲染 */}

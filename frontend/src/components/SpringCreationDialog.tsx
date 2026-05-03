@@ -85,6 +85,7 @@ export default function SpringCreationDialog() {
         selectEntity(springEntity.id);
       }
       exitSpringMode();
+      closeSpringDialog();
     },
     [springEntityAId, springEntityBId, addEntity, selectEntity, exitSpringMode],
   );
@@ -113,7 +114,7 @@ export default function SpringCreationDialog() {
               step={1}
               min={1}
               max={1000}
-              {...register('stiffness', { valueAsNumber: true })}
+              {...register('stiffness', { setValueAs: (v: string) => v === '' ? undefined : Number(v) })}
               className={cn(errors.stiffness && 'border-red-500')}
               style={{
                 backgroundColor: '#222',
@@ -137,7 +138,7 @@ export default function SpringCreationDialog() {
               step={0.1}
               min={0.1}
               max={50}
-              {...register('restLength', { valueAsNumber: true })}
+              {...register('restLength', { setValueAs: (v: string) => v === '' ? undefined : Number(v) })}
               className={cn(errors.restLength && 'border-red-500')}
               style={{
                 backgroundColor: '#222',
@@ -161,7 +162,7 @@ export default function SpringCreationDialog() {
               step={0.1}
               min={0}
               max={50}
-              {...register('damping', { valueAsNumber: true })}
+              {...register('damping', { setValueAs: (v: string) => v === '' ? undefined : Number(v) })}
               className={cn(errors.damping && 'border-red-500')}
               style={{
                 backgroundColor: '#222',

@@ -260,7 +260,7 @@ export default function CreationDialog() {
             <Input
               type="number"
               value={field.value as number}
-              onChange={(e) => field.onChange(Number(e.target.value))}
+              onChange={(e) => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
               className="w-20 h-8 text-sm font-mono text-center"
               style={{
                 background: '#222',
@@ -424,7 +424,7 @@ export default function CreationDialog() {
                       type="number"
                       step={0.1}
                       value={field.value}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
+                      onChange={(e) => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
                       className="text-sm font-mono text-center"
                       style={{
                         background: '#222',
@@ -445,7 +445,7 @@ export default function CreationDialog() {
                       type="number"
                       step={0.1}
                       value={field.value}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
+                      onChange={(e) => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
                       className="text-sm font-mono text-center"
                       style={{
                         background: '#222',
@@ -466,7 +466,7 @@ export default function CreationDialog() {
                       type="number"
                       step={0.1}
                       value={field.value}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
+                      onChange={(e) => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
                       className="text-sm font-mono text-center"
                       style={{
                         background: '#222',
@@ -497,7 +497,7 @@ export default function CreationDialog() {
                       type="number"
                       step={0.1}
                       value={field.value}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
+                      onChange={(e) => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
                       className="text-sm font-mono text-center"
                       style={{
                         background: '#222',
@@ -519,7 +519,7 @@ export default function CreationDialog() {
                       type="number"
                       step={0.1}
                       value={field.value}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
+                      onChange={(e) => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
                       className="text-sm font-mono text-center"
                       style={{
                         background: '#222',
@@ -541,7 +541,7 @@ export default function CreationDialog() {
                       type="number"
                       step={0.1}
                       value={field.value}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
+                      onChange={(e) => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
                       className="text-sm font-mono text-center"
                       style={{
                         background: '#222',
