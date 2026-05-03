@@ -10,10 +10,10 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Simulation Core
 
 - [x] **SIM-01**: 系统支持基础刚体形状——球体、方块、圆柱、平面/斜面
-- [ ] **SIM-02**: 用户可配置重力强度和方向
+- [x] **SIM-02**: 用户可配置重力强度和方向
 - [x] **SIM-03**: 物体之间发生物理碰撞并正确响应
-- [ ] **SIM-04**: 用户可添加弹簧约束（弹簧振子），配置弹性系数和原长
-- [ ] **SIM-05**: 用户可配置全局环境参数——重力加速度、空气阻力系数、摩擦系数
+- [x] **SIM-04**: 用户可添加弹簧约束（弹簧振子），配置弹性系数和原长
+- [x] **SIM-05**: 用户可配置全局环境参数——重力加速度、空气阻力系数、摩擦系数
 - [x] **SIM-06**: 用户可以播放、暂停和重置模拟
 
 ### Rendering & Interaction
@@ -64,10 +64,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | SIM-01 | Phase 1: 仿真核心与基础3D渲染 | Complete (01-02) |
-| SIM-02 | Phase 3: 约束系统与环境配置 | Pending |
+| SIM-02 | Phase 3: 约束系统与环境配置 | Complete |
 | SIM-03 | Phase 1: 仿真核心与基础3D渲染 | Complete (01-02) |
-| SIM-04 | Phase 3: 约束系统与环境配置 | Pending |
-| SIM-05 | Phase 3: 约束系统与环境配置 | Pending |
+| SIM-04 | Phase 3: 约束系统与环境配置 | Complete |
+| SIM-05 | Phase 3: 约束系统与环境配置 | Complete |
 | SIM-06 | Phase 1: 仿真核心与基础3D渲染 | Complete (01-03) |
 | REN-01 | Phase 1: 仿真核心与基础3D渲染 | Complete (01-02) |
 | REN-02 | Phase 1: 仿真核心与基础3D渲染 | Complete (01-02) |

@@ -72,7 +72,7 @@ Plans:
 **Plans**: 5 plans (18 tasks, ~135 min est.)
 Plans:
 - [x] 03-01-PLAN.md — ECS ConstraintComponent + simulationSlice.environment + uiSlice 弹簧状态机 + 单元测试
-- [ ] 03-02-PLAN.md — EnvironmentPanel + 重力 prop 接入 + 倍率叠加 + 暂停只读
+- [x] 03-02-PLAN.md — EnvironmentPanel + 重力 prop 接入 + 倍率叠加 + 暂停只读
 - [ ] 03-03-PLAN.md — SpringRenderer (helix tube) + useSpringJoint + 弹簧创建状态机
 - [ ] 03-04-PLAN.md — PropertyPanel 多态 + 级联删除 + UAT
 - [ ] 03-05-PLAN.md — (可选) 集成测试 + 性能 spike
@@ -100,5 +100,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. 仿真核心与基础3D渲染 | 4/4 | Complete ✓ | 2026-05-01 |
 | 2. 组件化实体系统与属性编辑 | 6/6 | Complete   | 2026-05-01 |
-| 3. 约束系统与环境配置 | 1/1 | Complete   | 2026-05-02 |
+| 3. 约束系统与环境配置 | 1/1 | Complete    | 2026-05-03 |
 | 4. 轨迹与矢量可视化 | 0/TBD | Not started | - |
