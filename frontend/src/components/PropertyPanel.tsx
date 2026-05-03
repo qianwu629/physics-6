@@ -2,6 +2,7 @@ import { useCallback, useEffect, memo } from 'react';
 import { X } from 'lucide-react';
 import { useSimulationStore } from '../store';
 import { Button } from './ui/button';
+import { Switch } from './ui/switch';
 import { Slider } from './ui/slider';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -24,6 +25,8 @@ import type {
   VelocityComponent,
   MaterialComponent,
   ConstraintComponent,
+  TrailComponent,
+  VectorComponent,
   ColliderParams,
 } from '../ecs/types';
 import { DEFAULT_COLORS } from '../ecs/components/Material';
@@ -188,6 +191,8 @@ export default function PropertyPanel() {
   const openDeleteDialog = useSimulationStore((s) => s.openDeleteDialog);
   const closeDeleteDialog = useSimulationStore((s) => s.closeDeleteDialog);
   const togglePropertyPanel = useSimulationStore((s) => s.togglePropertyPanel);
+  const toggleTrailVisibility = useSimulationStore((s) => s.toggleTrailVisibility);
+  const toggleVectorVisibility = useSimulationStore((s) => s.toggleVectorVisibility);
 
   const selectedEntity = useSimulationStore((s) => {
     const id = s.selectedEntityId;
@@ -220,6 +225,8 @@ export default function PropertyPanel() {
   const velocity = selectedEntity?.components.get('velocity') as VelocityComponent | undefined;
   const material = selectedEntity?.components.get('material') as MaterialComponent | undefined;
   const constraint = selectedEntity?.components.get('constraint') as ConstraintComponent | undefined;
+  const trailComp = selectedEntity?.components.get('trail') as TrailComponent | undefined;
+  const vectorComp = selectedEntity?.components.get('vector') as VectorComponent | undefined;
 
   const isSpring = !!constraint;
 
@@ -478,6 +485,26 @@ export default function PropertyPanel() {
 
               <Separator className="bg-white/[0.06]" />
 
+              {/* 可视化开关 — Phase 4 */}
+              <div className="pt-2 mt-2 border-t border-white/10 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs text-white/60">显示轨迹</label>
+                  <Switch
+                    checked={trailComp?.visible ?? true}
+                    onCheckedChange={(v) => toggleTrailVisibility(selectedEntity.id, v)}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs text-white/60">显示矢量</label>
+                  <Switch
+                    checked={vectorComp?.showVelocity ?? true}
+                    onCheckedChange={(v) => toggleVectorVisibility(selectedEntity.id, v)}
+                  />
+                </div>
+              </div>
+
+              <Separator className="bg-white/[0.06]" />
+
               {/* 删除按钮 */}
               <Button
                 variant="destructive"
@@ -701,6 +728,26 @@ export default function PropertyPanel() {
                     ))}
                   </div>
                 )}
+              </div>
+
+              <Separator className="bg-white/[0.06]" />
+
+              {/* 可视化开关 — Phase 4 */}
+              <div className="pt-2 mt-2 border-t border-white/10 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs text-white/60">显示轨迹</label>
+                  <Switch
+                    checked={trailComp?.visible ?? true}
+                    onCheckedChange={(v) => toggleTrailVisibility(selectedEntity.id, v)}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs text-white/60">显示矢量</label>
+                  <Switch
+                    checked={vectorComp?.showVelocity ?? true}
+                    onCheckedChange={(v) => toggleVectorVisibility(selectedEntity.id, v)}
+                  />
+                </div>
               </div>
 
               <Separator className="bg-white/[0.06]" />
