@@ -107,10 +107,13 @@ describe('ConstraintComponent', () => {
       expect(spring.id).toBe('spring-2');
     });
 
-    it('only has constraint component (no transform/rigidBody/collider)', () => {
+    it('has constraint + default trail and vector components (no transform/rigidBody/collider)', () => {
       const entity = createSpringEntity('a', 'b');
-      expect(entity.components.size).toBe(1);
+      // + trail + vector (Phase 4 defaults)
+      expect(entity.components.size).toBe(3);
       expect(entity.components.has('constraint')).toBe(true);
+      expect(entity.components.has('trail')).toBe(true);
+      expect(entity.components.has('vector')).toBe(true);
       expect(entity.components.has('transform')).toBe(false);
       expect(entity.components.has('rigidBody')).toBe(false);
       expect(entity.components.has('collider')).toBe(false);
