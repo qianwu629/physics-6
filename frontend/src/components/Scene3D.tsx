@@ -8,6 +8,7 @@ import { useShallow } from 'zustand/react/shallow';
 import EntityRenderer from './EntityRenderer';
 import SpringRenderer from './SpringRenderer';
 import { TrajectoryRenderer } from './TrajectoryRenderer';
+import { VectorRenderer } from './VectorRenderer';
 import { RigidBodyRefContext } from './RigidBodyRefContext';
 
 // ──── 地面 (Phase 1 遗留 — 保持不变) ────
@@ -205,6 +206,9 @@ export default function Scene3D() {
 
           {/* Phase 4: 轨迹渲染 — TrajectoryRenderer */}
           <TrajectoryRenderer />
+
+          {/* Phase 4: 矢量渲染 — VectorRenderer */}
+          <VectorRenderer />
 
           {/* 点击空白取消选中 — D-07 (also exits spring mode if active) */}
           <mesh
