@@ -14,13 +14,13 @@ export default function SpringCreationBanner() {
   const stage = useSimulationStore((s) => s.springCreationStage);
   const entityAId = useSimulationStore((s) => s.springEntityAId);
 
-  if (stage === 'idle') return null;
-
-  // Resolve entity A name
+  // 所有 hooks 必须在条件返回之前调用（React Rules of Hooks）
   const entityAName = useSimulationStore((s) => {
     if (!entityAId) return null;
     return s.entities.get(entityAId)?.name ?? entityAId;
   });
+
+  if (stage === 'idle') return null;
 
   let message: string;
   if (stage === 'pendingA') {
