@@ -1,5 +1,6 @@
 import { Play, Pause, RotateCcw, Bug, Globe, Gauge, Boxes } from 'lucide-react';
 import { useSimulationStore } from '../store';
+import { useVisualizationStore, type VectorDisplayMode } from '../store/visualizationStore';
 import { cn } from '../lib/utils';
 
 /**
@@ -24,6 +25,11 @@ export default function Toolbar() {
   const reset = useSimulationStore((s) => s.reset);
   const setShowDebug = useSimulationStore((s) => s.setShowDebug);
   const toggleEnvironmentPanel = useSimulationStore((s) => s.toggleEnvironmentPanel);
+
+  const {
+    showTrails, showVelocityVectors, showForceVectors, vectorDisplayMode,
+    toggleTrails, toggleVelocityVectors, toggleForceVectors, setVectorDisplayMode,
+  } = useVisualizationStore();
 
   const isPlaying = isRunning;
 
@@ -149,6 +155,57 @@ export default function Toolbar() {
         <Globe size={16} strokeWidth={2} />
         <span>环境</span>
       </button>
+
+      <div style={{ width: 1, height: 20, backgroundColor: 'rgba(255, 255, 255, 0.1)' }} />
+
+      {/* 可视化控制按钮 — Phase 4 */}
+      <div className="flex items-center gap-1 pl-1 border-l border-white/10">
+        <button
+          type="button"
+          onClick={toggleTrails}
+          className={cn(
+            'px-2 py-1 text-xs rounded',
+            showTrails ? 'bg-white/15 text-white' : 'text-white/50 hover:text-white/80'
+          )}
+          title={showTrails ? '隐藏轨迹' : '显示轨迹'}
+        >
+          轨迹
+        </button>
+        <button
+          type="button"
+          onClick={toggleVelocityVectors}
+          className={cn(
+            'px-2 py-1 text-xs rounded',
+            showVelocityVectors ? 'bg-white/15 text-white' : 'text-white/50 hover:text-white/80'
+          )}
+          title={showVelocityVectors ? '隐藏速度矢量' : '显示速度矢量'}
+        >
+          速度
+        </button>
+        <button
+          type="button"
+          onClick={toggleForceVectors}
+          className={cn(
+            'px-2 py-1 text-xs rounded',
+            showForceVectors ? 'bg-white/15 text-white' : 'text-white/50 hover:text-white/80'
+          )}
+          title={showForceVectors ? '隐藏受力矢量' : '显示受力矢量'}
+        >
+          受力
+        </button>
+        <button
+          type="button"
+          onClick={() =>
+            setVectorDisplayMode(
+              vectorDisplayMode === 'all' ? 'selected' : 'all'
+            )
+          }
+          className="px-2 py-1 text-xs rounded text-white/50 hover:text-white/80"
+          title={vectorDisplayMode === 'all' ? '仅显示选中实体' : '显示全部实体'}
+        >
+          {vectorDisplayMode === 'all' ? '全部' : '选中'}
+        </button>
+      </div>
 
       <div style={{ width: 1, height: 20, backgroundColor: 'rgba(255, 255, 255, 0.1)' }} />
 
