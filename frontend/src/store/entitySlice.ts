@@ -29,6 +29,11 @@ export interface EntitySlice {
   updateComponent: (entityId: string, componentType: ComponentType, data: Partial<Component>) => void;
   /** 重置——清空所有实体 (D-12: reset = empty scene) */
   resetEntities: () => void;
+
+  /** 切换轨迹可见性 (Phase 4: 可视化控制) */
+  toggleTrailVisibility: (entityId: string, visible: boolean) => void;
+  /** 切换矢量可见性 (Phase 4: 可视化控制) */
+  toggleVectorVisibility: (entityId: string, visible: boolean) => void;
 }
 
 export type EntityStore = EntitySlice;
@@ -99,4 +104,35 @@ export const createEntitySlice: StateCreator<EntitySlice, [], [], EntitySlice> =
       entities: new Map(),
       selectedEntityId: null,
     })),
+
+  toggleTrailVisibility: (entityId: string, visible: boolean) =>
+    set((state) => {
+      const entity = state.entities.get(entityId);
+      if (!entity) return state;
+      const newComponents = new Map(entity.components);
+      newComponents.set('trail', {
+        type: 'trail',
+        visible,
+      });
+      const updated: Entity = { ...entity, components: newComponents };
+      const next = new Map(state.entities);
+      next.set(entityId, updated);
+      return { entities: next };
+    }),
+
+  toggleVectorVisibility: (entityId: string, visible: boolean) =>
+    set((state) => {
+      const entity = state.entities.get(entityId);
+      if (!entity) return state;
+      const newComponents = new Map(entity.components);
+      newComponents.set('vector', {
+        type: 'vector',
+        showVelocity: visible,
+        showForces: visible,
+      });
+      const updated: Entity = { ...entity, components: newComponents };
+      const next = new Map(state.entities);
+      next.set(entityId, updated);
+      return { entities: next };
+    }),
 });

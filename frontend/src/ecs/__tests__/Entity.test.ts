@@ -14,7 +14,7 @@ describe('ECS Entity Factory', () => {
     const entity = createEntity('test-1', 'Test', [transform, rigidBody]);
     expect(entity.id).toBe('test-1');
     expect(entity.name).toBe('Test');
-    expect(entity.components.size).toBe(2);
+    expect(entity.components.size).toBe(4); // + trail + vector (Phase 4 defaults)
     expect(entity.components.get('transform')).toEqual(transform);
     expect(entity.components.get('rigidBody')).toEqual(rigidBody);
   });
@@ -23,7 +23,7 @@ describe('ECS Entity Factory', () => {
     const e = createSphereEntity(1.0, 1.0, 0.5, 0.3, '#ff0000');
     expect(e.id).toBe('sphere-1');
     expect(e.name).toBe('球体-1');
-    expect(e.components.size).toBe(5);
+    expect(e.components.size).toBe(7); // 5 base + trail + vector (Phase 4 defaults)
     const collider = e.components.get('collider') as ColliderComponent;
     expect(collider.shape).toBe('sphere');
     expect(collider.params.radius).toBe(1.0);
@@ -86,5 +86,22 @@ describe('ECS Entity Factory', () => {
     const e = createBoxEntity(1.0, 1.0, 1.0, 1.0, 0.5, 0.3, undefined, undefined, [3, 8, -1]);
     const t = e.components.get('transform') as TransformComponent;
     expect(t.position).toEqual([3, 8, -1]);
+  });
+
+  it('default trail component has visible=true', () => {
+    const e = createSphereEntity(1.0, 1.0, 0.5, 0.3);
+    const trail = e.components.get('trail');
+    expect(trail).toBeDefined();
+    expect(trail!.type).toBe('trail');
+    expect((trail as any).visible).toBe(true);
+  });
+
+  it('default vector component has showVelocity=true and showForces=true', () => {
+    const e = createSphereEntity(1.0, 1.0, 0.5, 0.3);
+    const vector = e.components.get('vector');
+    expect(vector).toBeDefined();
+    expect(vector!.type).toBe('vector');
+    expect((vector as any).showVelocity).toBe(true);
+    expect((vector as any).showForces).toBe(true);
   });
 });

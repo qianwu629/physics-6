@@ -1,4 +1,4 @@
-import type { Entity, Component, ComponentType, TransformComponent, RigidBodyComponent, ColliderComponent, VelocityComponent, MaterialComponent, ConstraintComponent, SpringConstraintParams } from './types';
+import type { Entity, Component, ComponentType, TransformComponent, RigidBodyComponent, ColliderComponent, VelocityComponent, MaterialComponent, ConstraintComponent, TrailComponent, VectorComponent, SpringConstraintParams } from './types';
 import { DEFAULT_COLORS, DEFAULT_MATERIAL } from './components/Material';
 
 export const DEFAULT_SPRING_PARAMS: SpringConstraintParams = {
@@ -20,6 +20,13 @@ export function createEntity(
   const compMap = new Map<ComponentType, Component>();
   for (const comp of components) {
     compMap.set(comp.type, comp);
+  }
+  // Phase 4: 新实体默认附加 trail 和 vector 组件
+  if (!compMap.has('trail')) {
+    compMap.set('trail', { type: 'trail', visible: true } as TrailComponent);
+  }
+  if (!compMap.has('vector')) {
+    compMap.set('vector', { type: 'vector', showVelocity: true, showForces: true } as VectorComponent);
   }
   return { id, name, components: compMap };
 }
