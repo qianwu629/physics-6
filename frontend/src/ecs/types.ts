@@ -3,7 +3,7 @@
  * Transform | RigidBody | Collider | Velocity | Material
  */
 
-export type ComponentType = 'transform' | 'rigidBody' | 'collider' | 'velocity' | 'material' | 'constraint';
+export type ComponentType = 'transform' | 'rigidBody' | 'collider' | 'velocity' | 'material' | 'constraint' | 'trail' | 'vector';
 
 export interface Component {
   type: ComponentType;
@@ -70,6 +70,17 @@ export interface ConstraintComponent extends Component {
   params: SpringConstraintParams;
 }
 
+export interface TrailComponent extends Component {
+  type: 'trail';
+  visible: boolean;
+}
+
+export interface VectorComponent extends Component {
+  type: 'vector';
+  showVelocity: boolean;
+  showForces: boolean;
+}
+
 /**
  * Entity — ECS 场景图节点 (D-01, ARCHITECTURE.md Pattern 1)
  * 行为由其附加的组件集合决定 (DIF-01)
@@ -87,4 +98,6 @@ export type AnyComponent =
   | ColliderComponent
   | VelocityComponent
   | MaterialComponent
-  | ConstraintComponent;
+  | ConstraintComponent
+  | TrailComponent
+  | VectorComponent;
