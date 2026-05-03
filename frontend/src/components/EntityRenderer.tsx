@@ -1,8 +1,10 @@
 import { useRef, useMemo, useCallback, useEffect } from 'react';
 import { RigidBody, BallCollider, CuboidCollider, CylinderCollider } from '@react-three/rapier';
 import { Outlines } from '@react-three/drei';
+import { Vector3 } from 'three';
 import { useSimulationStore } from '../store';
 import { useRigidBodyRefRegistry } from './RigidBodyRefContext';
+import { setContactForce } from './contactForceStore';
 import type { Entity } from '../ecs/types';
 import type { TransformComponent, RigidBodyComponent, ColliderComponent, VelocityComponent, MaterialComponent } from '../ecs/types';
 
@@ -138,6 +140,13 @@ export default function EntityRenderer({ entity, isSelected, onSelect }: EntityR
       linearVelocity={velocity?.linearVelocity ?? [0, 0, 0]}
       angularVelocity={velocity?.angularVelocity ?? [0, 0, 0]}
       colliders={false} // Manual Collider management — no auto-generation
+      onContactForce={(payload) => {
+        setContactForce(entity.id, new Vector3(
+          payload.totalForce.x,
+          payload.totalForce.y,
+          payload.totalForce.z
+        ));
+      }}
     >
       {/* Collider — determines physics behavior */}
       {renderCollider}
