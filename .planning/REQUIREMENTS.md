@@ -20,13 +20,13 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **REN-01**: 系统以 WebGL/WebGPU 实时 3D 渲染物理场景
 - [x] **REN-02**: 用户可通过轨道旋转、平移、缩放控制 3D 摄像机
-- [ ] **REN-03**: 用户可通过属性面板编辑物体的物理参数（质量、速度、位置、摩擦系数、弹性系数）
+- [x] **REN-03**: 用户可通过属性面板编辑物体的物理参数（质量、速度、位置、摩擦系数、弹性系数）
 
 ### Differentiators
 
-- [ ] **DIF-01**: 系统采用组件化自由组合架构——用户组合基础物理原语搭建场景，而非使用预制模板
-- [ ] **DIF-02**: 系统渲染物体运动轨迹残影（拖尾效果）
-- [ ] **DIF-03**: 系统以矢量箭头叠加显示物体速度和受力方向
+- [x] **DIF-01**: 系统采用组件化自由组合架构——用户组合基础物理原语搭建场景，而非使用预制模板
+- [x] **DIF-02**: 系统渲染物体运动轨迹残影（拖尾效果）
+- [x] **DIF-03**: 系统以矢量箭头叠加显示物体速度和受力方向
 
 ## v2 Requirements
 
@@ -71,10 +71,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SIM-06 | Phase 1: 仿真核心与基础3D渲染 | Complete (01-03) |
 | REN-01 | Phase 1: 仿真核心与基础3D渲染 | Complete (01-02) |
 | REN-02 | Phase 1: 仿真核心与基础3D渲染 | Complete (01-02) |
-| REN-03 | Phase 2: 组件化实体系统与属性编辑 | Pending |
-| DIF-01 | Phase 2: 组件化实体系统与属性编辑 | Pending |
-| DIF-02 | Phase 4: 轨迹与矢量可视化 | Pending |
-| DIF-03 | Phase 4: 轨迹与矢量可视化 | Pending |
+| REN-03 | Phase 2: 组件化实体系统与属性编辑 | Complete (02-05) |
+| DIF-01 | Phase 2: 组件化实体系统与属性编辑 | Complete (02-01..02-07) |
+| DIF-02 | Phase 4: 轨迹与矢量可视化 | Complete (04-01..04-04) |
+| DIF-03 | Phase 4: 轨迹与矢量可视化 | Complete (04-01..04-04) |
 
 **Coverage:**
 - v1 requirements: 12 total
@@ -83,4 +83,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-04-30*
-*Last updated: 2026-04-30 after roadmap creation*
+*Last updated: 2026-05-04 — all 12 v1 requirements verified complete after Phase 4 UAT*
