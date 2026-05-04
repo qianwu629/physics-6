@@ -14,6 +14,33 @@ Physis 是一个基于 Web 的物理模拟平台，允许用户通过组合基�
 - 22 测试套件 / 185 测试用例 PASS
 - 详见 `.planning/MILESTONES.md` 和 `.planning/milestones/v1.0-ROADMAP.md`
 
+## Current Milestone: v2.0 力场与多维模拟
+
+**Goal:** 让用户在原 ECS 物理沙盒之上获得场景持久化、力场体系、表达式驱动外加力、实时物理量分析、FPS 摄像机控制和 2D 模拟模式；同时清理 v1.0 遗留交互精度与性能债务，从"3D 经典力学组件箱"扩展为"可保存、可分析、可定制力学规则、可降维"的交互物理实验室。
+
+**Target features:**
+
+新能力：
+- 场景 JSON 持久化（文件 IO + localStorage + 预设场景库；只保存初始配置）
+- 物理量实时图表（位置 / 速度 / 加速度 / 能量 KE/PE/E，多实体多曲线）
+- 通用向量力场系统（ForceField 组件框架 + 多类型预设 + 力线/箭头可视化）
+- 表达式驱动外加力（用户输入数学表达式逐帧求值；解析器待研究）
+- 类 FPS 自由飞行摄像机（WSAD + 鼠标拖拽 + 屏幕摇杆 fallback；2D 模式降级正交）
+- 2D 模拟模式（沿用 rapier3d + z 轴约束 + 正交摄像机 + UI 切换）
+
+v1.0 polish / debt 清理：
+- 弹簧 3D tube 射线点击选中精度修复
+- 多弹簧链（≥3）数值稳定性测试与调参
+- 50+ 实体 + 20 弹簧性能基准与优化（目标 60fps）
+- Scene3D.test.tsx three.js Vector3 mock 修复（9 用例）+ Phase 4 补回 VERIFICATION.md
+
+**Key context（关键决策）:**
+- 架构：3D 引擎模拟 2D（不引入 rapier2d，通过 z 轴约束 + 正交相机 + 2D UI 风格降级）
+- 力场：通用 ForceField 组件框架（电磁场、引力源、方向场作为预设类型）
+- 自定义力：表达式驱动（mathjs vs expr-eval 待研究阶段确认）
+- 摄像机：类 FPS 自由飞行（保留 OrbitControls 作为 fallback）
+- 持久化：文件 + 本地 + 预设三合一，仅保存初始配置（教学场景理念）
+
 ## Core Value
 
 用户可以将任意基础物理组件自由组合，搭建任意场景——不受预设模板限制。场景搭建采用可视化拖拽操作，模拟结果以 3D 画面实时呈现。
@@ -28,15 +55,22 @@ Physis 是一个基于 Web 的物理模拟平台，允许用户通过组合基�
 - ✓ **REN-01..03**：WebGL 实时 3D 渲染、3D 摄像机控制、属性面板运行时编辑 — v1.0 (Phases 1, 2, 5)
 - ✓ **DIF-01..03**：组件化自由组合架构、轨迹残影、速度/受力矢量箭头 — v1.0 (Phases 2, 4)
 
-### Active (v1.1+)
+### Active (v2.0)
 
-下个里程碑通过 `/gsd-new-milestone` 重新定义。当前没有立即排队的需求，候选方向：
+REQ-IDs 由 `/gsd-new-milestone` 流程的 Define Requirements 阶段生成，写入 `.planning/REQUIREMENTS.md`。本里程碑预期需求类别：
 
-- 可视化拖拽场景搭建（v2 SCN-01）
-- 场景 JSON 保存/加载（v2 SCN-03）
-- 实时运动图表（v2 ANL-01）
-- 弹簧 3D tube 点击选中精度（v1.0 遗留 UAT 项）
-- 50+ 实体 + 弹簧性能优化（v1.0 遗留 UAT 项）
+- **PERSIST**：场景 JSON 保存/加载、本地存储、预设场景库
+- **CHART**：实时物理量图表（位置/速度/加速度/能量 4 类，多曲线）
+- **FIELD**：通用向量力场（点电荷/磁场/引力/方向场等）+ 力线可视化
+- **EXPR**：表达式驱动外加力（实体级公式力）
+- **CAM**：类 FPS 自由飞行摄像机（WSAD + 鼠标 + 屏幕摇杆）
+- **DIM2**：2D 模拟模式（z 约束 + 正交相机 + UI 切换）
+- **DEBT**：v1.0 遗留 UAT 项与测试基线修复
+
+### Future Requirements（暂不在本里程碑）
+
+- 可视化拖拽场景搭建（v2 SCN-01，候选下个里程碑）
+- 多人实时协作（v1 已确认 Out of Scope）
 
 ### Out of Scope
 
@@ -102,4 +136,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state ✓
 
 ---
-*Last updated: 2026-05-04 after v1.0 milestone completion (5/5 phases, 17/17 plans, 12/12 requirements)*
+*Last updated: 2026-05-04 — milestone v2.0 力场与多维模拟 started (continues from v1.0 完成的 5 个 phase)*

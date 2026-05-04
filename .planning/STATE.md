@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: MVP 物理沙盒
-status: shipped
-stopped_at: v1.0 archived 2026-05-04
-last_updated: "2026-05-04T04:00:00Z"
-last_activity: 2026-05-04 -- v1.0 milestone shipped and tagged
+milestone: v2.0
+milestone_name: 力场与多维模拟
+status: planning
+last_updated: "2026-05-04T07:37:50.244Z"
+last_activity: 2026-05-04
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 17
-  completed_plans: 17
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -25,12 +24,10 @@ See: .planning/PROJECT.md (updated 2026-05-04 after v1.0 milestone)
 
 ## Current Position
 
-Milestone: v1.0 MVP 物理沙盒 — SHIPPED 2026-05-04
-所有 5 阶段、17 计划、12/12 需求闭环。
-Tag: v1.0 (待推送)
-Last activity: 2026-05-04 -- v1.0 milestone archived
-
-Progress: [██████████] v1.0 100% complete
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-05-04 — Milestone v2.0 started
 
 ## Next Steps
 
