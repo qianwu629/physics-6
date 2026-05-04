@@ -2,15 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: 力场与多维模拟
-status: Defining requirements
-stopped_at: context exhaustion at 75% (2026-05-04)
-last_updated: "2026-05-04T11:28:55.658Z"
-last_activity: 2026-05-04 — Milestone v2.0 started
+status: Phase 1 complete — all 6 plans executed
+stopped_at: Plan 05 App 集成布线 complete (2026-05-04)
+last_updated: "2026-05-04T15:52:14Z"
+last_activity: 2026-05-04 — Phase 1 Plan 05 (集成布线) complete; all Phase 1 plans done
 progress:
   total_phases: 6
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  completed_phases: 1
+  total_plans: 6
+  completed_plans: 6
+  percent: 100
 ---
 
 # Project State
@@ -24,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-05-04 after v1.0 milestone)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-05-04 — Milestone v2.0 started
+Phase: 01-持久化与场景库 (Complete — 6/6 plans)
+Plan: 05 (App 集成布线) — Complete
+Status: Phase complete — ready for Phase 2 or 01-06 (DEBT-04)
+Last activity: 2026-05-04 — Plan 05 App integration wiring complete; MenuBar/SnapshotManager/PresetSelector/SceneBanner wired + CameraFitter added
 
 ## Next Steps
 
@@ -79,6 +80,10 @@ Recent decisions affecting current work:
 - (01-03) visibilitychange auto-pause but no auto-resume — educational UX respects user intent on tab return.
 - (01-03) R key checks !ctrlKey && !metaKey && !altKey — prevents intercepting Ctrl+R browser refresh.
 - (01-03) Store accessed via .getState() in visibilitychange handler (not useSimulationStore hook) — avoids stale closure bugs.
+- (01-05) Toolbar top offset via CSS injection (`[data-toolbar] { top: 44px !important }`) — minimally invasive approach respects Plan 05 files_modified boundary. Toolbar.tsx gets `data-toolbar` attribute only.
+- (01-05) CameraFitter skips auto-fit on initial mount (resetCounter === 0) — preserves default (12,10,12) camera angle on first load.
+- (01-05) expandByScalar(1) in CameraFitter prevents degenerate Box3 on single-point or collinear entity scenes.
+- (01-05) 200ms setTimeout in CameraFitter lets Physics key-reconciliation complete before reading entity positions.
 
 ### Pending Todos
 
@@ -92,6 +97,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-04T11:28:55.654Z
-Stopped at: context exhaustion at 75% (2026-05-04)
-Resume file: None
+Last session: 2026-05-04T15:52:14Z
+Stopped at: Completed 01-05-PLAN.md — App integration wiring
+Resume file: None (Phase 1 complete; next: 01-06 or Phase 2)
