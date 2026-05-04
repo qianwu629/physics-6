@@ -4,6 +4,7 @@ node_modules/
 # Build output
 dist/
 build/
+*.tsbuildinfo
 
 # Environment files
 .env
@@ -27,3 +28,20 @@ npm-debug.log*
 
 # Vite
 .vite/
+
+# Tooling local data (Claude Code, MCP, spec-workflow)
+.claude/
+.spec-workflow/
+.playwright-mcp/
+
+# Stale/duplicate planning dir under frontend
+frontend/.planning/
+
+# UAT/debug screenshots (temporary verification artifacts)
+*.png
+*.jpg
+*.jpeg
+vector-test-snapshot.yml
+
+# Windows accidental redirect artifact
+nul
