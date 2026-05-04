@@ -12,7 +12,8 @@ Physis 从一个可运行的物理沙盒起步（球体和方块在重力下碰�
 
 - [x] **Phase 1: 仿真核心与基础3D渲染** - 可运行的物理沙盒：物体在重力下碰撞堆叠，3D 视角可旋转观察，支持播放/暂停/重置
 - [x] **Phase 2: 组件化实体系统与属性编辑** - 用户可自由添加实体、组合组件、通过属性面板编辑物理参数 (completed 2026-05-01)
-- [x] **Phase 3: 约束系统与环境配置** - 弹簧约束连接物体，全局重力/摩擦/空气阻力可配置 (completed 2026-05-02)
+- [x] **Phase 3: 约束系统与环境配置** - 弹簧约束连接物体，全局重力/摩擦/空气阻力可配置
+ (completed 2026-05-02)
 - [x] **Phase 4: 轨迹与矢量可视化** - 运动轨迹残影、速度和受力矢量箭头叠加显示 (completed 2026-05-04)
 - [ ] **Phase 5: 运行时属性同步与债务清理** - 关闭 REN-03 / Pitfall 5：让属性面板编辑在运行时立即影响 Rapier 物理
 
@@ -125,7 +126,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
   2. 暂停模拟、修改属性、恢复播放后，物体行为反映新的参数值（例如：弹性 0.5→0.95 后球体反弹明显增高）
   3. 运行中（不暂停）修改属性也能立即生效
   4. 现有测试套件继续通过（无回归）
-**Plans:** 0 plans
+**Plans:** 1 plans
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 5 to break down)
+- [ ] 05-01-PLAN.md — 在 EntityRenderer 添加 useEffect 通过 Rapier imperative API（setAdditionalMass / setLinearDamping / Collider.setRestitution / setFriction）同步运行时物理状态，关闭 REN-03 / Pitfall 5
