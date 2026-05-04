@@ -12,6 +12,11 @@ import SpringCreationDialog from './SpringCreationDialog';
 import LoadingScreen from './LoadingScreen';
 import ErrorFallback from './ErrorFallback';
 import type { ErrorType } from './ErrorFallback';
+// Phase 1: 持久化与场景库组件
+import MenuBar from './MenuBar';
+import SnapshotManager from './SnapshotManager';
+import PresetSelector from './PresetSelector';
+import { SceneBanner } from './SceneLoader';
 
 /**
  * App — Phase 2 应用根组件
@@ -53,6 +58,10 @@ export default function App() {
   const enterSpringMode = useSimulationStore((s) => s.enterSpringMode);
   const exitSpringMode = useSimulationStore((s) => s.exitSpringMode);
   const springCreationStage = useSimulationStore((s) => s.springCreationStage);
+
+  // Phase 1: 快照 Drawer + 预设 Dialog 开关状态
+  const [snapshotDrawerOpen, setSnapshotDrawerOpen] = useState(false);
+  const [presetSelectorOpen, setPresetSelectorOpen] = useState(false);
 
   // ──── 步骤 1: WebGL 可用性检测 ────
   const checkWebGL = useCallback((): boolean => {
@@ -189,6 +198,22 @@ export default function App() {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
+  // ──── MenuBar 引入后调整 Toolbar 顶部偏移 (Phase 1 Plan 05) ────
+  // MenuBar 高度 36px (h-9) + 固定定位 z-50; Toolbar 原有 top-4 (16px) 会与 MenuBar 重叠
+  // 通过 CSS 注入将 Toolbar 下移，为 MenuBar 腾出空间
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.id = 'phase1-menu-offset';
+    style.textContent = `
+      [data-toolbar] { top: 44px !important; }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      const el = document.getElementById('phase1-menu-offset');
+      if (el) el.remove();
+    };
+  }, []);
+
   // ──── 状态机渲染 ────
   if (appState === 'error' && errorType) {
     return <ErrorFallback type={errorType} />;
@@ -202,6 +227,27 @@ export default function App() {
   // CR-01 fix: Suspense 边界捕获 @react-three/rapier 的 WASM 加载挂起状态
   return (
     <>
+      {/* Phase 1: MenuBar — 固定在页面顶部 z-50 */}
+      <MenuBar
+        onOpenSnapshots={() => setSnapshotDrawerOpen(true)}
+        onOpenPresets={() => setPresetSelectorOpen(true)}
+      />
+
+      {/* Phase 1: SceneBanner — schema 版本不匹配等警告 (黄色横幅) */}
+      <SceneBanner />
+
+      {/* Phase 1: SnapshotManager Drawer (Sheet side="right") — 由 MenuBar 触发 */}
+      <SnapshotManager
+        open={snapshotDrawerOpen}
+        onOpenChange={setSnapshotDrawerOpen}
+      />
+
+      {/* Phase 1: PresetSelector Dialog — 由 MenuBar 触发 */}
+      <PresetSelector
+        open={presetSelectorOpen}
+        onOpenChange={setPresetSelectorOpen}
+      />
+
       <Scene3D />
       <Toolbar />
       <Toolbox />
