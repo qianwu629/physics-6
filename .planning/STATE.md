@@ -8,10 +8,10 @@ last_updated: "2026-05-04T02:20:00Z"
 last_activity: 2026-05-04 -- Phase 04 UAT complete (5/5 pass after trail length fix)
 progress:
   total_phases: 5
-  completed_phases: 4
-  total_plans: 16
-  completed_plans: 16
-  percent: 80
+  completed_phases: 5
+  total_plans: 17
+  completed_plans: 17
+  percent: 100
 ---
 
 # Project State
@@ -21,15 +21,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-30)
 
 **Core value:** 用户可以将任意基础物理组件自由组合，搭建任意场景——不受预设模板限制
-**Current focus:** Phase 5 — 运行时属性同步与债务清理（关闭 REN-03/Pitfall 5）
+**Current focus:** v1.0 milestone 全部 5 阶段完成，REN-03 / Pitfall 5 已关闭，准备归档
 
 ## Current Position
 
-Phase: 05 (运行时属性同步与债务清理) — PLANNED, awaiting /gsd-plan-phase 5
-v1.0 phases 1-4 已完成；Phase 5 添加用于关闭 REN-03 重大债务，完成后归档 v1.0。
-Last activity: 2026-05-04 -- Phase 05 added to roadmap
+Phase: 05 (运行时属性同步与债务清理) — COMPLETE ✓
+v1.0 全部 5 阶段已完成，REN-03 重大债务已闭环。准备 `/gsd-complete-milestone v1.0`。
+Last activity: 2026-05-04 -- Phase 05 UAT 2 passed + 1 skipped (covered by unit test)
 
-Progress: [█████████░] 4/5 phases complete (80%)
+Progress: [██████████] 5/5 phases complete (100%)
 
 ## Performance Metrics
 

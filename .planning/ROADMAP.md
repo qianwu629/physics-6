@@ -15,7 +15,7 @@ Physis 从一个可运行的物理沙盒起步（球体和方块在重力下碰�
 - [x] **Phase 3: 约束系统与环境配置** - 弹簧约束连接物体，全局重力/摩擦/空气阻力可配置
  (completed 2026-05-02)
 - [x] **Phase 4: 轨迹与矢量可视化** - 运动轨迹残影、速度和受力矢量箭头叠加显示 (completed 2026-05-04)
-- [ ] **Phase 5: 运行时属性同步与债务清理** - 关闭 REN-03 / Pitfall 5：让属性面板编辑在运行时立即影响 Rapier 物理 (1/1 plans done, awaiting UAT)
+- [x] **Phase 5: 运行时属性同步与债务清理** - 关闭 REN-03 / Pitfall 5：让属性面板编辑在运行时立即影响 Rapier 物理 (completed 2026-05-04)
 
 ## Phase Details
 
@@ -114,7 +114,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. 组件化实体系统与属性编辑 | 6/6 | Complete   | 2026-05-01 |
 | 3. 约束系统与环境配置 | 1/1 | Complete    | 2026-05-03 |
 | 4. 轨迹与矢量可视化 | 4/4 | Complete   | 2026-05-04 |
-| 5. 运行时属性同步与债务清理 | 1/1 | Code complete, awaiting UAT | - |
+| 5. 运行时属性同步与债务清理 | 1/1 | Complete   | 2026-05-04 |
 
 ### Phase 5: 运行时属性同步与债务清理
 
