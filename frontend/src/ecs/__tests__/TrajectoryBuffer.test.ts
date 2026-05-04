@@ -31,13 +31,13 @@ describe('TrajectoryBuffer', () => {
     expect(positions[2].x).toBe(3);
   });
 
-  it('getPoints excludes points older than 5 seconds', () => {
+  it('getPoints excludes points older than 10 seconds', () => {
     buffer.push(new Vector3(1, 0, 0), T0);       // old
-    buffer.push(new Vector3(2, 0, 0), T0 + 3);   // still valid
-    buffer.push(new Vector3(3, 0, 0), T0 + 4.9); // still valid
+    buffer.push(new Vector3(2, 0, 0), T0 + 5);   // still valid
+    buffer.push(new Vector3(3, 0, 0), T0 + 9.9); // still valid
 
-    // Query at T0 + 6: first point is 6s old, should be cut
-    const { positions, count } = buffer.getPoints(T0 + 6);
+    // Query at T0 + 11: first point is 11s old, should be cut
+    const { positions, count } = buffer.getPoints(T0 + 11);
     expect(count).toBe(2);
     expect(positions[0].x).toBe(2);
     expect(positions[1].x).toBe(3);
@@ -47,28 +47,28 @@ describe('TrajectoryBuffer', () => {
     buffer.push(new Vector3(1, 0, 0), T0);
     buffer.push(new Vector3(2, 0, 0), T0 + 0.1);
 
-    const { positions, count } = buffer.getPoints(T0 + 10);
+    const { positions, count } = buffer.getPoints(T0 + 20);
     expect(count).toBe(0);
     expect(positions.length).toBe(0);
   });
 
-  it('wraps around after 300 points (ring buffer behavior)', () => {
+  it('wraps around after 600 points (ring buffer behavior)', () => {
     // Fill buffer to capacity
-    for (let i = 0; i < 300; i++) {
+    for (let i = 0; i < 600; i++) {
       buffer.push(new Vector3(i, 0, 0), T0 + i * 0.01);
     }
-    expect(buffer.getCount()).toBe(300);
+    expect(buffer.getCount()).toBe(600);
 
     // Push one more — should overwrite oldest
-    buffer.push(new Vector3(999, 0, 0), T0 + 300 * 0.01);
-    expect(buffer.getCount()).toBe(300);
+    buffer.push(new Vector3(999, 0, 0), T0 + 600 * 0.01);
+    expect(buffer.getCount()).toBe(600);
 
     // The oldest point (x=0) should be gone, x=1 is now oldest
-    const { positions, count } = buffer.getPoints(T0 + 300 * 0.01 + 1);
-    expect(count).toBe(300);
+    const { positions, count } = buffer.getPoints(T0 + 600 * 0.01 + 1);
+    expect(count).toBe(600);
     expect(positions[0].x).toBe(1);  // x=0 was overwritten
-    expect(positions[298].x).toBe(299);
-    expect(positions[299].x).toBe(999); // newest
+    expect(positions[598].x).toBe(599);
+    expect(positions[599].x).toBe(999); // newest
   });
 
   it('clear resets count and head to 0', () => {
@@ -88,15 +88,15 @@ describe('TrajectoryBuffer', () => {
 
   it('handles mixed age points with wrap-around', () => {
     // Fill buffer and wrap several times
-    for (let i = 0; i < 350; i++) {
+    for (let i = 0; i < 700; i++) {
       buffer.push(new Vector3(i, 0, 0), T0 + i * 0.01);
     }
-    expect(buffer.getCount()).toBe(300); // capped at 300
+    expect(buffer.getCount()).toBe(600); // capped at 600
 
-    // Oldest in buffer should be x=50 (indices 0-49 overwritten)
-    const { positions, count } = buffer.getPoints(T0 + 350 * 0.01 + 1);
-    expect(count).toBe(300);
-    expect(positions[0].x).toBe(50);
+    // Oldest in buffer should be x=100 (indices 0-99 overwritten)
+    const { positions, count } = buffer.getPoints(T0 + 700 * 0.01 + 1);
+    expect(count).toBe(600);
+    expect(positions[0].x).toBe(100);
   });
 
   it('preserves Y and Z coordinates', () => {

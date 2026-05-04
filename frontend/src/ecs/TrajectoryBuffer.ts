@@ -1,7 +1,7 @@
 import { Vector3 } from 'three';
 
-const MAX_POINTS = 300;
-const MAX_AGE_SECONDS = 5;
+const MAX_POINTS = 600;
+const MAX_AGE_SECONDS = 10;
 const STRIDE = 3;
 
 export class TrajectoryBuffer {
