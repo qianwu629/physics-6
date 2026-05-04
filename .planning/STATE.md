@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: 力场与多维模拟
-status: planning
-last_updated: "2026-05-04T07:37:50.244Z"
-last_activity: 2026-05-04
+status: Defining requirements
+stopped_at: context exhaustion at 75% (2026-05-04)
+last_updated: "2026-05-04T11:28:55.658Z"
+last_activity: 2026-05-04 — Milestone v2.0 started
 progress:
-  total_phases: 0
+  total_phases: 6
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
-  percent: 0
 ---
 
 # Project State
@@ -92,6 +92,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-03T06:48:44.794Z
-Stopped at: Phase 4 context gathered
-Resume file: .planning/phases/04-轨迹与矢量可视化/04-CONTEXT.md
+Last session: 2026-05-04T11:28:55.654Z
+Stopped at: context exhaustion at 75% (2026-05-04)
+Resume file: None

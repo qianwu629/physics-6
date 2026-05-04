@@ -685,22 +685,16 @@ function importSceneFromFile(file: File): Promise<SceneData> {
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **摄像机自适应的具体触发时机**
-   - What we know: OrbitControls 需要调用 `update()` 后生效；resetCounter 变化会触发 Physics 重新挂载
-   - What's unclear: 是在 `loadSceneWithConfirm` 中直接操作 camera ref，还是通过 resetCounter 变化在 Scene3D 的 useEffect 中触发
-   - Recommendation: 在 Scene3D 中添加 `useEffect(() => { fitCamera(); }, [resetCounter])`，保持加载逻辑与渲染逻辑解耦
+1. **摄像机自适应的具体触发时机** → RESOLVED by 01-05 T2
+   - Decision: 在 Scene3D 中添加 `useEffect(() => { fitCamera(); }, [resetCounter])`，保持加载逻辑与渲染逻辑解耦
+   
+2. **预设场景的 JSON 序列化格式** → RESOLVED by 01-01 T1
+   - Decision: 使用对象格式 `Record<ComponentType, Component>`（键为 ComponentType），与 Map 语义更接近，反序列化时 `new Map(Object.entries(components))`
 
-2. **预设场景的 JSON 序列化格式**
-   - What we know: Entity 使用 `Map<ComponentType, Component>`，JSON 不支持 Map
-   - What's unclear: 预设文件中使用对象 `{ "transform": {...}, "rigidBody": {...} }` 还是数组 `[{type: "transform", ...}]`
-   - Recommendation: 使用对象格式（键为 ComponentType），与 Map 的语义更接近，反序列化时 `new Map(Object.entries(components))`
-
-3. **快照数据与运行时 store 的实体数据是否共享同一序列化函数**
-   - What we know: D-01-01 要求保存最小集；entities Map 包含 trail/vector 组件
-   - What's unclear: 快照是否也排除 trail/vector 的 visible 状态（属于 UI 状态）
-   - Recommendation: 快照也遵循 D-01-01 最小集原则，不保存 trail/vector visible 状态；反序列化时默认附加 trail/vector 组件（如 Entity.ts 工厂函数所做）
+3. **快照数据与运行时 store 的实体数据是否共享同一序列化函数** → RESOLVED by 01-02 T1
+   - Decision: 快照也遵循 D-01-01 最小集原则，不保存 trail/vector visible 状态；反序列化时默认附加 trail/vector 组件（如 Entity.ts 工厂函数所做）
 
 ---
 

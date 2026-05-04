@@ -12,7 +12,7 @@ Requirements for v2.0 release. 7 categories, 18 requirements total.
 - [ ] **PERSIST-01**: 用户可以将当前场景导出为 JSON 文件下载到本地（仅保存初始配置：实体清单、组件参数、约束、环境参数、可视化设置）
 - [ ] **PERSIST-02**: 用户可以从本地选择 JSON 文件加载到场景中，原场景被替换；加载后处于暂停状态
 - [ ] **PERSIST-03**: 用户可以将场景保存到浏览器 localStorage（命名快照，至少 5 个槽位），并从快照列表恢复
-- [ ] **PERSIST-04**: 系统提供至少 6 个内置预设场景（抛体、斜面、自由落体堆叠、弹簧振子、双弹簧链、点电荷力场示例），可一键加载
+- [ ] **PERSIST-04**: 系统提供 5 个内置预设场景（抛体、斜面、自由落体堆叠、弹簧振子、双弹簧链），可一键加载；第 6 个点电荷力场示例推迟到 Phase 3（需 ForceField 系统）
 
 ### Real-Time Charts (CHART)
 
