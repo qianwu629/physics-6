@@ -1,8 +1,9 @@
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useThree } from '@react-three/fiber';
 import { Physics, RigidBody, CuboidCollider } from '@react-three/rapier';
 import { OrbitControls, Grid, GizmoHelper, GizmoViewport } from '@react-three/drei';
 import { useRef, useEffect, useCallback } from 'react';
 import * as THREE from 'three';
+import { Box3, Vector3, type PerspectiveCamera } from 'three';
 import { useSimulationStore } from '../store';
 import { useShallow } from 'zustand/react/shallow';
 import EntityRenderer from './EntityRenderer';
@@ -69,6 +70,82 @@ function SceneInitializer() {
   }, [entities.size, setObjectCount]);
 
   return null;
+}
+
+// ──── 摄像机自适应 — D-01-03: 场景加载后摄像机适配实体包围盒 ────
+
+/**
+ * CameraFitter — 纯逻辑组件，在 resetCounter 变化时自动计算场景包围盒
+ * 并调整摄像机位置，使所有实体可见。
+ *
+ * 规则:
+ * - resetCounter === 0 时不触发（首次挂载保留默认视角）
+ * - 空场景 → 回到默认视角 (12, 10, 12)
+ * - 有实体 → 计算包围盒 → 摄像机定位到对角线方向
+ * - expandByScalar(1) 防止单点/共线场景包围盒退化
+ * - Pitfall #3: OrbitControls 必须调用 update() 使变更生效
+ */
+function CameraFitter({ controlsRef }: { controlsRef: React.MutableRefObject<any> }) {
+  const { camera } = useThree();
+  const resetCounter = useSimulationStore((s) => s.resetCounter);
+
+  useEffect(() => {
+    if (resetCounter === 0) return; // 首次挂载不触发自适应（保留默认视角）
+
+    const timer = setTimeout(() => {
+      const ctrl = controlsRef.current;
+      if (!ctrl) return;
+
+      // 从 store 读取实体位置计算包围盒
+      const store = useSimulationStore.getState();
+      const box = new Box3();
+      let hasAny = false;
+
+      for (const [, entity] of store.entities) {
+        const t = entity.components.get('transform');
+        if (t) {
+          const p = (t as any).position as [number, number, number];
+          if (p && Array.isArray(p) && p.length === 3) {
+            box.expandByPoint(new Vector3(p[0], p[1], p[2]));
+            hasAny = true;
+          }
+        }
+      }
+
+      if (!hasAny) {
+        // 空场景 → 默认视角
+        (camera as PerspectiveCamera).position.set(12, 10, 12);
+        ctrl.target.set(0, 2, 0);
+        ctrl.update();
+        return;
+      }
+
+      // 确保包围盒有最小体积（用于单点或共线场景）
+      box.expandByScalar(1);
+
+      const center = new Vector3();
+      box.getCenter(center);
+      const size = new Vector3();
+      box.getSize(size);
+
+      const maxDim = Math.max(size.x, size.y, size.z);
+      const fovRad = (camera as PerspectiveCamera).fov * (Math.PI / 180);
+      const dist = (maxDim / (2 * Math.tan(fovRad / 2))) * 1.5;
+
+      // 对角线方向摄像机位置
+      (camera as PerspectiveCamera).position.set(
+        center.x + dist * 0.7,
+        center.y + dist * 0.6,
+        center.z + dist * 0.7,
+      );
+      ctrl.target.copy(center);
+      ctrl.update(); // Pitfall #3: 必须调用 update() 才能让 OrbitControls 生效
+    }, 200);
+
+    return () => clearTimeout(timer);
+  }, [resetCounter, camera, controlsRef]);
+
+  return null; // 纯逻辑组件，无 DOM 输出
 }
 
 // ──── 主场景组件 ────
@@ -140,6 +217,7 @@ export default function Scene3D() {
 
   const initialCameraPosition: [number, number, number] = [12, 10, 12];   // D-05: 45° 对角线
   const initialCameraTarget: [number, number, number] = [0, 2, 0];       // 场景中心偏上
+  const controlsRef = useRef<any>(null);                                   // Phase 1: CameraFitter 控制摄像机
 
   return (
     <Canvas
@@ -167,6 +245,7 @@ export default function Scene3D() {
       {/* ── 调试与初始化 ── */}
       <FpsTracker />
       <SceneInitializer />
+      <CameraFitter controlsRef={controlsRef} />
 
       {/* ── 物理世界 (Rapier WASM) ── */}
       <Physics
@@ -225,6 +304,7 @@ export default function Scene3D() {
 
       {/* ── 摄像机控制 (D-05) ── */}
       <OrbitControls
+        ref={controlsRef}
         target={initialCameraTarget}
         enableDamping={true}
         dampingFactor={0.1}
