@@ -14,6 +14,7 @@ Physis 从一个可运行的物理沙盒起步（球体和方块在重力下碰�
 - [x] **Phase 2: 组件化实体系统与属性编辑** - 用户可自由添加实体、组合组件、通过属性面板编辑物理参数 (completed 2026-05-01)
 - [x] **Phase 3: 约束系统与环境配置** - 弹簧约束连接物体，全局重力/摩擦/空气阻力可配置 (completed 2026-05-02)
 - [x] **Phase 4: 轨迹与矢量可视化** - 运动轨迹残影、速度和受力矢量箭头叠加显示 (completed 2026-05-04)
+- [ ] **Phase 5: 运行时属性同步与债务清理** - 关闭 REN-03 / Pitfall 5：让属性面板编辑在运行时立即影响 Rapier 物理
 
 ## Phase Details
 
@@ -104,7 +105,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -112,3 +113,19 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 2. 组件化实体系统与属性编辑 | 6/6 | Complete   | 2026-05-01 |
 | 3. 约束系统与环境配置 | 1/1 | Complete    | 2026-05-03 |
 | 4. 轨迹与矢量可视化 | 4/4 | Complete   | 2026-05-04 |
+| 5. 运行时属性同步与债务清理 | 0/0 | Planned | - |
+
+### Phase 5: 运行时属性同步与债务清理
+
+**Goal:** 用户在属性面板中编辑实体的物理参数（质量、弹性系数、摩擦系数）后，Rapier 物理引擎在运行时立即响应这些变更，无需重置或重新创建实体。
+**Requirements:** REN-03 (从 partial → satisfied), 修复 Pitfall 5
+**Depends on:** Phase 4 (其实只依赖 Phase 2 的实体系统，但保持顺序编号)
+**Success Criteria** (what must be TRUE):
+  1. EntityRenderer 通过 `useEffect` 调用 `rigidBodyRef.current.setRestitution()/setFriction()/setMass()` 在 component 变化时同步 Rapier 状态
+  2. 暂停模拟、修改属性、恢复播放后，物体行为反映新的参数值（例如：弹性 0.5→0.95 后球体反弹明显增高）
+  3. 运行中（不暂停）修改属性也能立即生效
+  4. 现有测试套件继续通过（无回归）
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 5 to break down)
