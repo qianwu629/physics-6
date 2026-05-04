@@ -48,6 +48,42 @@ export default function EntityRenderer({ entity, isSelected, onSelect }: EntityR
   const velocity = entity.components.get('velocity') as VelocityComponent | undefined;
   const material = entity.components.get('material') as MaterialComponent | undefined;
 
+  // ── Phase 5: Rapier 运行时属性同步 (REN-03 / Pitfall 5 闭环) ──
+  // 根因：@react-three/rapier 把 mass/restitution/friction/damping 视为初始化 props；
+  //      挂载后必须通过 imperative API 同步。restitution / friction 是 collider-level。
+  // 注意：position/velocity 的运行时同步未在此 useEffect 处理（暂停态编辑可走 reset 链路；
+  //      运行时编辑会被物理积分覆盖，不是有意义的语义）。
+  // 注意：本 hook 必须放在 early-return null 检查之前，遵守 React Rules of Hooks。
+  useEffect(() => {
+    const rb = rigidBodyRef.current;
+    if (!rb) return;
+    if (!rigidBody) return; // 缺组件时跳过同步（早退由下方 null 检查处理）
+
+    // RigidBody-level
+    // setAdditionalMass(mass, wakeUp=true): 不重新计算 inertia tensor；最小侵入；
+    // wakeUp=true 触发休眠物体唤醒以响应新质量。
+    rb.setAdditionalMass(rigidBody.mass, true);
+    rb.setLinearDamping(drag);
+    // 部分版本暴露 setAngularDamping；若类型不存在用 any 兜底
+    if (typeof (rb as any).setAngularDamping === 'function') {
+      (rb as any).setAngularDamping(drag * 0.5);
+    }
+
+    // Collider-level（restitution / friction 在 Rapier 中是 collider 属性，不在 RigidBody 上）
+    if (typeof rb.numColliders === 'function' && rb.numColliders() > 0) {
+      const col = rb.collider(0);
+      col.setRestitution(Math.min(rigidBody.restitution * restitutionScale, 1.0));
+      col.setFriction(Math.min(rigidBody.friction * frictionScale, 2.0));
+    }
+  }, [
+    rigidBody?.mass,
+    rigidBody?.restitution,
+    rigidBody?.friction,
+    restitutionScale,
+    frictionScale,
+    drag,
+  ]);
+
   // T-02-01: Defensive null check — corrupt ECS data won't crash the render tree
   if (!transform || !rigidBody || !collider || !material) {
     console.warn(`Entity ${entity.id} missing required components for rendering`);
