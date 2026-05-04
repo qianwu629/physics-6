@@ -1,0 +1,259 @@
+{
+  "schemaVersion": "1.0",
+  "savedAt": "2026-05-04T00:00:00Z",
+  "simulation": {
+    "environment": {
+      "gravity": [0, -9.81, 0],
+      "frictionScale": 1.0,
+      "restitutionScale": 1.0,
+      "drag": 0.1
+    },
+    "entities": [
+      {
+        "id": "chain-anchor-top",
+        "name": "顶部锚点",
+        "components": {
+          "transform": {
+            "type": "transform",
+            "position": [0, 8, 0],
+            "rotation": [0, 0, 0],
+            "scale": [1, 1, 1]
+          },
+          "rigidBody": {
+            "type": "rigidBody",
+            "kind": "fixed",
+            "mass": 0,
+            "restitution": 0.5,
+            "friction": 0.3
+          },
+          "collider": {
+            "type": "collider",
+            "shape": "sphere",
+            "params": { "radius": 0.2 }
+          },
+          "material": {
+            "type": "material",
+            "color": "#9ca3af",
+            "roughness": 0.6,
+            "metalness": 0.1
+          },
+          "velocity": {
+            "type": "velocity",
+            "linearVelocity": [0, 0, 0],
+            "angularVelocity": [0, 0, 0]
+          }
+        }
+      },
+      {
+        "id": "chain-anchor-bottom",
+        "name": "底部锚点",
+        "components": {
+          "transform": {
+            "type": "transform",
+            "position": [0, -2, 0],
+            "rotation": [0, 0, 0],
+            "scale": [1, 1, 1]
+          },
+          "rigidBody": {
+            "type": "rigidBody",
+            "kind": "fixed",
+            "mass": 0,
+            "restitution": 0.5,
+            "friction": 0.3
+          },
+          "collider": {
+            "type": "collider",
+            "shape": "sphere",
+            "params": { "radius": 0.2 }
+          },
+          "material": {
+            "type": "material",
+            "color": "#9ca3af",
+            "roughness": 0.6,
+            "metalness": 0.1
+          },
+          "velocity": {
+            "type": "velocity",
+            "linearVelocity": [0, 0, 0],
+            "angularVelocity": [0, 0, 0]
+          }
+        }
+      },
+      {
+        "id": "chain-mass-1",
+        "name": "质量块-1",
+        "components": {
+          "transform": {
+            "type": "transform",
+            "position": [0.05, 6, 0],
+            "rotation": [0, 0, 0],
+            "scale": [1, 1, 1]
+          },
+          "rigidBody": {
+            "type": "rigidBody",
+            "kind": "dynamic",
+            "mass": 1,
+            "restitution": 0.5,
+            "friction": 0.3
+          },
+          "collider": {
+            "type": "collider",
+            "shape": "sphere",
+            "params": { "radius": 0.4 }
+          },
+          "material": {
+            "type": "material",
+            "color": "#ef4444",
+            "roughness": 0.6,
+            "metalness": 0.1
+          },
+          "velocity": {
+            "type": "velocity",
+            "linearVelocity": [0, 0, 0],
+            "angularVelocity": [0, 0, 0]
+          }
+        }
+      },
+      {
+        "id": "chain-mass-2",
+        "name": "质量块-2",
+        "components": {
+          "transform": {
+            "type": "transform",
+            "position": [-0.05, 3.5, 0],
+            "rotation": [0, 0, 0],
+            "scale": [1, 1, 1]
+          },
+          "rigidBody": {
+            "type": "rigidBody",
+            "kind": "dynamic",
+            "mass": 1.5,
+            "restitution": 0.5,
+            "friction": 0.3
+          },
+          "collider": {
+            "type": "collider",
+            "shape": "sphere",
+            "params": { "radius": 0.45 }
+          },
+          "material": {
+            "type": "material",
+            "color": "#22c55e",
+            "roughness": 0.6,
+            "metalness": 0.1
+          },
+          "velocity": {
+            "type": "velocity",
+            "linearVelocity": [0, 0, 0],
+            "angularVelocity": [0, 0, 0]
+          }
+        }
+      },
+      {
+        "id": "chain-mass-3",
+        "name": "质量块-3",
+        "components": {
+          "transform": {
+            "type": "transform",
+            "position": [0.05, 1, 0],
+            "rotation": [0, 0, 0],
+            "scale": [1, 1, 1]
+          },
+          "rigidBody": {
+            "type": "rigidBody",
+            "kind": "dynamic",
+            "mass": 2,
+            "restitution": 0.5,
+            "friction": 0.3
+          },
+          "collider": {
+            "type": "collider",
+            "shape": "sphere",
+            "params": { "radius": 0.5 }
+          },
+          "material": {
+            "type": "material",
+            "color": "#3b82f6",
+            "roughness": 0.6,
+            "metalness": 0.1
+          },
+          "velocity": {
+            "type": "velocity",
+            "linearVelocity": [0, 0, 0],
+            "angularVelocity": [0, 0, 0]
+          }
+        }
+      }
+    ],
+    "constraints": [
+      {
+        "id": "chain-spring-1",
+        "name": "弹簧-1",
+        "components": {
+          "constraint": {
+            "type": "constraint",
+            "kind": "spring",
+            "entityAId": "chain-anchor-top",
+            "entityBId": "chain-mass-1",
+            "params": {
+              "stiffness": 200,
+              "restLength": 2.5,
+              "damping": 0.15
+            }
+          }
+        }
+      },
+      {
+        "id": "chain-spring-2",
+        "name": "弹簧-2",
+        "components": {
+          "constraint": {
+            "type": "constraint",
+            "kind": "spring",
+            "entityAId": "chain-mass-1",
+            "entityBId": "chain-mass-2",
+            "params": {
+              "stiffness": 200,
+              "restLength": 2.5,
+              "damping": 0.15
+            }
+          }
+        }
+      },
+      {
+        "id": "chain-spring-3",
+        "name": "弹簧-3",
+        "components": {
+          "constraint": {
+            "type": "constraint",
+            "kind": "spring",
+            "entityAId": "chain-mass-2",
+            "entityBId": "chain-mass-3",
+            "params": {
+              "stiffness": 200,
+              "restLength": 2.5,
+              "damping": 0.15
+            }
+          }
+        }
+      },
+      {
+        "id": "chain-spring-4",
+        "name": "弹簧-4",
+        "components": {
+          "constraint": {
+            "type": "constraint",
+            "kind": "spring",
+            "entityAId": "chain-mass-3",
+            "entityBId": "chain-anchor-bottom",
+            "params": {
+              "stiffness": 200,
+              "restLength": 2.5,
+              "damping": 0.15
+            }
+          }
+        }
+      }
+    ]
+  }
+}

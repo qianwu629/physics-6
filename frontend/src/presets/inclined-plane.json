@@ -1,0 +1,85 @@
+{
+  "schemaVersion": "1.0",
+  "savedAt": "2026-05-04T00:00:00Z",
+  "simulation": {
+    "environment": {
+      "gravity": [0, -9.81, 0],
+      "frictionScale": 1.0,
+      "restitutionScale": 1.0,
+      "drag": 0.1
+    },
+    "entities": [
+      {
+        "id": "plane-1",
+        "name": "斜面",
+        "components": {
+          "transform": {
+            "type": "transform",
+            "position": [0, 3, 0],
+            "rotation": [0, 0, 0.523599],
+            "scale": [1, 1, 1]
+          },
+          "rigidBody": {
+            "type": "rigidBody",
+            "kind": "fixed",
+            "mass": 0,
+            "restitution": 0.5,
+            "friction": 0.3
+          },
+          "collider": {
+            "type": "collider",
+            "shape": "cuboid",
+            "params": { "halfWidth": 4, "halfHeight": 0.3, "halfDepth": 2 }
+          },
+          "material": {
+            "type": "material",
+            "color": "#6b7280",
+            "roughness": 0.6,
+            "metalness": 0.1
+          },
+          "velocity": {
+            "type": "velocity",
+            "linearVelocity": [0, 0, 0],
+            "angularVelocity": [0, 0, 0]
+          }
+        }
+      },
+      {
+        "id": "slider-1",
+        "name": "滑块",
+        "components": {
+          "transform": {
+            "type": "transform",
+            "position": [0, 5, 0],
+            "rotation": [0, 0, 0],
+            "scale": [1, 1, 1]
+          },
+          "rigidBody": {
+            "type": "rigidBody",
+            "kind": "dynamic",
+            "mass": 1,
+            "restitution": 0.1,
+            "friction": 0.1
+          },
+          "collider": {
+            "type": "collider",
+            "shape": "cuboid",
+            "params": { "halfWidth": 0.4, "halfHeight": 0.4, "halfDepth": 0.4 }
+          },
+          "material": {
+            "type": "material",
+            "color": "#f97316",
+            "roughness": 0.6,
+            "metalness": 0.1
+          },
+          "velocity": {
+            "type": "velocity",
+            "linearVelocity": [0, 0, 0],
+            "angularVelocity": [0, 0, 0]
+          }
+        }
+      }
+    ],
+    "constraints": []
+  }
+}
