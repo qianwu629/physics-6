@@ -1,0 +1,190 @@
+{
+  "schemaVersion": "1.0",
+  "savedAt": "2026-05-04T00:00:00Z",
+  "simulation": {
+    "environment": {
+      "gravity": [0, -9.81, 0],
+      "frictionScale": 1.0,
+      "restitutionScale": 1.0,
+      "drag": 0.1
+    },
+    "entities": [
+      {
+        "id": "stack-ball-1",
+        "name": "自由落体球-1",
+        "components": {
+          "transform": {
+            "type": "transform",
+            "position": [0, 8, 0],
+            "rotation": [0, 0, 0],
+            "scale": [1, 1, 1]
+          },
+          "rigidBody": {
+            "type": "rigidBody",
+            "kind": "dynamic",
+            "mass": 1,
+            "restitution": 0.6,
+            "friction": 0.3
+          },
+          "collider": {
+            "type": "collider",
+            "shape": "sphere",
+            "params": { "radius": 0.4 }
+          },
+          "material": {
+            "type": "material",
+            "color": "#ef4444",
+            "roughness": 0.6,
+            "metalness": 0.1
+          },
+          "velocity": {
+            "type": "velocity",
+            "linearVelocity": [0, 0, 0],
+            "angularVelocity": [0, 0, 0]
+          }
+        }
+      },
+      {
+        "id": "stack-ball-2",
+        "name": "自由落体球-2",
+        "components": {
+          "transform": {
+            "type": "transform",
+            "position": [0, 6, 0],
+            "rotation": [0, 0, 0],
+            "scale": [1, 1, 1]
+          },
+          "rigidBody": {
+            "type": "rigidBody",
+            "kind": "dynamic",
+            "mass": 1,
+            "restitution": 0.6,
+            "friction": 0.3
+          },
+          "collider": {
+            "type": "collider",
+            "shape": "sphere",
+            "params": { "radius": 0.4 }
+          },
+          "material": {
+            "type": "material",
+            "color": "#f97316",
+            "roughness": 0.6,
+            "metalness": 0.1
+          },
+          "velocity": {
+            "type": "velocity",
+            "linearVelocity": [0, 0, 0],
+            "angularVelocity": [0, 0, 0]
+          }
+        }
+      },
+      {
+        "id": "stack-ball-3",
+        "name": "自由落体球-3",
+        "components": {
+          "transform": {
+            "type": "transform",
+            "position": [0, 4, 0],
+            "rotation": [0, 0, 0],
+            "scale": [1, 1, 1]
+          },
+          "rigidBody": {
+            "type": "rigidBody",
+            "kind": "dynamic",
+            "mass": 1,
+            "restitution": 0.6,
+            "friction": 0.3
+          },
+          "collider": {
+            "type": "collider",
+            "shape": "sphere",
+            "params": { "radius": 0.4 }
+          },
+          "material": {
+            "type": "material",
+            "color": "#eab308",
+            "roughness": 0.6,
+            "metalness": 0.1
+          },
+          "velocity": {
+            "type": "velocity",
+            "linearVelocity": [0, 0, 0],
+            "angularVelocity": [0, 0, 0]
+          }
+        }
+      },
+      {
+        "id": "stack-ball-4",
+        "name": "自由落体球-4",
+        "components": {
+          "transform": {
+            "type": "transform",
+            "position": [0, 2, 0],
+            "rotation": [0, 0, 0],
+            "scale": [1, 1, 1]
+          },
+          "rigidBody": {
+            "type": "rigidBody",
+            "kind": "dynamic",
+            "mass": 1,
+            "restitution": 0.6,
+            "friction": 0.3
+          },
+          "collider": {
+            "type": "collider",
+            "shape": "sphere",
+            "params": { "radius": 0.4 }
+          },
+          "material": {
+            "type": "material",
+            "color": "#22c55e",
+            "roughness": 0.6,
+            "metalness": 0.1
+          },
+          "velocity": {
+            "type": "velocity",
+            "linearVelocity": [0, 0, 0],
+            "angularVelocity": [0, 0, 0]
+          }
+        }
+      },
+      {
+        "id": "stack-ball-5",
+        "name": "自由落体球-5",
+        "components": {
+          "transform": {
+            "type": "transform",
+            "position": [0, 0.5, 0],
+            "rotation": [0, 0, 0],
+            "scale": [1, 1, 1]
+          },
+          "rigidBody": {
+            "type": "rigidBody",
+            "kind": "dynamic",
+            "mass": 1,
+            "restitution": 0.6,
+            "friction": 0.3
+          },
+          "collider": {
+            "type": "collider",
+            "shape": "sphere",
+            "params": { "radius": 0.4 }
+          },
+          "material": {
+            "type": "material",
+            "color": "#3b82f6",
+            "roughness": 0.6,
+            "metalness": 0.1
+          },
+          "velocity": {
+            "type": "velocity",
+            "linearVelocity": [0, 0, 0],
+            "angularVelocity": [0, 0, 0]
+          }
+        }
+      }
+    ],
+    "constraints": []
+  }
+}

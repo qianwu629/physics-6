@@ -1,0 +1,103 @@
+{
+  "schemaVersion": "1.0",
+  "savedAt": "2026-05-04T00:00:00Z",
+  "simulation": {
+    "environment": {
+      "gravity": [0, -9.81, 0],
+      "frictionScale": 1.0,
+      "restitutionScale": 1.0,
+      "drag": 0.1
+    },
+    "entities": [
+      {
+        "id": "anchor-1",
+        "name": "天花板锚点",
+        "components": {
+          "transform": {
+            "type": "transform",
+            "position": [0, 6, 0],
+            "rotation": [0, 0, 0],
+            "scale": [1, 1, 1]
+          },
+          "rigidBody": {
+            "type": "rigidBody",
+            "kind": "fixed",
+            "mass": 0,
+            "restitution": 0.5,
+            "friction": 0.3
+          },
+          "collider": {
+            "type": "collider",
+            "shape": "sphere",
+            "params": { "radius": 0.2 }
+          },
+          "material": {
+            "type": "material",
+            "color": "#9ca3af",
+            "roughness": 0.6,
+            "metalness": 0.1
+          },
+          "velocity": {
+            "type": "velocity",
+            "linearVelocity": [0, 0, 0],
+            "angularVelocity": [0, 0, 0]
+          }
+        }
+      },
+      {
+        "id": "mass-1",
+        "name": "振子质量块",
+        "components": {
+          "transform": {
+            "type": "transform",
+            "position": [0, 3, 0],
+            "rotation": [0, 0, 0],
+            "scale": [1, 1, 1]
+          },
+          "rigidBody": {
+            "type": "rigidBody",
+            "kind": "dynamic",
+            "mass": 2,
+            "restitution": 0.5,
+            "friction": 0.3
+          },
+          "collider": {
+            "type": "collider",
+            "shape": "sphere",
+            "params": { "radius": 0.5 }
+          },
+          "material": {
+            "type": "material",
+            "color": "#8b5cf6",
+            "roughness": 0.6,
+            "metalness": 0.1
+          },
+          "velocity": {
+            "type": "velocity",
+            "linearVelocity": [0, 0, 0],
+            "angularVelocity": [0, 0, 0]
+          }
+        }
+      }
+    ],
+    "constraints": [
+      {
+        "id": "spring-osc-1",
+        "name": "弹簧",
+        "components": {
+          "constraint": {
+            "type": "constraint",
+            "kind": "spring",
+            "entityAId": "anchor-1",
+            "entityBId": "mass-1",
+            "params": {
+              "stiffness": 150,
+              "restLength": 3.0,
+              "damping": 0.2
+            }
+          }
+        }
+      }
+    ]
+  }
+}
