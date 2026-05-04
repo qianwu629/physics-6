@@ -32,7 +32,14 @@ Physis 已交付 v1.0 物理沙盒 MVP（5 阶段，12/12 需求闭环）。v2.0
   3. 至少 5 个 localStorage 命名快照槽位可用，快照列表显示创建时间
   4. 至少 6 个内置预设场景（抛体/斜面/堆叠/弹簧振子/双弹簧链/电荷场示例），一键加载
   5. Scene3D.test.tsx 的 9 个 baseline 失败用例修复，Phase 4 补回 VERIFICATION.md
-**Plans**: TBD (run /gsd-plan-phase 1)
+**Plans**: 6 plans in 3 waves
+**Plans**:
+- [ ] 01-01-PLAN.md — 场景序列化/反序列化引擎 (sceneSerializer + sceneValidation + Zod Schema)
+- [ ] 01-02-PLAN.md — 快照系统 (snapshotSlice Zustand persist + SnapshotManager Drawer UI)
+- [ ] 01-03-PLAN.md — MenuBar 菜单栏 + SceneLoader 加载流程 (导出/导入/确认/暂停/重置/摄像机)
+- [ ] 01-04-PLAN.md — 内置预设场景库 (5 个 JSON 预设 + PresetSelector 卡片选择器)
+- [ ] 01-05-PLAN.md — App 集成布线 (MenuBar + SnapshotManager + PresetSelector + SceneBanner + 摄像机自适应)
+- [ ] 01-06-PLAN.md — DEBT-04 修复 (Scene3D.test.tsx mock 补全 + Phase 4 VERIFICATION.md)
 **UI hint**: yes
 
 ### Phase 2: 实时物理量图表
@@ -104,7 +111,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status      | Completed |
 |-------|----------------|-------------|-----------|
-| 1. 持久化与场景库              | 0/0 | Not started | -          |
+| 1. 持久化与场景库              | 0/6 | Planned    | -          |
 | 2. 实时物理量图表              | 0/0 | Not started | -          |
 | 3. 通用力场系统                | 0/0 | Not started | -          |
 | 4. 表达式驱动外加力            | 0/0 | Not started | -          |
