@@ -1,11 +1,11 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.0
-milestone_name: milestone
-status: milestone_complete_pending
-stopped_at: Phase 4 verified, ready for milestone archival
-last_updated: "2026-05-04T02:20:00Z"
-last_activity: 2026-05-04 -- Phase 04 UAT complete (5/5 pass after trail length fix)
+milestone_name: MVP 物理沙盒
+status: shipped
+stopped_at: v1.0 archived 2026-05-04
+last_updated: "2026-05-04T04:00:00Z"
+last_activity: 2026-05-04 -- v1.0 milestone shipped and tagged
 progress:
   total_phases: 5
   completed_phases: 5
@@ -18,18 +18,24 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-30)
+See: .planning/PROJECT.md (updated 2026-05-04 after v1.0 milestone)
 
 **Core value:** 用户可以将任意基础物理组件自由组合，搭建任意场景——不受预设模板限制
-**Current focus:** v1.0 milestone 全部 5 阶段完成，REN-03 / Pitfall 5 已关闭，准备归档
+**Current focus:** v1.0 已发布。准备启动下个里程碑（运行 `/gsd-new-milestone`）。
 
 ## Current Position
 
-Phase: 05 (运行时属性同步与债务清理) — COMPLETE ✓
-v1.0 全部 5 阶段已完成，REN-03 重大债务已闭环。准备 `/gsd-complete-milestone v1.0`。
-Last activity: 2026-05-04 -- Phase 05 UAT 2 passed + 1 skipped (covered by unit test)
+Milestone: v1.0 MVP 物理沙盒 — SHIPPED 2026-05-04
+所有 5 阶段、17 计划、12/12 需求闭环。
+Tag: v1.0 (待推送)
+Last activity: 2026-05-04 -- v1.0 milestone archived
 
-Progress: [██████████] 5/5 phases complete (100%)
+Progress: [██████████] v1.0 100% complete
+
+## Next Steps
+
+- `/gsd-new-milestone` — 启动下个里程碑（提问 → 调研 → 需求 → 路线图）
+- 或先把 git tag v1.0 推送到远端：`git push origin v1.0`
 
 ## Performance Metrics
 
