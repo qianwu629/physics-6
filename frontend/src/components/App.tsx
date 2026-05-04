@@ -15,8 +15,10 @@ import type { ErrorType } from './ErrorFallback';
 // Phase 1: 持久化与场景库组件
 import MenuBar from './MenuBar';
 import SnapshotManager from './SnapshotManager';
+import type { Snapshot } from '../store/snapshotSlice';
 import PresetSelector from './PresetSelector';
-import { SceneBanner } from './SceneLoader';
+import { SceneBanner, loadSceneWithConfirm } from './SceneLoader';
+import { deserializeScene } from '../utils/sceneSerializer';
 
 /**
  * App — Phase 2 应用根组件
@@ -240,6 +242,21 @@ export default function App() {
       <SnapshotManager
         open={snapshotDrawerOpen}
         onOpenChange={setSnapshotDrawerOpen}
+        onLoadSnapshot={async (snapshot: Snapshot) => {
+          const sceneJSON = {
+            schemaVersion: '1.0',
+            savedAt: snapshot.createdAt,
+            simulation: {
+              environment: snapshot.data.environment,
+              entities: snapshot.data.entities,
+              constraints: snapshot.data.constraints,
+            },
+          };
+          const result = deserializeScene(sceneJSON);
+          if (result.success && result.data) {
+            await loadSceneWithConfirm(result.data);
+          }
+        }}
       />
 
       {/* Phase 1: PresetSelector Dialog — 由 MenuBar 触发 */}
