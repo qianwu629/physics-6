@@ -45,7 +45,7 @@ describe('SnapshotManager', () => {
 
     useSnapshotStore.getState().saveSnapshot(0, '测试快照', {
       entities: entities as Map<string, { id: string; name: string; components: Map<string, unknown> }>,
-      environment: { gravity: [0, -9.81, 0], frictionScale: 1, restitutionScale: 1, drag: 0.1 },
+      environment: { gravity: [0, -9.81, 0], frictionScale: 1, restitutionScale: 1, drag: 0.1, peReferenceY: 0 },
     });
 
     renderComponent();
@@ -58,7 +58,7 @@ describe('SnapshotManager', () => {
 
     useSnapshotStore.getState().saveSnapshot(1, '单实体快照', {
       entities: entities as Map<string, { id: string; name: string; components: Map<string, unknown> }>,
-      environment: { gravity: [0, -9.81, 0], frictionScale: 1, restitutionScale: 1, drag: 0.1 },
+      environment: { gravity: [0, -9.81, 0], frictionScale: 1, restitutionScale: 1, drag: 0.1, peReferenceY: 0 },
     });
 
     renderComponent();

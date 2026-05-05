@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { computeEnergy, AccelerationSmoother } from '../physicsCalc';
-import * as THREE from 'three';
 
 /**
  * physicsCalc — 能量计算 + 加速度 SMA 平滑 单元测试
@@ -187,7 +186,6 @@ describe('Energy Conservation (spring oscillator)', () => {
       currentTime = t;
 
       const vx = -amplitude * omega * Math.sin(omega * t);
-      const speedSq = vx * vx;
 
       const mockRb = {
         linvel: () => ({ x: vx, y: 0, z: 0 }),

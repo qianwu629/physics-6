@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { useChartDataStore, type TimeWindow, type LayoutMode, type MetricType } from '../chartDataStore';
+import { describe, it, expect, afterEach } from 'vitest';
+import { useChartDataStore, type MetricType } from '../chartDataStore';
 
 describe('chartDataStore', () => {
   afterEach(() => {

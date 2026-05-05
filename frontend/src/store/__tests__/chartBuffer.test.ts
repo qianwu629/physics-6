@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { ChartDataBuffer, MAX_POINTS, METRICS_PER_ENTITY, chartBuffers, getOrCreateBuffer, clearAllBuffers } from '../chartBuffer';
 
 describe('ChartDataBuffer', () => {

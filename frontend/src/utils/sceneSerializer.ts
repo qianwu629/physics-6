@@ -88,6 +88,7 @@ export function serializeScene(state: SerializeState): SceneData {
         frictionScale: state.environment.frictionScale,
         restitutionScale: state.environment.restitutionScale,
         drag: state.environment.drag,
+        peReferenceY: state.environment.peReferenceY,
       },
       entities: serializedEntities,
       constraints: serializedConstraints,
@@ -136,6 +137,7 @@ export function deserializeScene(json: unknown): DeserializeResult {
     frictionScale: data.simulation.environment.frictionScale ?? DEFAULT_ENVIRONMENT.frictionScale,
     restitutionScale: data.simulation.environment.restitutionScale ?? DEFAULT_ENVIRONMENT.restitutionScale,
     drag: data.simulation.environment.drag ?? DEFAULT_ENVIRONMENT.drag,
+    peReferenceY: data.simulation.environment.peReferenceY ?? DEFAULT_ENVIRONMENT.peReferenceY,
   };
 
   // 3. Build entities Map

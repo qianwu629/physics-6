@@ -23,6 +23,7 @@ function makeStoreState(
       frictionScale: 1.0,
       restitutionScale: 1.0,
       drag: 0.1,
+      peReferenceY: 0,
       ...envOverrides,
     },
   };

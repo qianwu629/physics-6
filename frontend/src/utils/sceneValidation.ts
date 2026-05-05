@@ -63,6 +63,7 @@ export interface EnvironmentState {
   frictionScale: number;
   restitutionScale: number;
   drag: number;
+  peReferenceY: number;
 }
 
 export interface SceneData {
@@ -89,6 +90,7 @@ const EnvironmentSchema = z.object({
   frictionScale: z.number().default(1.0),
   restitutionScale: z.number().default(1.0),
   drag: z.number().default(0.1),
+  peReferenceY: z.number().default(0),
 });
 
 const TransformSchema = z.object({
@@ -179,7 +181,7 @@ export const SceneSchema = z.object({
     entities: z.array(_SceneEntitySchema).default([]),
     constraints: z.array(_SceneEntitySchema).default([]),
   }).default({
-    environment: { gravity: [0, -9.81, 0], frictionScale: 1.0, restitutionScale: 1.0, drag: 0.1 },
+    environment: { gravity: [0, -9.81, 0], frictionScale: 1.0, restitutionScale: 1.0, drag: 0.1, peReferenceY: 0 },
     entities: [],
     constraints: [],
   }),

@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import {
-  SceneSchema,
   EntitySchema,
   validateSceneJSON,
 } from './sceneValidation';
@@ -18,6 +17,7 @@ function makeValidScene(overrides: Partial<SceneData> = {}): SceneData {
         frictionScale: 1.0,
         restitutionScale: 1.0,
         drag: 0.1,
+        peReferenceY: 0,
       },
       entities: [],
       constraints: [],
@@ -87,7 +87,7 @@ describe('validateSceneJSON', () => {
   it('Test 5: 校验空 entities 数组 + 空 constraints 数组返回 success', () => {
     const scene = makeValidScene({
       simulation: {
-        environment: { gravity: [0, -9.81, 0], frictionScale: 1.0, restitutionScale: 1.0, drag: 0.1 },
+        environment: { gravity: [0, -9.81, 0], frictionScale: 1.0, restitutionScale: 1.0, drag: 0.1, peReferenceY: 0 },
         entities: [],
         constraints: [],
       },
@@ -140,14 +140,14 @@ describe('EntitySchema', () => {
   it('Test 10: 校验未知组件类型返回 warnings（宽容模式）+ 过滤未知组件后 success=true', () => {
     // Test through validateSceneJSON with an entity that has unknown component type
     const entity = makeValidEntity();
-    entity.components = {
+    (entity as { components: Record<string, unknown> }).components = {
       ...entity.components,
       unknownType: { type: 'unknownType', value: 42 },
       anotherUnknown: { type: 'anotherUnknown', data: 'test' },
     };
     const scene = makeValidScene({
       simulation: {
-        environment: { gravity: [0, -9.81, 0], frictionScale: 1.0, restitutionScale: 1.0, drag: 0.1 },
+        environment: { gravity: [0, -9.81, 0], frictionScale: 1.0, restitutionScale: 1.0, drag: 0.1, peReferenceY: 0 },
         entities: [entity],
         constraints: [],
       },

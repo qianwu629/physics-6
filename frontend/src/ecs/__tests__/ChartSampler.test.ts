@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { getOrCreateBuffer, clearAllBuffers, chartBuffers, METRICS_PER_ENTITY, ChartDataBuffer } from '../../store/chartBuffer';
+import { getOrCreateBuffer, clearAllBuffers, chartBuffers, METRICS_PER_ENTITY } from '../../store/chartBuffer';
 import { useChartDataStore } from '../../store/chartDataStore';
 
 /**
@@ -54,8 +54,6 @@ describe('ChartSampster (buffer + store integration)', () => {
     expect(useChartDataStore.getState().trackedEntityIds.has(untrackedId)).toBe(false);
 
     // Simulate ChartSampler loop: only push for tracked entities
-    const trackedIds = useChartDataStore.getState().trackedEntityIds;
-
     // Push data for tracked entity (simulating useFrame)
     const now = 1000;
     const metrics = new Float64Array(METRICS_PER_ENTITY);
