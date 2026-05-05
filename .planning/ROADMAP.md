@@ -51,7 +51,14 @@ Physis 已交付 v1.0 物理沙盒 MVP（5 阶段，12/12 需求闭环）。v2.0
   2. 同一图表面板可同时绘制 ≤4 个实体 × 4 类指标 = 16 条曲线，按颜色区分
   3. 图表面板浮动显示（可调整大小），时间窗口可在 5s/30s/全程切换
   4. 暂停时图表冻结，重置时清空，无内存泄漏（300+ 帧持续记录）
-**Plans**: TBD (run /gsd-plan-phase 2)
+**Plans**: 6 plans in 4 waves
+**Plans**:
+- [ ] 02-01-PLAN.md — 依赖安装 + 数据层骨架 (chartDataStore + chartBuffer + simulationSlice 扩展)
+- [ ] 02-02-PLAN.md — 采样 + 计算核心 (physicsCalc + ChartSampler)
+- [ ] 02-03-PLAN.md — 图表渲染 (ChartCanvas + ChartMetricTabs)
+- [ ] 02-04-PLAN.md — 浮动面板 (ChartPanel: draggable + resizable)
+- [ ] 02-05-PLAN.md — UI 集成 (PropertyPanel/EnvironmentPanel/Toolbar/App.tsx)
+- [ ] 02-06-PLAN.md — 验证与优化 (benchmark + 修复)
 **UI hint**: yes
 
 ### Phase 3: 通用力场系统
@@ -112,7 +119,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | Phase | Plans Complete | Status      | Completed |
 |-------|----------------|-------------|-----------|
 | 1. 持久化与场景库              | 6/6 | Complete   | 2026-05-04 |
-| 2. 实时物理量图表              | 0/0 | Not started | -          |
+| 2. 实时物理量图表              | 6/6 | Planned    | 2026-05-05 |
 | 3. 通用力场系统                | 0/0 | Not started | -          |
 | 4. 表达式驱动外加力            | 0/0 | Not started | -          |
 | 5. 自由飞行摄像机 + 2D 模式    | 0/0 | Not started | -          |
