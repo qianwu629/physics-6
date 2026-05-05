@@ -17,7 +17,7 @@ import MenuBar from './MenuBar';
 import SnapshotManager from './SnapshotManager';
 import type { Snapshot } from '../store/snapshotSlice';
 import PresetSelector from './PresetSelector';
-import { SceneBanner, loadSceneWithConfirm } from './SceneLoader';
+import { SceneBanner, ConfirmDialogRoot, loadSceneWithConfirm } from './SceneLoader';
 import { deserializeScene } from '../utils/sceneSerializer';
 
 /**
@@ -237,6 +237,9 @@ export default function App() {
 
       {/* Phase 1: SceneBanner — schema 版本不匹配等警告 (黄色横幅) */}
       <SceneBanner />
+
+      {/* Phase 1: ConfirmDialogRoot — 全局确认对话框 (加载/覆盖/删除确认) */}
+      <ConfirmDialogRoot />
 
       {/* Phase 1: SnapshotManager Drawer (Sheet side="right") — 由 MenuBar 触发 */}
       <SnapshotManager
