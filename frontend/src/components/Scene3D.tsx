@@ -1,7 +1,7 @@
 import { Canvas, useThree } from '@react-three/fiber';
 import { Physics, RigidBody, CuboidCollider } from '@react-three/rapier';
 import { OrbitControls, Grid, GizmoHelper, GizmoViewport } from '@react-three/drei';
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import * as THREE from 'three';
 import { Box3, Vector3, type PerspectiveCamera } from 'three';
 import { useSimulationStore } from '../store';
@@ -10,6 +10,7 @@ import EntityRenderer from './EntityRenderer';
 import SpringRenderer from './SpringRenderer';
 import { TrajectoryRenderer } from './TrajectoryRenderer';
 import { VectorRenderer } from './VectorRenderer';
+import { ChartSampler } from '../ecs/ChartSampler';
 import { RigidBodyRefContext } from './RigidBodyRefContext';
 
 // ──── 地面 (Phase 1 遗留 — 保持不变) ────
@@ -173,6 +174,17 @@ export default function Scene3D() {
   const restitutionScale = useSimulationStore((s) => s.environment.restitutionScale);
   const springCreationStage = useSimulationStore((s) => s.springCreationStage);
 
+  // CR-02 fix: 使用延迟 key 更新避免 @react-three/rapier jointRef null 崩溃
+  // 直接 key={resetCounter} 触发 Physics 同步卸载/挂载时，rapier 内部 jointRef
+  // 清理时序问题导致 "Cannot read properties of null (reading 'current')"
+  const [physicsKey, setPhysicsKey] = useState(0);
+  useEffect(() => {
+    if (resetCounter > 0) {
+      const timer = setTimeout(() => setPhysicsKey(resetCounter), 100);
+      return () => clearTimeout(timer);
+    }
+  }, [resetCounter]);
+
   // ECS 实体 + 选中状态
   const entities = useSimulationStore((s) => s.entities);
   const selectedId = useSimulationStore((s) => s.selectedEntityId);
@@ -249,7 +261,7 @@ export default function Scene3D() {
 
       {/* ── 物理世界 (Rapier WASM) ── */}
       <Physics
-        key={resetCounter}                  // CR-02: 重置时 key 变化 → React 卸载旧 Physics → 挂载新 Physics
+        key={physicsKey}                    // CR-02 fix: 延迟 key 更新避免 rapier jointRef null 崩溃
         timeStep={1 / 120}                  // ARCHITECTURE.md: 固定 120Hz
         paused={!isRunning}                 // D-04: 初始暂停（isRunning=false）
         debug={showDebug}                   // D-07: 调试线框
@@ -290,6 +302,9 @@ export default function Scene3D() {
 
           {/* Phase 4: 矢量渲染 — VectorRenderer */}
           <VectorRenderer />
+
+          {/* Phase 2: 图表采样 — ChartSampler */}
+          <ChartSampler />
 
           {/* 点击空白取消选中 — D-07 (also exits spring mode if active) */}
           <mesh
