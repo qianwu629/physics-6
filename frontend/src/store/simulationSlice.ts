@@ -14,6 +14,7 @@ export interface EnvironmentState {
   frictionScale: number;
   restitutionScale: number;
   drag: number;
+  peReferenceY: number;
 }
 
 export const DEFAULT_ENVIRONMENT: EnvironmentState = {
@@ -21,6 +22,7 @@ export const DEFAULT_ENVIRONMENT: EnvironmentState = {
   frictionScale: 1.0,
   restitutionScale: 1.0,
   drag: 0.1,
+  peReferenceY: 0,
 };
 
 export interface SimulationSlice {
@@ -61,6 +63,7 @@ export interface SimulationSlice {
   setRestitutionScale: (v: number) => void;
   setDrag: (v: number) => void;
   resetEnvironment: () => void;
+  setPeReferenceY: (y: number) => void;
 }
 
 export type SimulationStore = SimulationSlice;
@@ -90,4 +93,5 @@ export const createSimulationSlice: StateCreator<SimulationSlice, [], [], Simula
   setRestitutionScale: (v) => set((s) => ({ environment: { ...s.environment, restitutionScale: v } })),
   setDrag: (v) => set((s) => ({ environment: { ...s.environment, drag: v } })),
   resetEnvironment: () => set({ environment: { ...DEFAULT_ENVIRONMENT } }),
+  setPeReferenceY: (y) => set((s) => ({ environment: { ...s.environment, peReferenceY: y } })),
 });
