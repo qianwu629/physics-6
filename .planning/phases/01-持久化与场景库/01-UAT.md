@@ -1,5 +1,5 @@
 ---
-status: complete
+status: resolved
 phase: 01-持久化与场景库
 source:
   - 01-01-SUMMARY.md
@@ -9,7 +9,7 @@ source:
   - 01-05-SUMMARY.md
   - 01-06-SUMMARY.md
 started: "2026-05-05T05:00:00Z"
-updated: "2026-05-05T05:47:00Z"
+updated: "2026-05-05T06:06:00Z"
 ---
 
 ## Current Test
@@ -57,7 +57,6 @@ result: pass
 ### 10. 加载预设场景
 expected: 在预设选择器中点击任意预设卡片，Dialog 关闭，对应物理实验场景加载到画布中。
 result: pass
-note: "抛体运动"预设加载成功。"自由落体堆叠"预设加载触发 @react-three/rapier 崩溃（见 Gaps #2）。
 
 ### 11. 摄像机自适应
 expected: 加载场景（导入、预设、快照）后，摄像机应自动调整视角，使所有实体都能被看到。空场景时摄像机回到默认视角。
@@ -68,6 +67,7 @@ result: pass
 total: 11
 passed: 11
 issues: 2
+resolved: 2
 pending: 0
 skipped: 0
 blocked: 0
@@ -89,17 +89,16 @@ blocked: 0
   debug_session: ""
 
 - truth: "加载预设场景时不应导致页面崩溃"
-  status: failed
+  status: resolved
   reason: "加载「自由落体堆叠」预设时页面变白，控制台出现 9 个 TypeError: Cannot read properties of null (reading 'current') at jointRef.current (@react-three/rapier)"
   severity: blocker
   test: 10
-  root_cause: "loadSceneWithConfirm 调用 store.reset() 触发 Physics 组件重挂载。@react-three/rapier 在组件卸载/重挂载过程中 jointRef 变为 null，导致渲染时崩溃。可能与 Physics 组件内部的 useEffect cleanup 或 joint 生命周期管理有关。需要进一步确认是特定预设数据触发还是所有场景切换都会触发。"
+  root_cause: "key={resetCounter} 触发 Physics 同步卸载/挂载。React 在同一个渲染帧内卸载旧 Physics 并挂载新 Physics 时，@react-three/rapier v2.2.0 内部 jointRef cleanup 未完成就被新实例同步渲染，导致 jointRef.current 读取 null。"
   artifacts:
-    - path: "frontend/src/components/SceneLoader.tsx"
-      issue: "store.reset() 触发 Physics 重挂载"
-    - path: "frontend/src/components/Scene3D.tsx"
-      issue: "Physics 组件包裹 RigidBody 实体，重挂载时 @react-three/rapier 内部 jointRef 为 null"
-  missing:
-    - "进一步诊断：是否所有预设切换都会触发，还是仅特定预设"
-    - "评估是否需要用其他方式替代 store.reset() 触发重挂载"
+    - path: "frontend/src/components/Scene3D.tsx:177-186"
+      issue: "key={resetCounter} 同步触发 Physics 重挂载，无清理窗口"
+  fix:
+    - "useState(physicsKey) + useEffect setTimeout(100ms) 延迟 key 更新"
+    - "给 rapier 内部 joint cleanup 足够时间完成后再挂载新 Physics"
+  fix_commit: "35d1719"
   debug_session: ""
