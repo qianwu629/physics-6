@@ -1,39 +1,32 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import React, { useRef } from 'react';
+import { render, waitFor } from '@testing-library/react';
+import React from 'react';
 import { useChartDataStore, type MetricType } from '../../store/chartDataStore';
 import { chartBuffers, ChartDataBuffer, clearAllBuffers } from '../../store/chartBuffer';
 
-// Mock lightweight-charts before any imports
-const mockRemove = vi.fn();
-const mockAddSeries = vi.fn();
-const mockRemoveSeries = vi.fn();
-const mockApplyOptions = vi.fn();
-const mockTimeScaleSetVisibleRange = vi.fn();
-const mockTimeScaleFitContent = vi.fn();
-const mockTimeScale = vi.fn(() => ({
-  setVisibleRange: mockTimeScaleSetVisibleRange,
-  fitContent: mockTimeScaleFitContent,
-}));
-
-const mockChart = {
-  addSeries: mockAddSeries,
-  removeSeries: mockRemoveSeries,
-  remove: mockRemove,
-  applyOptions: mockApplyOptions,
-  timeScale: mockTimeScale,
-};
-
-const mockCreateChart = vi.fn(() => mockChart);
-
-// Track series instances for tests
-const mockSeriesInstances: Array<{ update: ReturnType<typeof vi.fn>; setData: ReturnType<typeof vi.fn> }> = [];
-
-function createMockSeries() {
-  const inst = { update: vi.fn(), setData: vi.fn() };
-  mockSeriesInstances.push(inst);
-  return inst;
-}
+// Use vi.hoisted to make mock variables available in the vi.mock factory
+const {
+  mockCreateChart,
+  mockRemove,
+  mockAddSeries,
+  mockRemoveSeries,
+  mockApplyOptions,
+  mockTimeScaleSetVisibleRange,
+  mockTimeScaleFitContent,
+  mockSeriesInstances,
+} = vi.hoisted(() => {
+  const seriesInstances: Array<{ update: ReturnType<typeof vi.fn>; setData: ReturnType<typeof vi.fn> }> = [];
+  return {
+    mockCreateChart: vi.fn(),
+    mockRemove: vi.fn(),
+    mockAddSeries: vi.fn(),
+    mockRemoveSeries: vi.fn(),
+    mockApplyOptions: vi.fn(),
+    mockTimeScaleSetVisibleRange: vi.fn(),
+    mockTimeScaleFitContent: vi.fn(),
+    mockSeriesInstances: seriesInstances,
+  };
+});
 
 vi.mock('lightweight-charts', () => ({
   createChart: mockCreateChart,
@@ -42,6 +35,12 @@ vi.mock('lightweight-charts', () => ({
 
 // Need to import ChartCanvas after mocks
 import { ChartCanvas, type ChartCanvasHandle } from '../ChartCanvas';
+
+function createMockSeries() {
+  const inst = { update: vi.fn(), setData: vi.fn() };
+  mockSeriesInstances.push(inst);
+  return inst;
+}
 
 // Helper: render ChartCanvas and get ref
 function renderChartCanvas(metric: MetricType = 'position') {
@@ -55,6 +54,20 @@ describe('ChartCanvas', () => {
     vi.clearAllMocks();
     mockSeriesInstances.length = 0;
     mockAddSeries.mockImplementation(() => createMockSeries());
+
+    // Build mock chart object
+    const mockTimeScale = vi.fn(() => ({
+      setVisibleRange: mockTimeScaleSetVisibleRange,
+      fitContent: mockTimeScaleFitContent,
+    }));
+
+    mockCreateChart.mockReturnValue({
+      addSeries: mockAddSeries,
+      removeSeries: mockRemoveSeries,
+      remove: mockRemove,
+      applyOptions: mockApplyOptions,
+      timeScale: mockTimeScale,
+    });
 
     // Reset store state
     useChartDataStore.setState({
@@ -101,15 +114,16 @@ describe('ChartCanvas', () => {
   });
 
   // ── Test 3: series.update() is called via imperative refreshAll ──
-  it('calls series.update() when refreshAll is invoked', () => {
+  it('calls series.update() when refreshAll is invoked', async () => {
     const ref = React.createRef<ChartCanvasHandle>();
 
-    // Populate buffer with some data
+    // Populate buffer with some data — use timestamp close to now
+    const now = performance.now() / 1000;
     const buf = new ChartDataBuffer();
     const metrics = new Float64Array(12);
     metrics[0] = 10; // x position
     metrics[1] = 20; // y position
-    buf.push(1000, metrics);
+    buf.push(now - 5, metrics);
     chartBuffers.set('entity-1', buf);
 
     const { rerender } = render(<ChartCanvas ref={ref} metric="position" />);
@@ -118,10 +132,15 @@ describe('ChartCanvas', () => {
     useChartDataStore.setState({ trackedEntityIds: new Set(['entity-1']) });
     rerender(<ChartCanvas ref={ref} metric="position" />);
 
+    // Wait for useEffect to add series before calling refreshAll
+    await waitFor(() => {
+      expect(mockAddSeries).toHaveBeenCalled();
+    });
+
     // Call refreshAll
     ref.current?.refreshAll();
 
-    // Should have called update on one of the series (x-axis for entity-1)
+    // Should have called update on one of the series
     const anyUpdateCalled = mockSeriesInstances.some((s) => s.update.mock.calls.length > 0);
     expect(anyUpdateCalled).toBe(true);
   });
