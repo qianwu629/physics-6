@@ -16,3 +16,6 @@ export const useSimulationStore = create<SimulationSlice & EntitySlice & UiSlice
   ...createEntitySlice(...args),
   ...createUiSlice(...args),
 }));
+
+// Phase 2: Chart data stores (independent — not merged to avoid re-render storms)
+export { useChartDataStore } from './chartDataStore';
