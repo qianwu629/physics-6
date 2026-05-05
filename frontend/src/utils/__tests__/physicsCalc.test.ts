@@ -1,21 +1,19 @@
 import { describe, it, expect } from 'vitest';
+import { computeEnergy, AccelerationSmoother } from '../physicsCalc';
+import * as THREE from 'three';
+
 /**
  * physicsCalc — 能量计算 + 加速度 SMA 平滑 单元测试
  *
  * Plan 02-02 Task 1: 7 个 test case
  */
 
-// We import the module under test — will fail on first run (RED phase)
 describe('computeEnergy', () => {
   /**
    * Test 1: KE = 0.5 * m * |v|²
    * mass=2 kg, velocity=(3,4,0), speed=5 m/s, KE = 0.5 * 2 * 25 = 25 J
    */
   it('should compute kinetic energy correctly', () => {
-    // Import after test file is in place — will be resolved in GREEN phase
-    // For now, this test WILL FAIL because the module doesn't exist yet
-    const { computeEnergy } = require('../physicsCalc');
-
     const mockRb = {
       linvel: () => ({ x: 3, y: 4, z: 0 }),
       translation: () => ({ x: 0, y: 0, z: 0 }),
@@ -34,8 +32,6 @@ describe('computeEnergy', () => {
    * mass=1 kg, y=5, peRef=0, g=-9.81 → 1 * 9.81 * 5 = 49.05 J
    */
   it('should compute gravitational potential energy correctly', () => {
-    const { computeEnergy } = require('../physicsCalc');
-
     const mockRb = {
       linvel: () => ({ x: 0, y: 0, z: 0 }),
       translation: () => ({ x: 0, y: 5, z: 0 }),
@@ -53,8 +49,6 @@ describe('computeEnergy', () => {
    * PE = 0.5 * 100 * 1² = 50 J
    */
   it('should compute spring potential energy correctly', () => {
-    const { computeEnergy } = require('../physicsCalc');
-
     // Entity A at origin, Entity B at (3,0,0) → currentLength=3
     const getPos = (id: string) => {
       if (id === 'eA') return { x: 0, y: 0, z: 0 } as any;
@@ -83,8 +77,6 @@ describe('computeEnergy', () => {
    * Combine the above scenarios
    */
   it('should sum kinetic, gravitational, and spring potential energy', () => {
-    const { computeEnergy } = require('../physicsCalc');
-
     const getPos = (id: string) => {
       if (id === 'eA') return { x: 0, y: 0, z: 0 } as any;
       if (id === 'eB') return { x: 3, y: 0, z: 0 } as any;
@@ -117,8 +109,6 @@ describe('AccelerationSmoother', () => {
    * Must be < 0.05 m/s²
    */
   it('should report near-zero acceleration for a static body', () => {
-    const { AccelerationSmoother } = require('../physicsCalc');
-
     const smoother = new AccelerationSmoother(5);
     const dt = 1 / 60;
 
@@ -139,8 +129,6 @@ describe('AccelerationSmoother', () => {
    * After 5 frames, smoothed acceleration should be ~1/dt
    */
   it('should detect constant acceleration correctly', () => {
-    const { AccelerationSmoother } = require('../physicsCalc');
-
     const smoother = new AccelerationSmoother(5);
     const dt = 1 / 60;
 
@@ -166,8 +154,6 @@ describe('Energy Conservation (spring oscillator)', () => {
    * Computed at 120 Hz for 30 seconds, then check relative total energy drift
    */
   it('should conserve total energy within 5% for a spring oscillator', () => {
-    const { computeEnergy } = require('../physicsCalc');
-
     // Parameters for a 1D spring oscillator (no gravity)
     const mass = 1.0;
     const k = 10.0; // N/m
