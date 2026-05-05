@@ -118,7 +118,7 @@ describe('ChartCanvas', () => {
     const ref = React.createRef<ChartCanvasHandle>();
 
     // Populate buffer with some data — use timestamp close to now
-    const now = performance.now() / 1000;
+    const now = Date.now() / 1000;
     const buf = new ChartDataBuffer();
     const metrics = new Float64Array(12);
     metrics[0] = 10; // x position

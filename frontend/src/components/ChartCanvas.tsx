@@ -153,13 +153,17 @@ export const ChartCanvas = forwardRef<ChartCanvasHandle, ChartCanvasProps>(
       const chart = chartRef.current;
       if (!chart) return;
 
-      const now = performance.now() / 1000;
-      if (timeWindow === '5s') {
-        chart.timeScale().setVisibleRange({ from: now - 5, to: now });
-      } else if (timeWindow === '30s') {
-        chart.timeScale().setVisibleRange({ from: now - 30, to: now });
-      } else {
-        chart.timeScale().fitContent();
+      const now = Date.now() / 1000;
+      try {
+        if (timeWindow === '5s') {
+          chart.timeScale().setVisibleRange({ from: now - 5, to: now });
+        } else if (timeWindow === '30s') {
+          chart.timeScale().setVisibleRange({ from: now - 30, to: now });
+        } else {
+          chart.timeScale().fitContent();
+        }
+      } catch {
+        // chart has no data yet — visible range will be set when data arrives
       }
     }, [timeWindow]);
 
@@ -168,7 +172,7 @@ export const ChartCanvas = forwardRef<ChartCanvasHandle, ChartCanvasProps>(
       refreshAll: () => {
         const chart = chartRef.current;
         if (!chart) return;
-        const now = performance.now() / 1000;
+        const now = Date.now() / 1000;
         const indices = METRIC_INDICES[metric];
 
         for (const entityId of trackedEntityIds) {
@@ -201,13 +205,17 @@ export const ChartCanvas = forwardRef<ChartCanvasHandle, ChartCanvasProps>(
       setTimeWindow: (window) => {
         const chart = chartRef.current;
         if (!chart) return;
-        const now = performance.now() / 1000;
-        if (window === '5s') {
-          chart.timeScale().setVisibleRange({ from: now - 5, to: now });
-        } else if (window === '30s') {
-          chart.timeScale().setVisibleRange({ from: now - 30, to: now });
-        } else {
-          chart.timeScale().fitContent();
+        const now = Date.now() / 1000;
+        try {
+          if (window === '5s') {
+            chart.timeScale().setVisibleRange({ from: now - 5, to: now });
+          } else if (window === '30s') {
+            chart.timeScale().setVisibleRange({ from: now - 30, to: now });
+          } else {
+            chart.timeScale().fitContent();
+          }
+        } catch {
+          // chart has no data yet
         }
       },
     }), [trackedEntityIds, metric, timeWindow]);
