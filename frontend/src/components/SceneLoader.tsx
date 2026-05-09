@@ -291,6 +291,7 @@ export async function loadSceneWithConfirm(sceneData: {
   store.setFrictionScale(sceneData.environment.frictionScale);
   store.setRestitutionScale(sceneData.environment.restitutionScale);
   store.setDrag(sceneData.environment.drag);
+  store.setPeReferenceY(sceneData.environment.peReferenceY);
 
   //    e. 遍历 entities，先加载非约束实体，再加载约束
   const nonConstraints: Entity[] = [];
