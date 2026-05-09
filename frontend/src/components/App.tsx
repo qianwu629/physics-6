@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { PanelRight } from 'lucide-react';
 import { useSimulationStore } from '../store';
 import Scene3D from './Scene3D';
@@ -93,89 +93,89 @@ export default function App() {
   }, [checkWebGL]);
 
   // ──── 键盘快捷键 (D-08) ────
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // 忽略输入框内按键
-      const target = e.target;
-      if (!(target instanceof HTMLElement)) return;  // WR-04: 类型守卫代替不安全断言
-      if (
-        target.tagName === 'INPUT' ||
-        target.tagName === 'TEXTAREA' ||
-        target.tagName === 'SELECT' ||
-        target.isContentEditable
-      ) {
-        return;
-      }
+  // Use ref to cache the latest handler so effect only subscribes once
+  const handleKeyDownRef = useRef((e: KeyboardEvent) => {
+    // 忽略输入框内按键
+    const target = e.target;
+    if (!(target instanceof HTMLElement)) return;
+    if (
+      target.tagName === 'INPUT' ||
+      target.tagName === 'TEXTAREA' ||
+      target.tagName === 'SELECT' ||
+      target.isContentEditable
+    ) {
+      return;
+    }
 
-      switch (e.code) {
-        case 'Space':
-          e.preventDefault();           // 防止页面滚动
-          toggle();                      // D-08: Space = 播放/暂停
-          break;
-        case 'KeyR':
-          if (!e.ctrlKey && !e.metaKey && !e.altKey) {
-            e.preventDefault();
-            // D-12: 重置 = 空场景 + 暂停
-            // 使用 getState() 避免过期闭包问题 (Phase 1 模式)
-            const state = useSimulationStore.getState();
-            state.resetEntities();
-            state.reset();
-          }
-          break;
-        // ── Phase 2: 创建对话框快捷键 (D-04) ──
-        case 'KeyB':
+    switch (e.code) {
+      case 'Space':
+        e.preventDefault();
+        useSimulationStore.getState().toggle();
+        break;
+      case 'KeyR':
+        if (!e.ctrlKey && !e.metaKey && !e.altKey) {
           e.preventDefault();
-          openDialog('sphere');
-          break;
-        case 'KeyN':
-          e.preventDefault();
-          openDialog('box');
-          break;
-        case 'KeyC':
-          e.preventDefault();
-          openDialog('cylinder');
-          break;
-        case 'KeyS':
-          e.preventDefault();
-          openDialog('slope');
-          break;
-        // ── Phase 2: 删除实体快捷键 (D-11) ──
-        case 'Delete':
-        case 'Backspace': {
-          const sid = useSimulationStore.getState().selectedEntityId;
-          if (sid) {
-            e.preventDefault();
-            openDeleteDialog();
-          }
-          break;
+          const state = useSimulationStore.getState();
+          state.resetEntities();
+          state.reset();
         }
-        // ── Phase 3: 弹簧模式快捷键 ──
-        case 'KeyK':
+        break;
+      // ── Phase 2: 创建对话框快捷键 (D-04) ──
+      case 'KeyB':
+        e.preventDefault();
+        useSimulationStore.getState().openDialog('sphere');
+        break;
+      case 'KeyN':
+        e.preventDefault();
+        useSimulationStore.getState().openDialog('box');
+        break;
+      case 'KeyC':
+        e.preventDefault();
+        useSimulationStore.getState().openDialog('cylinder');
+        break;
+      case 'KeyS':
+        e.preventDefault();
+        useSimulationStore.getState().openDialog('slope');
+        break;
+      // ── Phase 2: 删除实体快捷键 (D-11) ──
+      case 'Delete':
+      case 'Backspace': {
+        const sid = useSimulationStore.getState().selectedEntityId;
+        if (sid) {
           e.preventDefault();
-          {
-            const stage = useSimulationStore.getState().springCreationStage;
-            if (stage === 'idle') {
-              enterSpringMode();
-            } else {
-              exitSpringMode();
-            }
-          }
-          break;
-        case 'Escape':
-          {
-            const stage = useSimulationStore.getState().springCreationStage;
-            if (stage !== 'idle') {
-              e.preventDefault();
-              exitSpringMode();
-            }
-          }
-          break;
+          useSimulationStore.getState().openDeleteDialog();
+        }
+        break;
       }
-    };
+      // ── Phase 3: 弹簧模式快捷键 ──
+      case 'KeyK':
+        e.preventDefault();
+        {
+          const stage = useSimulationStore.getState().springCreationStage;
+          if (stage === 'idle') {
+            useSimulationStore.getState().enterSpringMode();
+          } else {
+            useSimulationStore.getState().exitSpringMode();
+          }
+        }
+        break;
+      case 'Escape':
+        {
+          const stage = useSimulationStore.getState().springCreationStage;
+          if (stage !== 'idle') {
+            e.preventDefault();
+            useSimulationStore.getState().exitSpringMode();
+          }
+        }
+        break;
+    }
+  });
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [toggle, openDialog, openDeleteDialog, resetEntities, reset, enterSpringMode, exitSpringMode]);
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => handleKeyDownRef.current(e);
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   // ──── 重置计数器监听 (D-12: 工具栏重置按钮也需清空实体) ────
   useEffect(() => {
