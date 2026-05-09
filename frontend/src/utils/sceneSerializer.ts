@@ -168,23 +168,21 @@ export function deserializeScene(json: unknown): DeserializeResult {
     }
   };
 
-  // Build regular entities
-  for (const serializedEntity of data.simulation.entities) {
+  // 3. Build all entities first (regular + constraints)
+  const allSerializedEntities = [
+    ...data.simulation.entities,
+    ...data.simulation.constraints,
+  ];
+
+  for (const serializedEntity of allSerializedEntities) {
     const entity = buildEntity(serializedEntity);
     if (entity) {
       entitiesMap.set(entity.id, entity);
     }
   }
 
-  // Build constraint entities
-  for (const serializedConstraint of data.simulation.constraints) {
-    const entity = buildEntity(serializedConstraint);
-    if (entity) {
-      entitiesMap.set(entity.id, entity);
-    }
-  }
-
-  // 4. Validate constraint references (D-01-08: 引用失效 → 跳过 + 警告)
+  // 4. Validate constraint references after ALL entities are built
+  //    (D-01-08: 引用失效 → 跳过 + 警告)
   let skippedConstraints = 0;
   for (const entity of entitiesMap.values()) {
     const constraintComp = entity.components.get('constraint') as ConstraintComponent | undefined;
