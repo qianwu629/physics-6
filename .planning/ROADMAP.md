@@ -42,6 +42,17 @@ Physis 已交付 v1.0 物理沙盒 MVP（5 阶段，12/12 需求闭环）。v2.0
 - [x] 01-06-PLAN.md — DEBT-04 修复 (Scene3D.test.tsx mock 补全 + Phase 4 VERIFICATION.md)
 **UI hint**: yes
 
+### Phase 01.1: ui重构 (INSERTED)
+
+**Goal:** 全面重构 Physis UI——修复 Phase 2 浮层缺陷、建立 shadcn/ui 设计系统与深/浅双主题、将散乱浮层升级为 Blender 风格三栏栅格化工作台、引入响应式 3 断点骨架与 a11y 基线、为 Phase 3(力场)和 Phase 5(摄像机/2D)预留 UI 进入点。
+**Requirements**: UI-01(浮层缺陷修复), UI-02(shadcn/ui token体系), UI-03(深/浅双主题), UI-04(Blender风格栅格化), UI-05(3断点响应式), UI-06(a11y基线), UI-07(z-index标度), UI-08(Phase3/5UI前置), UI-09(ChartPanel浮动保留)
+**Depends on:** Phase 1 (Phase 2 数据层 bug 不阻塞)
+**Plans:** 0 plans
+**UI hint:** yes
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 01.1 to break down)
+
 ### Phase 2: 实时物理量图表
 **Goal**: 用户可为任意实体启用实时折线图，在浮动面板中观察位置/速度/加速度/能量随时间变化；支持多实体多曲线并存。
 **Depends on**: Phase 1（持久化基础不影响图表，但希望先稳定基础设施）
