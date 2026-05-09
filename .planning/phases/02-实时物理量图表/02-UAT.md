@@ -1,0 +1,93 @@
+---
+status: testing
+phase: 02-实时物理量图表
+source:
+  - 02-01-SUMMARY.md
+  - 02-02-SUMMARY.md
+  - 02-03-SUMMARY.md
+  - 02-04-SUMMARY.md
+  - 02-05-SUMMARY.md
+  - 02-06-SUMMARY.md
+started: "2026-05-05"
+updated: "2026-05-05"
+---
+
+## Current Test
+
+number: 1
+name: PropertyPanel 图表追踪开关
+expected: |
+  选中任意实体后，PropertyPanel 可视化区域显示「图表追踪」Switch，默认关闭。开启后该实体进入追踪列表。
+awaiting: user response
+
+## Tests
+
+### 1. PropertyPanel 图表追踪开关
+expected: 选中任意实体后，PropertyPanel 可视化区域显示「图表追踪」Switch，默认关闭。开启后该实体进入追踪列表。
+result: pending
+
+### 2. Toolbar 图表按钮
+expected: Toolbar 右侧显示「图表」toggle 按钮。点击后 ChartPanel 浮动面板出现；再次点击或点击面板关闭按钮后面板消失。
+result: pending
+
+### 3. ChartPanel 浮动面板显示
+expected: 面板包含标题栏（可拖拽）、时间窗口切换按钮（5s/30s/全程）、布局模式切换（叠加/分离）、ChartMetricTabs（位置/速度/加速度/能量）、ChartCanvas 图表区域。
+result: pending
+
+### 4. 单实体单指标图表
+expected: 开启一个实体的图表追踪，播放仿真，ChartPanel 中该实体的位置曲线（x/y/z 三条）应实时绘制。
+result: pending
+
+### 5. 多实体多曲线并存
+expected: 开启 4 个实体的图表追踪，ChartPanel 中应同时显示最多 16 条曲线（4 实体 × 4 指标），按颜色区分不同实体。
+result: pending
+
+### 6. 时间窗口切换
+expected: 点击 5s/30s/全程 按钮，图表视口范围相应变化。切换过程中底层缓冲区数据不丢失，重新打开全程可看到完整历史。
+result: pending
+
+### 7. 暂停时图表冻结
+expected: 播放状态下图表实时更新；点击暂停后，图表曲线停止更新，定格在当前帧。
+result: pending
+
+### 8. 重置时图表清空
+expected: 按 R 键重置仿真后，所有图表缓冲区被清空，ChartPanel 中曲线消失（或归零）。
+result: pending
+
+### 9. EnvironmentPanel 势能参考高度
+expected: EnvironmentPanel 底部显示「势能参考高度」滑块，范围 -50~50m。调整数值后，能量曲线（PE/TotalE）应相应变化。
+result: pending
+
+### 10. 图表面板拖拽和调整大小
+expected: 拖拽面板标题栏可移动面板位置；拖拽右下角可调整面板大小；面板尺寸变化后图表自适应。
+result: pending
+
+### 11. 关闭面板不影响采样
+expected: 关闭 ChartPanel 后，被追踪实体的数据继续写入 buffer。重新打开面板后，能看到关闭期间的历史数据。
+result: pending
+
+### 12. 内存稳定性（长时间运行）
+expected: 4 实体追踪、运行 10 分钟后，chartBuffers 中每个实体的数据点不超过 500K，JS Heap 无持续增长。
+result: pending
+
+### 13. 能量守恒验证（弹簧振子）
+expected: 加载「弹簧振子」预设，开启图表追踪，运行 30 秒后，总能量（KE + PE_gravity + PE_spring）相对漂移 < 5%。
+result: pending
+
+### 14. 加速度噪声验证
+expected: 创建静态物体（无运动），开启图表追踪观察加速度曲线，SMA(5) 平滑后加速度幅值 < 0.05 m/s²。
+result: pending
+
+## Summary
+
+total: 14
+passed: 0
+issues: 0
+resolved: 0
+pending: 14
+skipped: 0
+blocked: 0
+
+## Gaps
+
+None yet — UAT 执行中。

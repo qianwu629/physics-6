@@ -1,6 +1,7 @@
 import { useCallback, useEffect, memo } from 'react';
 import { X } from 'lucide-react';
 import { useSimulationStore } from '../store';
+import { useChartDataStore } from '../store/chartDataStore';
 import { Button } from './ui/button';
 import { Switch } from './ui/switch';
 import { Slider } from './ui/slider';
@@ -193,6 +194,10 @@ export default function PropertyPanel() {
   const togglePropertyPanel = useSimulationStore((s) => s.togglePropertyPanel);
   const toggleTrailVisibility = useSimulationStore((s) => s.toggleTrailVisibility);
   const toggleVectorVisibility = useSimulationStore((s) => s.toggleVectorVisibility);
+
+  // Phase 2: 图表追踪
+  const trackedIds = useChartDataStore((s) => s.trackedEntityIds);
+  const toggleTracking = useChartDataStore((s) => s.toggleTracking);
 
   const selectedEntity = useSimulationStore((s) => {
     const id = s.selectedEntityId;
@@ -501,6 +506,13 @@ export default function PropertyPanel() {
                     onCheckedChange={(v) => toggleVectorVisibility(selectedEntity.id, v)}
                   />
                 </div>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs text-white/60">图表追踪</label>
+                  <Switch
+                    checked={trackedIds.has(selectedEntity.id)}
+                    onCheckedChange={() => toggleTracking(selectedEntity.id)}
+                  />
+                </div>
               </div>
 
               <Separator className="bg-white/[0.06]" />
@@ -746,6 +758,13 @@ export default function PropertyPanel() {
                   <Switch
                     checked={vectorComp?.showVelocity ?? true}
                     onCheckedChange={(v) => toggleVectorVisibility(selectedEntity.id, v)}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs text-white/60">图表追踪</label>
+                  <Switch
+                    checked={trackedIds.has(selectedEntity.id)}
+                    onCheckedChange={() => toggleTracking(selectedEntity.id)}
                   />
                 </div>
               </div>

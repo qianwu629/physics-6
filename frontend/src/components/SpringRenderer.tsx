@@ -80,10 +80,13 @@ export default function SpringRenderer({ entity, isSelected, onSelect }: SpringR
   const params = constraintComp.params;
 
   // ── useSpringJoint: 创建物理约束 ──
-  // 锚点使用世界坐标（Rapier useSpringJoint 接受 anchorA/anchorB 世界坐标）
+  // FIX: useSpringJoint → useImpulseJoint 内部直接访问 body1.current，
+  // 若传递 null 则触发 "Cannot read properties of null (reading 'current')".
+  // 用 dummyRef 替代 null，保证 .current 访问安全（值为 null，条件判断失败，不会创建 joint）。
+  const dummyRef = useRef<any>(null);
   useSpringJoint(
-    bodyARef || null,
-    bodyBRef || null,
+    bodyARef || dummyRef,
+    bodyBRef || dummyRef,
     [
       [0, 0, 0], // anchorA — 相对 bodyA 的局部坐标
       [0, 0, 0], // anchorB — 相对 bodyB 的局部坐标

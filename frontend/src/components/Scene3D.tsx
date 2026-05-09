@@ -1,7 +1,7 @@
 import { Canvas, useThree } from '@react-three/fiber';
 import { Physics, RigidBody, CuboidCollider } from '@react-three/rapier';
 import { OrbitControls, Grid, GizmoHelper, GizmoViewport } from '@react-three/drei';
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 import * as THREE from 'three';
 import { Box3, Vector3, type PerspectiveCamera } from 'three';
 import { useSimulationStore } from '../store';
@@ -174,16 +174,10 @@ export default function Scene3D() {
   const restitutionScale = useSimulationStore((s) => s.environment.restitutionScale);
   const springCreationStage = useSimulationStore((s) => s.springCreationStage);
 
-  // CR-02 fix: 使用延迟 key 更新避免 @react-three/rapier jointRef null 崩溃
-  // 直接 key={resetCounter} 触发 Physics 同步卸载/挂载时，rapier 内部 jointRef
-  // 清理时序问题导致 "Cannot read properties of null (reading 'current')"
-  const [physicsKey, setPhysicsKey] = useState(0);
-  useEffect(() => {
-    if (resetCounter > 0) {
-      const timer = setTimeout(() => setPhysicsKey(resetCounter), 100);
-      return () => clearTimeout(timer);
-    }
-  }, [resetCounter]);
+  // CR-02 fix v2: 不再使用 key 触发 Physics 重挂载。
+  // 根因：key 变化导致 Rapier 同步卸载/挂载时，内部 jointRef 清理时序问题引发崩溃。
+  // 修复：Physics 保持常驻，依赖 React 的 RigidBody/SpringRenderer 生命周期自动管理 world 状态。
+  // resetCounter 仅保留给 CameraFitter 触发摄像机自适应。
 
   // ECS 实体 + 选中状态
   const entities = useSimulationStore((s) => s.entities);
@@ -261,7 +255,7 @@ export default function Scene3D() {
 
       {/* ── 物理世界 (Rapier WASM) ── */}
       <Physics
-        key={physicsKey}                    // CR-02 fix: 延迟 key 更新避免 rapier jointRef null 崩溃
+        // Physics 保持常驻，由 React 生命周期管理 RigidBody/joint 的创建与销毁
         timeStep={1 / 120}                  // ARCHITECTURE.md: 固定 120Hz
         paused={!isRunning}                 // D-04: 初始暂停（isRunning=false）
         debug={showDebug}                   // D-07: 调试线框

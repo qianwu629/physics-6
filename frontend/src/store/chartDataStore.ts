@@ -8,13 +8,11 @@ export interface ChartConfigState {
   trackedEntityIds: Set<string>;
   timeWindow: TimeWindow;
   layoutMode: LayoutMode;
-  visibleMetrics: Set<MetricType>;
   peReferenceY: number;
 
   toggleTracking: (id: string) => void;
   setTimeWindow: (w: TimeWindow) => void;
   setLayoutMode: (m: LayoutMode) => void;
-  setVisibleMetrics: (metrics: Set<MetricType>) => void;
   setPeReferenceY: (y: number) => void;
 }
 
@@ -22,7 +20,6 @@ export const useChartDataStore = create<ChartConfigState>()((set) => ({
   trackedEntityIds: new Set(),
   timeWindow: '30s',
   layoutMode: 'overlay',
-  visibleMetrics: new Set<MetricType>(['position', 'velocity', 'acceleration', 'energy']),
   peReferenceY: 0,
 
   toggleTracking: (id) =>
@@ -34,6 +31,5 @@ export const useChartDataStore = create<ChartConfigState>()((set) => ({
     }),
   setTimeWindow: (w) => set({ timeWindow: w }),
   setLayoutMode: (m) => set({ layoutMode: m }),
-  setVisibleMetrics: (metrics) => set({ visibleMetrics: metrics }),
   setPeReferenceY: (y) => set({ peReferenceY: y }),
 }));

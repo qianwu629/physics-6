@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSimulationStore } from '../store';
+import { useChartDataStore } from '../store/chartDataStore';
 import { DEFAULT_ENVIRONMENT } from '../store/simulationSlice';
 
 const GRAVITY_PRESETS: { label: string; value: [number, number, number] }[] = [
@@ -75,6 +76,10 @@ export default function EnvironmentPanel() {
   const setRestitutionScale = useSimulationStore((s) => s.setRestitutionScale);
   const setDrag = useSimulationStore((s) => s.setDrag);
   const isRunning = useSimulationStore((s) => s.isRunning);
+
+  // Phase 2: 势能参考高度
+  const peReferenceY = useChartDataStore((s) => s.peReferenceY);
+  const setPeReferenceY = useChartDataStore((s) => s.setPeReferenceY);
 
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -241,6 +246,22 @@ export default function EnvironmentPanel() {
           step={0.05}
           disabled={isRunning}
           unit=""
+        />
+      </div>
+
+      <div className="h-px bg-[rgba(255,255,255,0.06)] my-3" />
+
+      {/* Phase 2: 势能参考高度 */}
+      <div className="mb-2">
+        <div className="text-xs font-medium text-[#a0a0a0] mb-2">势能参考高度 (y=0)</div>
+        <HighlightSlider
+          value={peReferenceY}
+          onChange={setPeReferenceY}
+          min={-50}
+          max={50}
+          step={0.1}
+          disabled={false}
+          unit="m"
         />
       </div>
     </div>

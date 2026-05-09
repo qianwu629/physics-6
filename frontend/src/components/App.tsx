@@ -14,6 +14,8 @@ import ErrorFallback from './ErrorFallback';
 import type { ErrorType } from './ErrorFallback';
 // Phase 1: 持久化与场景库组件
 import MenuBar from './MenuBar';
+// Phase 2: 实时物理量图表
+import { ChartPanel } from './ChartPanel';
 import SnapshotManager from './SnapshotManager';
 import type { Snapshot } from '../store/snapshotSlice';
 import PresetSelector from './PresetSelector';
@@ -64,6 +66,8 @@ export default function App() {
   // Phase 1: 快照 Drawer + 预设 Dialog 开关状态
   const [snapshotDrawerOpen, setSnapshotDrawerOpen] = useState(false);
   const [presetSelectorOpen, setPresetSelectorOpen] = useState(false);
+  // Phase 2: 图表面板开关状态
+  const [chartPanelOpen, setChartPanelOpen] = useState(false);
 
   // ──── 步骤 1: WebGL 可用性检测 ────
   const checkWebGL = useCallback((): boolean => {
@@ -269,9 +273,18 @@ export default function App() {
       />
 
       <Scene3D />
-      <Toolbar />
+      <Toolbar
+        chartPanelOpen={chartPanelOpen}
+        onToggleChartPanel={() => setChartPanelOpen((v) => !v)}
+      />
       <Toolbox />
       {!propertyPanelCollapsed && <PropertyPanel />}
+
+      {/* Phase 2: 实时物理量图表面板 */}
+      <ChartPanel
+        open={chartPanelOpen}
+        onClose={() => setChartPanelOpen(false)}
+      />
       {propertyPanelCollapsed && (
         <button
           type="button"

@@ -47,7 +47,7 @@ Requirements for v2.0 release. 7 categories, 18 requirements total.
 - [ ] **DEBT-01**: 修复弹簧 3D tube 射线点击选中精度——点击 tube 任意可见部分均能正确选中弹簧实体
 - [ ] **DEBT-02**: 多弹簧链（≥3 个连接的质量块）数值稳定性测试与调参，确保不同刚度参数下 30 秒内无穿插/爆炸/数值发散
 - [ ] **DEBT-03**: 性能基准与优化：50+ 实体 + 20+ 弹簧场景下，全可视化开启时平均 FPS ≥ 55（已验证目标硬件）
-- [ ] **DEBT-04**: 修复 Scene3D.test.tsx 9 个 baseline 失败用例（three.js Vector3 mock 缺失），并补回 Phase 4 缺失的 VERIFICATION.md（移到 milestones/v1.0-phases/04-轨迹与矢量可视化/）
+- [x] **DEBT-04**: 修复 Scene3D.test.tsx 9 个 baseline 失败用例（three.js Vector3 mock 缺失），并补回 Phase 4 缺失的 VERIFICATION.md（移到 milestones/v1.0-phases/04-轨迹与矢量可视化/）
 
 ## v3+ Requirements (deferred — not in v2.0)
 

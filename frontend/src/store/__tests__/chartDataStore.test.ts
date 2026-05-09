@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { useChartDataStore, type MetricType } from '../chartDataStore';
+import { useChartDataStore } from '../chartDataStore';
 
 describe('chartDataStore', () => {
   afterEach(() => {
@@ -8,7 +8,6 @@ describe('chartDataStore', () => {
       trackedEntityIds: new Set(),
       timeWindow: '30s',
       layoutMode: 'overlay',
-      visibleMetrics: new Set<MetricType>(['position', 'velocity', 'acceleration', 'energy']),
       peReferenceY: 0,
     });
   });
@@ -24,15 +23,6 @@ describe('chartDataStore', () => {
 
     it('has default layoutMode overlay', () => {
       expect(useChartDataStore.getState().layoutMode).toBe('overlay');
-    });
-
-    it('has all 4 metric types visible by default', () => {
-      const visible = useChartDataStore.getState().visibleMetrics;
-      expect(visible.size).toBe(4);
-      expect(visible.has('position')).toBe(true);
-      expect(visible.has('velocity')).toBe(true);
-      expect(visible.has('acceleration')).toBe(true);
-      expect(visible.has('energy')).toBe(true);
     });
 
     it('has default peReferenceY 0', () => {
@@ -78,19 +68,6 @@ describe('chartDataStore', () => {
     it('updates layoutMode to separate', () => {
       useChartDataStore.getState().setLayoutMode('separate');
       expect(useChartDataStore.getState().layoutMode).toBe('separate');
-    });
-  });
-
-  describe('setVisibleMetrics', () => {
-    it('reduces to single metric', () => {
-      useChartDataStore.getState().setVisibleMetrics(new Set<MetricType>(['position']));
-      expect(useChartDataStore.getState().visibleMetrics.size).toBe(1);
-      expect(useChartDataStore.getState().visibleMetrics.has('position')).toBe(true);
-    });
-
-    it('can set empty metrics set', () => {
-      useChartDataStore.getState().setVisibleMetrics(new Set<MetricType>());
-      expect(useChartDataStore.getState().visibleMetrics.size).toBe(0);
     });
   });
 

@@ -3,6 +3,11 @@ import { useSimulationStore } from '../store';
 import { useVisualizationStore, type VectorDisplayMode } from '../store/visualizationStore';
 import { cn } from '../lib/utils';
 
+interface ToolbarProps {
+  chartPanelOpen?: boolean;
+  onToggleChartPanel?: () => void;
+}
+
 /**
  * Toolbar — 顶部浮动控制栏
  *
@@ -16,7 +21,7 @@ import { cn } from '../lib/utils';
  * - 工具栏内边距: 16px (md token)
  * - 状态指示器间距: 24px (lg token)
  */
-export default function Toolbar() {
+export default function Toolbar({ chartPanelOpen, onToggleChartPanel }: ToolbarProps = {}) {
   const isRunning = useSimulationStore((s) => s.isRunning);
   const showDebug = useSimulationStore((s) => s.showDebug);
   const fps = useSimulationStore((s) => s.fps);
@@ -205,6 +210,23 @@ export default function Toolbar() {
           title={vectorDisplayMode === 'all' ? '仅显示选中实体' : '显示全部实体'}
         >
           {vectorDisplayMode === 'all' ? '全部' : '选中'}
+        </button>
+      </div>
+
+      <div style={{ width: 1, height: 20, backgroundColor: 'rgba(255, 255, 255, 0.1)' }} />
+
+      {/* Phase 2: 图表按钮 */}
+      <div className="flex items-center gap-1 pl-1 border-l border-white/10">
+        <button
+          type="button"
+          onClick={onToggleChartPanel}
+          className={cn(
+            'px-2 py-1 text-xs rounded',
+            chartPanelOpen ? 'bg-white/15 text-white' : 'text-white/50 hover:text-white/80'
+          )}
+          title={chartPanelOpen ? '隐藏图表' : '显示图表'}
+        >
+          图表
         </button>
       </div>
 
