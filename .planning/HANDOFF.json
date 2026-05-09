@@ -1,0 +1,110 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-05-09T16:24:01.207Z",
+  "context_type": "phase",
+  "phase": "01.1",
+  "phase_name": "ui",
+  "phase_dir": ".planning/phases/01.1-ui",
+  "phase_stage": "discuss",
+  "status": "paused",
+  "completed_tasks": [
+    {
+      "id": 1,
+      "name": "load_prior_context (PROJECT/REQUIREMENTS/STATE/01-CONTEXT/02-CONTEXT/02-REVIEW)",
+      "status": "done"
+    },
+    {
+      "id": 2,
+      "name": "scout_codebase (App.tsx 布局/Toolbox 视觉/44 个 .tsx 组件分类)",
+      "status": "done"
+    },
+    {
+      "id": 3,
+      "name": "analyze_phase (识别 5 个候选灰色地带 G-1..G-5)",
+      "status": "done"
+    },
+    {
+      "id": 4,
+      "name": "save user feedback memory (前端工作必走 ui-ux-pro-max)",
+      "status": "done"
+    },
+    {
+      "id": 5,
+      "name": "write .discuss-progress.md (会话级进度暂存)",
+      "status": "done"
+    }
+  ],
+  "remaining_tasks": [
+    {
+      "id": 6,
+      "name": "Skill(ui-ux-pro-max) 调用成功（解决 search.py 路径问题）+ 取得专业框架",
+      "status": "not_started"
+    },
+    {
+      "id": 7,
+      "name": "present_gray_areas (G-1 单独一轮锁定 Goal → 必要时 G-2..G-5)",
+      "status": "not_started"
+    },
+    {
+      "id": 8,
+      "name": "discuss_areas (深挖每个被选中的灰色地带)",
+      "status": "not_started"
+    },
+    {
+      "id": 9,
+      "name": "write_context (.planning/phases/01.1-ui/01.1-CONTEXT.md + 01.1-DISCUSSION-LOG.md)",
+      "status": "not_started"
+    },
+    {
+      "id": 10,
+      "name": "git commit + update_state (ROADMAP Goal/Requirements 回填)",
+      "status": "not_started"
+    }
+  ],
+  "blockers": [
+    {
+      "description": "上次会话上下文用尽至 79%，无法继续讨论与起草 CONTEXT.md",
+      "type": "technical",
+      "workaround": "/clear 后重启 /gsd-discuss-phase 01.1，先 Read .discuss-progress.md 跳过已完成的 3 步"
+    },
+    {
+      "description": "ui-ux-pro-max 的 search.py 路径不在文档示例（C:\\Users\\ASUS\\.agents\\... 错误），实际位于 C:\\Users\\ASUS\\.claude\\skills\\ui-ux-pro-max\\scripts\\search.py",
+      "type": "technical",
+      "workaround": "下次调用前先 cd 进 skill 目录，或使用绝对路径 python \"C:\\Users\\ASUS\\.claude\\skills\\ui-ux-pro-max\\scripts\\search.py\" \"...\" --design-system"
+    }
+  ],
+  "human_actions_pending": [],
+  "decisions": [
+    {
+      "decision": "Phase 01.1 的核心是锁住 Goal/Requirements/范围边界（ROADMAP 当前为 [Urgent work - to be planned] 占位）",
+      "rationale": "ROADMAP 上 Goal 为空，不能直接进入研究/规划；必须先 discuss 出可被下游 researcher/planner 使用的明确目标",
+      "phase": "01.1"
+    },
+    {
+      "decision": "下次会话第一轮提交给用户的应是 G-1（重构焦点范围），单独一轮 multiSelect 锁定 1-3 项作为 Phase Goal",
+      "rationale": "G-2..G-5 是技术形态选择，必须先确定 Goal 才能裁剪；否则会扩散到全局重构",
+      "phase": "01.1"
+    },
+    {
+      "decision": "ui-ux-pro-max 是 Physis 前端工作的强制 skill（已写入 memory/feedback_frontend_skills.md）",
+      "rationale": "用户在本次会话明确指令；UI 类 phase 仅凭通用经验产出会忽略 a11y/触控目标/层级一致性等系统性原则",
+      "phase": "01.1"
+    },
+    {
+      "decision": "范围红线：Phase 2 数据层 bugfix（C-04..C-07）不属于 01.1，进 02 review-fix；新增物理能力（CSV 导出/时间操控等）不属于 01.1，进 deferred",
+      "rationale": "01.1 是 UI 重构（HOW 实现已有面板的视觉/交互/信息架构），不是功能 bugfix 也不是新能力",
+      "phase": "01.1"
+    }
+  ],
+  "uncommitted_files": [
+    ".planning/ROADMAP.md (M, Phase 01.1 INSERTED 块)",
+    ".planning/STATE.md (M, Roadmap Evolution 记录 01.1 插入)",
+    ".planning/phases/02-实时物理量图表/.review-fix-recovery-pending.json (M)",
+    ".planning/phases/01-持久化与场景库/01-REVIEW-FIX.md (??)",
+    ".planning/phases/01.1-ui/.discuss-progress.md (??, 本次创建)",
+    ".planning/phases/01.1-ui/.gitkeep (??)",
+    ".planning/temp_review_scope.js (??)"
+  ],
+  "next_action": "/clear → /gsd-discuss-phase 01.1。Claude 启动后第一动作: Read .planning/phases/01.1-ui/.continue-here.md（本文 markdown 版本）→ Read .discuss-progress.md → 跳过 load_prior_context/scout_codebase/analyze_phase 三步 → 用绝对路径调用 ui-ux-pro-max search.py 取得专业建议 → 第一轮 AskUserQuestion 仅呈现 G-1（multiSelect, 6 选项 a..f）锁定 Goal",
+  "context_notes": "用户角色: 高中生用户的物理实验/教学场景；技术栈: React 19 + Tailwind v4 + shadcn/ui + R3F + Rapier3D；当前 UI 痛点: 浮层散乱+脏 hack（[data-toolbar]{top:44px !important} 注入）+ Toolbox 触控目标 40×40 < 44×44 推荐值 + PropertyPanel 折叠态变孤立浮按钮 + 配色硬编码（rgba/#3b82f6 等未 token 化）+ Phase 2 浮层缺陷（C-02 Draggable+Resizable ref bug, C-03 分离模式渲染 bug, W-02 句柄类名错）。讨论方向已收敛到 5 个候选灰色地带，用户原话 ui重构 信息量极薄，G-1 必须用 AskUserQuestion 落锤。"
+}
