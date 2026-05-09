@@ -116,8 +116,12 @@ export function SnapshotManager({ open, onOpenChange, onLoadSnapshot }: Snapshot
       }
       doSave(slotToUse);
     } else {
-      // All slots full — use targetSlot or slot 0
-      const slotToUse = targetSlot ?? 0;
+      // All slots full — must specify a target slot to overwrite
+      if (targetSlot === null) {
+        setSaveError('所有槽位已满，请点击一个槽位进行覆盖');
+        return;
+      }
+      const slotToUse = targetSlot;
       if (slots[slotToUse] !== null) {
         setConfirmDialog({
           slotIndex: slotToUse,
