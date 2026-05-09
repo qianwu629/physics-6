@@ -146,7 +146,7 @@ export function SnapshotManager({ open, onOpenChange, onLoadSnapshot }: Snapshot
       }
       setConfirmDialog(null);
     },
-    [saveName, saveSnapshot]
+    [saveName, saveSnapshot, setSaveName, setSaveError, setTargetSlot]
   );
 
   // ── Load Handler ──
