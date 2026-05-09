@@ -61,6 +61,8 @@ const PRESET_DEFINITIONS: PresetDefinition[] = [
   },
 ];
 
+const ALLOWED_PRESETS = new Set(PRESET_DEFINITIONS.map(p => p.id));
+
 const ICON_MAP: Record<string, React.ComponentType<{ size?: number }>> = {
   projectile: Target,
   'inclined-plane': Triangle,
@@ -86,6 +88,10 @@ export default function PresetSelector({
   const [loadingId, setLoadingId] = React.useState<string | null>(null);
 
   async function handlePresetClick(presetId: string) {
+    if (!ALLOWED_PRESETS.has(presetId)) {
+      console.error('Invalid preset ID:', presetId);
+      return;
+    }
     setLoadingId(presetId);
     try {
       // 动态导入 JSON 预设文件
