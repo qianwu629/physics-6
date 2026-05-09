@@ -178,11 +178,9 @@ export function ConfirmDialogRoot() {
 // ── Export: showConfirmDialog ──
 
 export function showConfirmDialog(message: string): Promise<boolean> {
-  // If there's already a pending dialog, auto-cancel it
+  // If there's already a pending dialog, ignore the new request
   if (_confirmResolver) {
-    const prev = _confirmResolver;
-    _confirmResolver = null;
-    prev(false);
+    return Promise.resolve(false);
   }
 
   return new Promise<boolean>((resolve) => {
