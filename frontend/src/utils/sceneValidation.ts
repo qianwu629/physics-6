@@ -195,6 +195,7 @@ const KNOWN_TOP_KEYS = new Set(['schemaVersion', 'savedAt', 'simulation']);
  * Check if the JSON has a schemaVersion that differs from "1.0"
  */
 export function isVersionMismatch(json: unknown): boolean {
+  if (json === null || typeof json !== 'object' || Array.isArray(json)) return true;
   const version = (json as any)?.schemaVersion;
   return version !== '1.0';
 }
