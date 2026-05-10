@@ -14,6 +14,7 @@ Physis 已交付 v1.0 物理沙盒 MVP（5 阶段，12/12 需求闭环）。v2.0
 **Phase Numbering:** v2.0 重置为从 Phase 1 开始（v1.0 阶段已归档至 `milestones/v1.0-phases/`）
 
 - [x] **Phase 1: 持久化与场景库** - JSON 文件 IO + localStorage 快照 + 预设场景库 + 测试基线修复 (completed 2026-05-04)
+- [ ] **Phase 01.1: ui重构 (INSERTED)** - UI 全面重构：bug修复 + shadcn设计系统 + 栅格化 + 响应式 + a11y + Phase 3/5预留 (planned 2026-05-10)
 - [ ] **Phase 2: 实时物理量图表** - 位置/速度/加速度/能量曲线 + 多实体多曲线 + 浮动图表面板
 - [ ] **Phase 3: 通用力场系统** - ForceField 框架 + 4 种预设（方向/引力/电场/磁场）+ 力线可视化
 - [ ] **Phase 4: 表达式驱动外加力** - 解析器集成 + 实体级公式力计算
@@ -47,11 +48,19 @@ Physis 已交付 v1.0 物理沙盒 MVP（5 阶段，12/12 需求闭环）。v2.0
 **Goal:** 全面重构 Physis UI——修复 Phase 2 浮层缺陷、建立 shadcn/ui 设计系统与深/浅双主题、将散乱浮层升级为 Blender 风格三栏栅格化工作台、引入响应式 3 断点骨架与 a11y 基线、为 Phase 3(力场)和 Phase 5(摄像机/2D)预留 UI 进入点。
 **Requirements**: UI-01(浮层缺陷修复), UI-02(shadcn/ui token体系), UI-03(深/浅双主题), UI-04(Blender风格栅格化), UI-05(3断点响应式), UI-06(a11y基线), UI-07(z-index标度), UI-08(Phase3/5UI前置), UI-09(ChartPanel浮动保留)
 **Depends on:** Phase 1 (Phase 2 数据层 bug 不阻塞)
-**Plans:** 0 plans
+**Plans:** 9 plans in 4 waves
 **UI hint:** yes
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 01.1 to break down)
+- [ ] 01.1-01-PLAN.md — CSS token体系 + z-index堆栈 + 布局变量 + shadcn 5组件安装 (Wave 1, UI-02/UI-03/UI-07)
+- [ ] 01.1-02-PLAN.md — ThemeProvider + ThemeToggle 集成 (Wave 1, UI-02/UI-03)
+- [ ] 01.1-03-PLAN.md — WorkspaceLayout 网格骨架 + App.tsx 重布线 + CSS hack 拆除 (Wave 2, UI-04)
+- [ ] 01.1-04-PLAN.md — Inspector Drawer + Tabs + Panel 整合 + ForceFieldPanelStub (Wave 2, UI-04/UI-08)
+- [ ] 01.1-05-PLAN.md — Toolbox 左列迁移 + Toolbar 底部迁移 + Phase 3/5 预留入口 (Wave 2, UI-04/UI-08)
+- [ ] 01.1-06-PLAN.md — ChartPanel C-02/C-03/W-02 修复 + 浮动模式保留 (Wave 3, UI-01/UI-09)
+- [ ] 01.1-07-PLAN.md — W-01 上限强制 + HACK-02 浮按钮拆除 (Wave 3, UI-01)
+- [ ] 01.1-08-PLAN.md — 全量 Token 迁移 codemod (Wave 4, UI-02)
+- [ ] 01.1-09-PLAN.md — 响应式 3 断点 + a11y 扫尾 + human-verify 验收 (Wave 4, UI-05/UI-06)
 
 ### Phase 2: 实时物理量图表
 **Goal**: 用户可为任意实体启用实时折线图，在浮动面板中观察位置/速度/加速度/能量随时间变化；支持多实体多曲线并存。
@@ -125,12 +134,13 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
+Phases execute in numeric order: 1 → 01.1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status      | Completed |
 |-------|----------------|-------------|-----------|
-| 1. 持久化与场景库              | 6/6 | Complete   | 2026-05-04 |
-| 2. 实时物理量图表              | 6/6 | Planned    | 2026-05-05 |
+| 1. 持久化与场景库              | 6/6 | Complete    | 2026-05-04 |
+| 01.1. ui重构 (INSERTED)         | 0/9 | Planned     | -          |
+| 2. 实时物理量图表              | 6/6 | Planned     | 2026-05-05 |
 | 3. 通用力场系统                | 0/0 | Not started | -          |
 | 4. 表达式驱动外加力            | 0/0 | Not started | -          |
 | 5. 自由飞行摄像机 + 2D 模式    | 0/0 | Not started | -          |
