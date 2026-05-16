@@ -53,7 +53,11 @@ export function ChartSampler() {
     // D-02-07: 暂停时冻结 — 不写入任何数据
     if (!isRunning) return;
 
-    const now = performance.now() / 1000;
+    // C-01 fix: 使用 Date.now()/1000 (Unix-second timestamps) 以匹配
+    // ChartCanvas 读取端 (Date.now()/1000) 与 lightweight-charts 的
+    // UTCTimestamp 语义。之前用 performance.now()/1000 会让写入侧时间戳
+    // 在 1970-01-01 + 30s 而读取侧 visible-range 在 2026，导致图表永远为空。
+    const now = Date.now() / 1000;
 
     // 60Hz 节流 — 避免超过 60Hz 采样
     if (now - lastSampleTime.current < SAMPLE_INTERVAL) return;

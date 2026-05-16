@@ -153,7 +153,7 @@ describe('ChartDataBuffer', () => {
   });
 
   describe('time unit', () => {
-    it('uses seconds as time unit (performance.now() / 1000)', () => {
+    it('expects writer to consistently use seconds since some monotonic origin (currently Date.now()/1000); buffer makes no assumption about the origin', () => {
       const buf = new ChartDataBuffer();
       const metrics = new Float64Array(METRICS_PER_ENTITY);
       buf.push(12.345, metrics);
