@@ -3,6 +3,7 @@ import { render, waitFor } from '@testing-library/react';
 import React from 'react';
 import { useChartDataStore, type MetricType } from '../../store/chartDataStore';
 import { chartBuffers, ChartDataBuffer, clearAllBuffers } from '../../store/chartBuffer';
+import * as nowSecondsModule from '../../utils/nowSeconds';
 
 // Use vi.hoisted to make mock variables available in the vi.mock factory
 const {
@@ -112,16 +113,21 @@ describe('ChartCanvas', () => {
   });
 
   // ── Test 3: series.update() is called via imperative refreshAll ──
+  // W-04 fix: spy nowSeconds() helper, 强制 writer 与 reader 使用同一时钟。
+  // 若 ChartSampler/ChartCanvas 中任何一处绕过 nowSeconds, 测试就能捕到。
   it('calls series.update() when refreshAll is invoked', async () => {
     const ref = React.createRef<ChartCanvasHandle>();
 
-    // Populate buffer with some data — use timestamp close to now
-    const now = Date.now() / 1000;
+    // Pin a deterministic "now" via nowSeconds spy
+    const FIXED_NOW = 1_700_000_000; // Unix seconds
+    const nowSpy = vi.spyOn(nowSecondsModule, 'nowSeconds').mockReturnValue(FIXED_NOW);
+
+    // Populate buffer with some data — use timestamp close to spied now
     const buf = new ChartDataBuffer();
     const metrics = new Float64Array(12);
     metrics[0] = 10; // x position
     metrics[1] = 20; // y position
-    buf.push(now - 5, metrics);
+    buf.push(FIXED_NOW - 5, metrics);
     chartBuffers.set('entity-1', buf);
 
     const { rerender } = render(<ChartCanvas ref={ref} metric="position" />);
@@ -135,12 +141,14 @@ describe('ChartCanvas', () => {
       expect(mockAddSeries).toHaveBeenCalled();
     });
 
-    // Call refreshAll
+    // Call refreshAll — uses the spied nowSeconds → window contains the pushed point
     ref.current?.refreshAll();
 
     // Should have called update on one of the series
     const anyUpdateCalled = mockSeriesInstances.some((s) => s.update.mock.calls.length > 0);
     expect(anyUpdateCalled).toBe(true);
+
+    nowSpy.mockRestore();
   });
 
   // ── Test 4: On unmount, chart.remove() is called ──

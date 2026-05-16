@@ -9,6 +9,7 @@ import {
 } from 'lightweight-charts';
 import { useChartDataStore, type MetricType } from '../store/chartDataStore';
 import { chartBuffers } from '../store/chartBuffer';
+import { nowSeconds } from '../utils/nowSeconds';
 
 // ── 配色方案 — D-02-03 指标优先 ──
 const METRIC_COLORS: Record<MetricType, string[]> = {
@@ -167,7 +168,7 @@ export const ChartCanvas = forwardRef<ChartCanvasHandle, ChartCanvasProps>(
       const chart = chartRef.current;
       if (!chart) return;
 
-      const now = Date.now() / 1000;
+      const now = nowSeconds();
       try {
         if (timeWindow === '5s') {
           chart.timeScale().setVisibleRange({ from: now - 5, to: now });
@@ -186,7 +187,7 @@ export const ChartCanvas = forwardRef<ChartCanvasHandle, ChartCanvasProps>(
       refreshAll: () => {
         const chart = chartRef.current;
         if (!chart) return;
-        const now = Date.now() / 1000;
+        const now = nowSeconds();
         const indices = METRIC_INDICES[metric];
 
         for (const entityId of trackedEntityIds) {
@@ -241,7 +242,7 @@ export const ChartCanvas = forwardRef<ChartCanvasHandle, ChartCanvasProps>(
       setTimeWindow: (window) => {
         const chart = chartRef.current;
         if (!chart) return;
-        const now = Date.now() / 1000;
+        const now = nowSeconds();
         try {
           if (window === '5s') {
             chart.timeScale().setVisibleRange({ from: now - 5, to: now });
