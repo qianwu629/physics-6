@@ -69,13 +69,11 @@ describe('ChartCanvas', () => {
       timeScale: mockTimeScale,
     });
 
-    // Reset store state
+    // Reset store state (C-04 fix: peReferenceY 已迁出 chartDataStore)
     useChartDataStore.setState({
       trackedEntityIds: new Set(),
       timeWindow: '30s',
       layoutMode: 'overlay',
-      visibleMetrics: new Set(['position', 'velocity', 'acceleration', 'energy']),
-      peReferenceY: 0,
     });
 
     // Clear buffers

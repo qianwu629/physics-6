@@ -8,7 +8,6 @@ describe('chartDataStore', () => {
       trackedEntityIds: new Set(),
       timeWindow: '30s',
       layoutMode: 'overlay',
-      peReferenceY: 0,
     });
   });
 
@@ -25,9 +24,8 @@ describe('chartDataStore', () => {
       expect(useChartDataStore.getState().layoutMode).toBe('overlay');
     });
 
-    it('has default peReferenceY 0', () => {
-      expect(useChartDataStore.getState().peReferenceY).toBe(0);
-    });
+    // C-04 fix: peReferenceY 已迁移至 simulationSlice.environment.peReferenceY
+    // 此处不再测试 chartDataStore 副本(原副本已删除)。
   });
 
   describe('toggleTracking', () => {
@@ -71,15 +69,7 @@ describe('chartDataStore', () => {
     });
   });
 
-  describe('setPeReferenceY', () => {
-    it('updates peReferenceY to 5.5', () => {
-      useChartDataStore.getState().setPeReferenceY(5.5);
-      expect(useChartDataStore.getState().peReferenceY).toBe(5.5);
-    });
-
-    it('accepts negative values', () => {
-      useChartDataStore.getState().setPeReferenceY(-10);
-      expect(useChartDataStore.getState().peReferenceY).toBe(-10);
-    });
-  });
+  // C-04 fix: setPeReferenceY 已从 chartDataStore 删除,
+  // 现仅存在于 simulationSlice (setPeReferenceY action 已在 simulationSlice.test 覆盖,
+  // 或可通过 EnvironmentPanel 集成测试覆盖)。
 });

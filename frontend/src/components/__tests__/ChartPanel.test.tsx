@@ -5,12 +5,11 @@ import { useChartDataStore } from '../../store/chartDataStore';
 
 // Helper to reset store between tests
 function resetStore() {
+  // C-04 fix: peReferenceY 已迁出 chartDataStore
   useChartDataStore.setState({
     trackedEntityIds: new Set(['entity-1', 'entity-2']),
     timeWindow: '30s',
     layoutMode: 'overlay',
-    visibleMetrics: new Set(['position', 'velocity', 'acceleration', 'energy']),
-    peReferenceY: 0,
   });
 }
 

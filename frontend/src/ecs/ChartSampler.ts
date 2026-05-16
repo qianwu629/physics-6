@@ -64,7 +64,8 @@ export function ChartSampler() {
     lastSampleTime.current = now;
 
     const trackedIds = useChartDataStore.getState().trackedEntityIds;
-    const peReferenceY = useChartDataStore.getState().peReferenceY;
+    // C-04 fix: peReferenceY 从 simulationSlice.environment 读取(唯一来源)
+    const peReferenceY = useSimulationStore.getState().environment.peReferenceY;
 
     if (trackedIds.size === 0) return;
 

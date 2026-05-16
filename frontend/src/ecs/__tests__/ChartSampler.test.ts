@@ -18,9 +18,9 @@ describe('ChartSampster (buffer + store integration)', () => {
   beforeEach(() => {
     clearAllBuffers();
     // Reset chartDataStore to initial state
+    // C-04 fix: peReferenceY 已迁至 simulationSlice.environment, 这里不再设置
     useChartDataStore.setState({
       trackedEntityIds: new Set(),
-      peReferenceY: 0,
     });
   });
 

@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSimulationStore } from '../store';
-import { useChartDataStore } from '../store/chartDataStore';
 import { DEFAULT_ENVIRONMENT } from '../store/simulationSlice';
 
 const GRAVITY_PRESETS: { label: string; value: [number, number, number] }[] = [
@@ -77,9 +76,9 @@ export default function EnvironmentPanel() {
   const setDrag = useSimulationStore((s) => s.setDrag);
   const isRunning = useSimulationStore((s) => s.isRunning);
 
-  // Phase 2: 势能参考高度
-  const peReferenceY = useChartDataStore((s) => s.peReferenceY);
-  const setPeReferenceY = useChartDataStore((s) => s.setPeReferenceY);
+  // Phase 2: 势能参考高度 (C-04 fix: 唯一来源在 simulationSlice.environment)
+  const peReferenceY = useSimulationStore((s) => s.environment.peReferenceY);
+  const setPeReferenceY = useSimulationStore((s) => s.setPeReferenceY);
 
   const panelRef = useRef<HTMLDivElement>(null);
 
