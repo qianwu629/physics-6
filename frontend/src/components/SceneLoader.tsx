@@ -20,6 +20,8 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { TriangleAlert, X } from 'lucide-react';
 import { useSimulationStore } from '../store';
+import { useChartDataStore } from '../store/chartDataStore';
+import { clearAllBuffers } from '../store/chartBuffer';
 import { serializeScene, deserializeScene } from '../utils/sceneSerializer';
 import type { Entity } from '../ecs/types';
 import type { EnvironmentState } from '../utils/sceneValidation';
@@ -280,6 +282,12 @@ export async function loadSceneWithConfirm(sceneData: {
 
   //    b. 清空现有实体
   store.resetEntities();
+
+  //    b'. C-06 fix: 加载场景前显式清空 chart 状态,
+  //        防止旧 entity id 残留在 trackedEntityIds 与 chartBuffers 中
+  //        (每个 buffer ~52 MB Float64Array)。
+  useChartDataStore.setState({ trackedEntityIds: new Set() });
+  clearAllBuffers();
 
   //    c. 递增 resetCounter（触发 Physics 重挂载 + 相机重置 + 轨迹清空）
   store.reset();
