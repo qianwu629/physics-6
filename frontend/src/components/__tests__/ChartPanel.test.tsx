@@ -3,6 +3,20 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { ChartPanel } from '../ChartPanel';
 import { useChartDataStore } from '../../store/chartDataStore';
 
+// W-05 fix: mock lightweight-charts 以便断言 addSeries 调用次数。
+// 用 vi.hoisted 让 mock 变量可在 vi.mock factory 内引用。
+const { mockCreateChart, mockAddSeries, mockRemoveSeries, mockRemove } = vi.hoisted(() => ({
+  mockCreateChart: vi.fn(),
+  mockAddSeries: vi.fn(),
+  mockRemoveSeries: vi.fn(),
+  mockRemove: vi.fn(),
+}));
+
+vi.mock('lightweight-charts', () => ({
+  createChart: mockCreateChart,
+  LineSeries: vi.fn(),
+}));
+
 // Helper to reset store between tests
 function resetStore() {
   // C-04 fix: peReferenceY 已迁出 chartDataStore
@@ -15,6 +29,19 @@ function resetStore() {
 
 describe('ChartPanel', () => {
   beforeEach(() => {
+    vi.clearAllMocks();
+    // 每次重新装配 mock chart 对象, 防止前一个 test 的 mock 状态污染
+    mockAddSeries.mockImplementation(() => ({ update: vi.fn(), setData: vi.fn() }));
+    mockCreateChart.mockReturnValue({
+      addSeries: mockAddSeries,
+      removeSeries: mockRemoveSeries,
+      remove: mockRemove,
+      applyOptions: vi.fn(),
+      timeScale: () => ({
+        setVisibleRange: vi.fn(),
+        fitContent: vi.fn(),
+      }),
+    });
     resetStore();
   });
 
@@ -95,9 +122,25 @@ describe('ChartPanel', () => {
     const chartContainersOverlay = panelBodyOverlay.querySelectorAll('div[style*="min-height: 0px"]');
     expect(chartContainersOverlay.length).toBe(1);
 
+    // W-05 fix: overlay 模式应 addSeries = entityCount × axes (=2 × 3 = 6)
+    // 默认 metric=position, axes=[x,y,z], 2 entity → 6 series。
+    expect(mockAddSeries).toHaveBeenCalledTimes(6);
+
     unmount();
 
-    // Separate mode with 2 tracked entities
+    // Separate mode with 2 tracked entities — 切换 layoutMode 前清 mock
+    vi.clearAllMocks();
+    mockAddSeries.mockImplementation(() => ({ update: vi.fn(), setData: vi.fn() }));
+    mockCreateChart.mockReturnValue({
+      addSeries: mockAddSeries,
+      removeSeries: mockRemoveSeries,
+      remove: mockRemove,
+      applyOptions: vi.fn(),
+      timeScale: () => ({
+        setVisibleRange: vi.fn(),
+        fitContent: vi.fn(),
+      }),
+    });
     useChartDataStore.setState({ layoutMode: 'separate', trackedEntityIds: new Set(['e1', 'e2']) });
     render(<ChartPanel open={true} onClose={vi.fn()} />);
 
@@ -105,6 +148,13 @@ describe('ChartPanel', () => {
     expect(screen.getByText('e1')).toBeInTheDocument();
     expect(screen.getByText('e2')).toBeInTheDocument();
   });
+
+  // W-05 fix: separate 模式 series-per-chart 断言占位。
+  // C-03 (separate mode 共享 ref + 不过滤 entityId) 由 Phase 01.1 UI 重构
+  // 承接, 修复后应启用此 it.todo 改写为完整断言:
+  //   "separate 模式每个 ChartCanvas 只 addSeries axes 条 (= 3),
+  //    N 个图共 N × 3 条 series, 而非 C-03 bug 中的 N × N × 3 条。"
+  it.todo('Test 5b (post-C-03): separate mode adds entities × axes series, not entities × axes × entities (Phase 01.1)');
 
   it('Test 6: panel-header has cursor-move class; Draggable wrapped around Resizable', () => {
     render(<ChartPanel open={true} onClose={vi.fn()} />);
