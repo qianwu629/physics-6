@@ -27,8 +27,8 @@ describe('computeEnergy', () => {
   });
 
   /**
-   * Test 2: PE_gravity = m * |g| * (y - peReferenceY)
-   * mass=1 kg, y=5, peRef=0, g=-9.81 → 1 * 9.81 * 5 = 49.05 J
+   * Test 2: PE_gravity = -m * gY * (y - peReferenceY)
+   * mass=1 kg, y=5, peRef=0, gY=-9.81 → -1 * (-9.81) * 5 = 49.05 J
    */
   it('should compute gravitational potential energy correctly', () => {
     const mockRb = {
@@ -39,6 +39,23 @@ describe('computeEnergy', () => {
 
     const result = computeEnergy(mockRb, 1, -9.81, 0, [], () => null);
     expect(result.peGravity).toBeCloseTo(49.05, 5);
+    expect(result.ke).toBe(0);
+  });
+
+  /**
+   * Test 2b (W-07 regression): 向上重力场景, PE 应为负
+   * mass=1, y=5, peRef=0, gY=+5 → -1 * 5 * 5 = -25 J
+   * (旧实现 Math.abs(gravityY) 会得到 +25 J, 违反能量守恒)
+   */
+  it('should give negative PE_gravity for upward gravity (W-07 fix)', () => {
+    const mockRb = {
+      linvel: () => ({ x: 0, y: 0, z: 0 }),
+      translation: () => ({ x: 0, y: 5, z: 0 }),
+      mass: () => 1,
+    };
+
+    const result = computeEnergy(mockRb, 1, 5, 0, [], () => null);
+    expect(result.peGravity).toBeCloseTo(-25, 5);
     expect(result.ke).toBe(0);
   });
 
