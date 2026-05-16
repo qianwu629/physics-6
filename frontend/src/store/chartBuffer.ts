@@ -103,3 +103,11 @@ export function clearAllBuffers(): void {
   }
   chartBuffers.clear();
 }
+
+/**
+ * C-05 fix: 释放指定实体的缓冲区, 让 ~52 MB Float64Array 可被 GC。
+ * 用于 entitySlice.removeEntity / resetEntities / SceneLoader 加载场景前。
+ */
+export function disposeBuffer(entityId: string): void {
+  chartBuffers.delete(entityId);
+}

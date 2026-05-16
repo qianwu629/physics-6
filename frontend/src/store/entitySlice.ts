@@ -1,5 +1,7 @@
 import type { StateCreator } from 'zustand';
 import type { Entity, ComponentType, Component, ConstraintComponent } from '../ecs/types';
+import { disposeBuffer, chartBuffers } from './chartBuffer';
+import { useChartDataStore } from './chartDataStore';
 
 /**
  * Entity 集合状态切片 (D-03: ECS 作为场景定义数据模型)
@@ -70,6 +72,13 @@ export const createEntitySlice: StateCreator<EntitySlice, [], [], EntitySlice> =
       }
       cascadeRemove.forEach((eid) => next.delete(eid));
 
+      // ── C-05 fix: 释放 chart 资源 (untrack + dispose buffer ~52 MB / 实体) ──
+      const chartStore = useChartDataStore.getState();
+      for (const removedId of [id, ...cascadeRemove]) {
+        chartStore.untrackEntity(removedId);
+        disposeBuffer(removedId);
+      }
+
       return {
         entities: next,
         selectedEntityId:
@@ -100,10 +109,19 @@ export const createEntitySlice: StateCreator<EntitySlice, [], [], EntitySlice> =
     }),
 
   resetEntities: () =>
-    set(() => ({
-      entities: new Map(),
-      selectedEntityId: null,
-    })),
+    set(() => {
+      // ── C-05 fix: 重置场景时一并释放所有 chart 资源 ──
+      // (a) 清空 trackedEntityIds (无论 buffer 是否存在);
+      // (b) 释放所有 chartBuffers Float64Array (~52 MB / 实体)。
+      useChartDataStore.setState({ trackedEntityIds: new Set() });
+      for (const id of Array.from(chartBuffers.keys())) {
+        disposeBuffer(id);
+      }
+      return {
+        entities: new Map(),
+        selectedEntityId: null,
+      };
+    }),
 
   toggleTrailVisibility: (entityId: string, visible: boolean) =>
     set((state) => {

@@ -12,6 +12,8 @@ export interface ChartConfigState {
   toggleTracking: (id: string) => void;
   setTimeWindow: (w: TimeWindow) => void;
   setLayoutMode: (m: LayoutMode) => void;
+  /** C-05 fix: 删除实体时调用,从追踪集合中移除其 id */
+  untrackEntity: (id: string) => void;
 }
 
 // C-04 fix: peReferenceY 已统一存于 simulationSlice.environment.peReferenceY
@@ -33,4 +35,11 @@ export const useChartDataStore = create<ChartConfigState>()((set) => ({
     }),
   setTimeWindow: (w) => set({ timeWindow: w }),
   setLayoutMode: (m) => set({ layoutMode: m }),
+  untrackEntity: (id) =>
+    set((s) => {
+      if (!s.trackedEntityIds.has(id)) return s;
+      const next = new Set(s.trackedEntityIds);
+      next.delete(id);
+      return { trackedEntityIds: next };
+    }),
 }));
