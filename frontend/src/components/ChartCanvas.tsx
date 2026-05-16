@@ -147,13 +147,18 @@ export const ChartCanvas = forwardRef<ChartCanvasHandle, ChartCanvasProps>(
       });
 
       // 移除不再追踪的 series
-      for (const [key, series] of seriesMapRef.current) {
-        if (!currentKeys.has(key)) {
-          chart.removeSeries(series);
-          seriesMapRef.current.delete(key);
-          // C-07 fix: 同步清理水位线
-          lastUpdatedTimesRef.current.delete(key);
-        }
+      // W-09 fix: 先收集待删 keys, 再批量 delete + removeSeries,
+      // 避免 iterate-during-mutate (Map 规范允许, 但脆弱, 易在重构后失效)。
+      const toRemove: string[] = [];
+      for (const [key] of seriesMapRef.current) {
+        if (!currentKeys.has(key)) toRemove.push(key);
+      }
+      for (const key of toRemove) {
+        const series = seriesMapRef.current.get(key);
+        if (series) chart.removeSeries(series);
+        seriesMapRef.current.delete(key);
+        // C-07 fix: 同步清理水位线
+        lastUpdatedTimesRef.current.delete(key);
       }
     }, [trackedEntityIds, metric]);
 
