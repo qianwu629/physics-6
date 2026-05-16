@@ -53,6 +53,9 @@ export const ChartCanvas = forwardRef<ChartCanvasHandle, ChartCanvasProps>(
     const containerRef = useRef<HTMLDivElement>(null);
     const chartRef = useRef<IChartApi | null>(null);
     const seriesMapRef = useRef<Map<string, ISeriesApi<'Line'>>>(new Map());
+    // C-07 fix: 每条 series 的水位线 (last-updated time),
+    // 用于在 refreshAll 中按增量 update 而非只更新尾点。
+    const lastUpdatedTimesRef = useRef<Map<string, number>>(new Map());
 
     const trackedEntityIds = useChartDataStore((s) => s.trackedEntityIds);
     const timeWindow = useChartDataStore((s) => s.timeWindow);
@@ -100,6 +103,7 @@ export const ChartCanvas = forwardRef<ChartCanvasHandle, ChartCanvasProps>(
         chart.remove();
         chartRef.current = null;
         seriesMapRef.current.clear();
+        lastUpdatedTimesRef.current.clear();
       };
     }, []);
 
@@ -133,6 +137,9 @@ export const ChartCanvas = forwardRef<ChartCanvasHandle, ChartCanvasProps>(
               const data = buf.getAllSeriesData(metricIndex);
               if (data.length > 0) {
                 series.setData(data as LineData<Time>[]);
+                // C-07 fix: 初始化水位线为最后一点 time, 防止 refreshAll
+                // 重复 update setData 中已有的点。
+                lastUpdatedTimesRef.current.set(key, data[data.length - 1].time);
               }
             }
           }
@@ -144,6 +151,8 @@ export const ChartCanvas = forwardRef<ChartCanvasHandle, ChartCanvasProps>(
         if (!currentKeys.has(key)) {
           chart.removeSeries(series);
           seriesMapRef.current.delete(key);
+          // C-07 fix: 同步清理水位线
+          lastUpdatedTimesRef.current.delete(key);
         }
       }
     }, [trackedEntityIds, metric]);
@@ -184,21 +193,43 @@ export const ChartCanvas = forwardRef<ChartCanvasHandle, ChartCanvasProps>(
             const series = seriesMapRef.current.get(key);
             if (!series) return;
 
-            // 根据时间窗口决定读取范围
-            let data: { time: number; value: number }[];
+            // C-07 fix: 水位线增量更新。
+            // 之前只 update(lastPoint), 当 rAF 跳帧或 5s 窗口外重新进入
+            // 时会有间隙;同时未 try/catch 包裹 series.update,
+            // lightweight-charts 在 time <= lastDataPoint.time 时会抛错。
+            const watermark = lastUpdatedTimesRef.current.get(key) ?? 0;
+            // 起点取 max(watermark, 时间窗口左界): 窗口外的旧点不必下发
+            let startTime: number;
             if (timeWindow === '5s') {
-              data = buf.getSeriesData(metricIndex, now - 5, now);
+              startTime = Math.max(watermark, now - 5);
             } else if (timeWindow === '30s') {
-              data = buf.getSeriesData(metricIndex, now - 30, now);
+              startTime = Math.max(watermark, now - 30);
             } else {
-              data = buf.getAllSeriesData(metricIndex);
+              startTime = watermark; // 全程模式: 只下发增量
             }
 
-            // 增量更新：只 update 最新的数据点
-            if (data.length > 0) {
-              const lastPoint = data[data.length - 1];
-              series.update(lastPoint as LineData<Time>);
+            // 用稍大于 watermark 的开区间下界 (避免重复 update 同一 time)
+            // getSeriesData 是闭区间 [start, end], 所以 start = watermark + ε
+            // 不过 ε 难取, 改为 watermark > 0 时 start = watermark + 1e-9 (1 ns 安全余量)
+            const queryStart = watermark > 0 && startTime === watermark
+              ? watermark + 1e-9
+              : startTime;
+            const data = buf.getSeriesData(metricIndex, queryStart, now);
+
+            if (data.length === 0) return;
+
+            // 逐点 update; 每个调用包 try/catch 以防 time <= last point.time
+            // 抛错 (lightweight-charts 在乱序时抛 "Cannot update oldest data")。
+            let newWatermark = watermark;
+            for (const p of data) {
+              try {
+                series.update(p as LineData<Time>);
+                if (p.time > newWatermark) newWatermark = p.time;
+              } catch {
+                // 跳过无法 update 的点 (通常是与上一点 time 相同/更老的并发样本)
+              }
             }
+            lastUpdatedTimesRef.current.set(key, newWatermark);
           });
         }
       },
