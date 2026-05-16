@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: 力场与多维模拟
-status: executing
-stopped_at: Phase 01.1 UI-SPEC approved
-last_updated: "2026-05-10T07:14:22.619Z"
-last_activity: 2026-05-10 -- Phase 01.1 planning complete
+status: ready_to_execute
+stopped_at: Phase 01.1 plans created (0/9 executed)
+last_updated: "2026-05-16T09:38:45.248Z"
+last_activity: 2026-05-16 -- Phase 01.1 plans created (9 plans / 4 waves), ready to execute Wave 1
 progress:
   total_phases: 7
   completed_phases: 1
   total_plans: 21
-  completed_plans: 11
-  percent: 52
+  completed_plans: 12
+  percent: 57
 ---
 
 # Project State
@@ -21,21 +21,22 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-04 after v1.0 milestone)
 
 **Core value:** 用户可以将任意基础物理组件自由组合，搭建任意场景——不受预设模板限制
-**Current focus:** Phase 02 — 实时物理量图表
+**Current focus:** Phase 01.1 — UI 重构（plans ready to execute）
 
 ## Current Position
 
-Phase: 02 (实时物理量图表) — COMPLETED (code delivered)
-Plan: 6 of 6
-Status: Ready to execute
-Last activity: 2026-05-10 -- Phase 01.1 planning complete
+Phase: 01.1 (UI 重构) — PLANNED, READY TO EXECUTE
+Plan: 0 of 9
+Status: Ready to execute Wave 1
+Last activity: 2026-05-16 -- Phase 01.1 plans created (9 plans / 4 waves)
 
 ## Next Steps
 
-1. **规划 Phase 01.1** — `/gsd-plan-phase 01.1` 分解 UI 重构为可执行计划（CONTEXT.md 已就绪）
-2. **修复 Phase 2 Critical Bugs** — C-01..C-07 中 C-02/C-03/W-01/W-02 由 01.1 承接，C-01/C-04/C-05/C-06/C-07 仍需 Phase 02 review-fix
-3. **执行 Phase 2 UAT** — 14 项人工验收测试 (`02-UAT.md`)
-4. **开始 Phase 3 规划** — 通用力场系统 (`/gsd-plan-phase 3`)，UI 已预留入口
+1. **执行 Phase 01.1 Wave 1** — `/gsd-execute-phase 01.1` 从 01.1-01-PLAN.md（CSS token + z-index + shadcn 5 组件）开始；Wave 1 含 01.1-01/01.1-02 两份 plan
+2. **执行 Phase 01.1 Wave 2-4** — Wave 2: 栅格化骨架（01.1-03/04/05）；Wave 3: 图表修复（01.1-06/07）；Wave 4: 响应式 + a11y 收尾（01.1-08/09）
+3. **修复 Phase 2 数据层 Critical Bugs** — C-01/C-04/C-05/C-06/C-07 由 Phase 02 review-fix 承接（C-02/C-03/W-01/W-02 由 01.1 承接）
+4. **执行 Phase 2 UAT** — 14 项人工验收测试 (`02-UAT.md`)
+5. **开始 Phase 3 规划** — 通用力场系统 (`/gsd-plan-phase 3`)，UI 入口已在 01.1-04 预留
 
 ## Performance Metrics
 
@@ -103,6 +104,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-10T05:44:10.785Z
-Stopped at: Phase 01.1 UI-SPEC approved
-Resume file: .planning/phases/01.1-ui/01.1-UI-SPEC.md
+Last session: 2026-05-16T09:38:45.248Z
+Stopped at: Phase 01.1 plans created (0/9 executed)
+Resume file: .planning/phases/01.1-ui/01.1-01-PLAN.md
