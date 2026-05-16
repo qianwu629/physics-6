@@ -38,6 +38,11 @@ export class ChartDataBuffer {
    * 获取指定指标、指定时间范围的数据点
    * 返回 {time, value}[] 供 lightweight-charts 消费
    * 不修改底层缓冲（V-CHART-06）
+   *
+   * W-08 fix: 时间戳数组按 ring 起点单调非降, 利用此性质 early-exit:
+   * - 若 t > endTime, break (后续点必然都 > endTime)
+   * - 若 t < startTime, 跳过 (尚未进入区间, continue)
+   * 大幅降低 O(N) 扫描成本 (满 ring buffer 60fps × 4 entity × 3 axis 场景)。
    */
   getSeriesData(
     metricIndex: number,
@@ -49,12 +54,12 @@ export class ChartDataBuffer {
     for (let i = 0; i < this.count; i++) {
       const bufIdx = (start + i) % MAX_POINTS;
       const t = this.timestamps[bufIdx];
-      if (t >= startTime && t <= endTime) {
-        result.push({
-          time: t,
-          value: this.data[bufIdx * METRICS_PER_ENTITY + metricIndex],
-        });
-      }
+      if (t > endTime) break; // W-08: monotonic, 后续点都越界
+      if (t < startTime) continue; // W-08: 尚未进入窗口
+      result.push({
+        time: t,
+        value: this.data[bufIdx * METRICS_PER_ENTITY + metricIndex],
+      });
     }
     return result;
   }
