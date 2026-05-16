@@ -1,20 +1,28 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { getOrCreateBuffer, clearAllBuffers, chartBuffers, METRICS_PER_ENTITY } from '../../store/chartBuffer';
 import { useChartDataStore } from '../../store/chartDataStore';
+import * as nowSecondsModule from '../../utils/nowSeconds';
 
 /**
- * ChartSampler 单元测试 — Plan 02-02 Task 2
+ * chartBuffer + chartDataStore 集成测试 — Plan 02-02 Task 2
  *
- * 测试 chartBuffer + chartDataStore 集成行为，
- * 覆盖 ChartSampler 组件的核心逻辑：
+ * W-03 fix: 文件名/描述对齐实际范围 — 本测试套件不挂载 ChartSampler
+ * React 组件 (R3F useFrame 在 jsdom 中难以驱动), 而是验证写入侧 buffer +
+ * 配置 store 的集成行为, 并新增一个 "writer 与 reader 共用 nowSeconds()"
+ * 端到端用例以检测 C-01 类时间基准漂移。
+ *
+ * 真实组件挂载测试待 R3F 测试工具就绪后补 (e.g. @react-three/test-renderer).
+ *
+ * 覆盖:
  * - 暂停冻结 (V-CHART-04)
  * - 追踪/未追踪实体采样
  * - 重置清空 (V-CHART-05)
  * - 12 指标索引正确性
  * - 多实体独立缓冲
+ * - writer/reader 时钟基准一致 (W-04 protection)
  */
 
-describe('ChartSampster (buffer + store integration)', () => {
+describe('chartBuffer + store integration', () => {
   beforeEach(() => {
     clearAllBuffers();
     // Reset chartDataStore to initial state
@@ -192,5 +200,41 @@ describe('ChartSampster (buffer + store integration)', () => {
     expect(chartBuffers.has('entity-A')).toBe(true);
     expect(chartBuffers.has('entity-B')).toBe(true);
     expect(chartBuffers.has('entity-C')).toBe(true);
+  });
+
+  // ──── Test 6 (W-03 / W-04 regression): writer 与 reader 共用 nowSeconds() ────
+  // 这个端到端用例显式验证 C-01 类时间基准 bug 的回归保护:
+  // 写入侧用 nowSeconds() 推, 读取侧用同一 nowSeconds() 取 visible range,
+  // slice 应非空。任何一侧绕过 helper 调用 Date.now()/1000 都会让 spy 失效
+  // → 写入侧时间戳与读取侧 visible range 不交 → 断言失败。
+  it('writer/reader using shared nowSeconds() helper see overlapping slice (W-03/W-04 regression)', () => {
+    const FIXED_NOW = 1_700_000_000;
+    const nowSpy = vi.spyOn(nowSecondsModule, 'nowSeconds').mockReturnValue(FIXED_NOW);
+
+    try {
+      // Writer 侧: 模拟 ChartSampler 用 nowSeconds() 写入近期样本
+      const entityId = 'integration-entity';
+      const buf = getOrCreateBuffer(entityId);
+      const metrics = new Float64Array(METRICS_PER_ENTITY);
+      metrics[1] = 42; // y position
+      // 5 个样本, 时间从 FIXED_NOW-4 到 FIXED_NOW
+      for (let i = -4; i <= 0; i++) {
+        const t = nowSecondsModule.nowSeconds() + i; // = FIXED_NOW + i
+        buf.push(t, metrics);
+      }
+
+      // Reader 侧: 模拟 ChartCanvas refreshAll 用 nowSeconds() 取 5s 窗口
+      const now = nowSecondsModule.nowSeconds();
+      const slice = buf.getSeriesData(1, now - 5, now);
+
+      // 期望 slice 非空且包含全部 5 个样本
+      expect(slice.length).toBe(5);
+      expect(slice[0].time).toBe(FIXED_NOW - 4);
+      expect(slice[4].time).toBe(FIXED_NOW);
+      // value 应是 metrics[1] = 42
+      expect(slice[0].value).toBe(42);
+    } finally {
+      nowSpy.mockRestore();
+    }
   });
 });
