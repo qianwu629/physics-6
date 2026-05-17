@@ -29,6 +29,8 @@ import type {
   TrailComponent,
   VectorComponent,
   ColliderParams,
+  ForceFieldComponent,
+  ForceFieldKind,
 } from '../ecs/types';
 import { DEFAULT_COLORS } from '../ecs/components/Material';
 
@@ -48,6 +50,14 @@ const SHAPE_LABELS: Record<string, string> = {
   sphere: '球体',
   cuboid: '方块',
   cylinder: '圆柱',
+};
+
+/** ForceField kind display names in Chinese (D-03-06) */
+const FORCE_FIELD_KIND_LABELS: Record<ForceFieldKind, string> = {
+  uniform: '均匀方向场',
+  gravity: '点引力源',
+  electric: '点电荷电场',
+  magnetic: '均匀磁场',
 };
 
 // ── PhysicsField — 可编辑/只读切换 ──
@@ -232,8 +242,10 @@ export default function PropertyPanel() {
   const constraint = selectedEntity?.components.get('constraint') as ConstraintComponent | undefined;
   const trailComp = selectedEntity?.components.get('trail') as TrailComponent | undefined;
   const vectorComp = selectedEntity?.components.get('vector') as VectorComponent | undefined;
+  const forceField = selectedEntity?.components.get('forceField') as ForceFieldComponent | undefined;
 
   const isSpring = !!constraint;
+  const isForceField = !!forceField;
 
   // Resolve endpoint entity names for spring editor
   const entityAName = useSimulationStore((s) => {
@@ -292,6 +304,15 @@ export default function PropertyPanel() {
     [selectedEntityId, updateComponent],
   );
 
+  // Phase 3 (03-03): charge 字段 (D-03-06)
+  const handleChargeChange = useCallback(
+    (val: number) => {
+      if (!selectedEntityId) return;
+      updateComponent(selectedEntityId, 'rigidBody', { charge: val });
+    },
+    [selectedEntityId, updateComponent],
+  );
+
   const handleColliderParamChange = useCallback(
     (key: keyof ColliderParams, val: number) => {
       if (!selectedEntityId || !collider) return;
@@ -345,6 +366,71 @@ export default function PropertyPanel() {
       });
     },
     [selectedEntityId, constraint, updateComponent],
+  );
+
+  // ── Phase 3 (03-03): ForceField property handlers (D-03-06) ──
+  const handleForceFieldRangeChange = useCallback(
+    (val: number) => {
+      if (!selectedEntityId || !forceField) return;
+      updateComponent(selectedEntityId, 'forceField', { range: val });
+    },
+    [selectedEntityId, forceField, updateComponent],
+  );
+
+  const handleForceFieldStrengthChange = useCallback(
+    (val: number) => {
+      if (!selectedEntityId || !forceField) return;
+      updateComponent(selectedEntityId, 'forceField', { strength: val } as Partial<ForceFieldComponent>);
+    },
+    [selectedEntityId, forceField, updateComponent],
+  );
+
+  const handleForceFieldChargeChange = useCallback(
+    (val: number) => {
+      if (!selectedEntityId || !forceField) return;
+      updateComponent(selectedEntityId, 'forceField', { charge: val } as Partial<ForceFieldComponent>);
+    },
+    [selectedEntityId, forceField, updateComponent],
+  );
+
+  const handleForceFieldDecayChange = useCallback(
+    (val: boolean) => {
+      if (!selectedEntityId || !forceField) return;
+      updateComponent(selectedEntityId, 'forceField', { decay: val } as Partial<ForceFieldComponent>);
+    },
+    [selectedEntityId, forceField, updateComponent],
+  );
+
+  const handleForceFieldDirectionChange = useCallback(
+    (index: number, val: number) => {
+      if (!selectedEntityId || !forceField) return;
+      const current =
+        forceField.kind === 'uniform' || forceField.kind === 'magnetic'
+          ? forceField.direction
+          : [0, 0, 0];
+      const newDir: [number, number, number] = [current[0], current[1], current[2]];
+      newDir[index] = val;
+      updateComponent(selectedEntityId, 'forceField', { direction: newDir } as Partial<ForceFieldComponent>);
+    },
+    [selectedEntityId, forceField, updateComponent],
+  );
+
+  const handleForceFieldPositionChange = useCallback(
+    (index: number, val: number) => {
+      if (!selectedEntityId || !forceField) return;
+      const newPos: [number, number, number] = [
+        forceField.position[0],
+        forceField.position[1],
+        forceField.position[2],
+      ];
+      newPos[index] = val;
+      // 同步更新 transform.position 和 forceField.position (ECS 双 source — D-03-01: 力场只读 transform.position 即可)
+      updateComponent(selectedEntityId, 'forceField', { position: newPos });
+      if (transform) {
+        updateComponent(selectedEntityId, 'transform', { position: newPos });
+      }
+    },
+    [selectedEntityId, forceField, transform, updateComponent],
   );
 
   // Panel border based on editable/readonly state
@@ -411,6 +497,168 @@ export default function PropertyPanel() {
             <div className="text-sm text-center py-6" style={{ color: '#666' }}>
               点击场景中的实体或从上方列表选择以编辑属性
             </div>
+          ) : isForceField && forceField ? (
+            /* ── ForceField Property Editor (D-03-06) ── */
+            <>
+              {/* Running banner */}
+              {disabled && (
+                <div className="mb-3 px-3 py-2 rounded-lg text-xs text-center bg-[rgba(59,130,246,0.1)] text-[#3b82f6] border border-[rgba(59,130,246,0.2)]">
+                  运行中,请暂停后编辑
+                </div>
+              )}
+
+              <div className="text-sm text-center" style={{ color: '#a0a0a0' }}>
+                当前选中: <span style={{ color: '#3b82f6' }}>{selectedEntity.name}</span>
+              </div>
+
+              <Separator className="bg-white/[0.06]" />
+
+              {/* 力场类型 — 只读 */}
+              <div className="flex items-center justify-between py-1">
+                <span className="text-sm" style={{ color: '#a0a0a0' }}>类型</span>
+                <span className="text-sm font-mono" style={{ color: '#e0e0e0' }}>
+                  {FORCE_FIELD_KIND_LABELS[forceField.kind]}
+                </span>
+              </div>
+
+              <Separator className="bg-white/[0.06]" />
+
+              {/* 中心位置 */}
+              <Vector3Field
+                label="中心位置"
+                value={forceField.position}
+                unit="米"
+                min={-100}
+                max={100}
+                step={0.1}
+                disabled={disabled}
+                onChange={handleForceFieldPositionChange}
+              />
+
+              <Separator className="bg-white/[0.06]" />
+
+              {/* 作用范围 */}
+              <PhysicsField
+                label="作用范围"
+                value={forceField.range}
+                unit="米"
+                min={0.1}
+                max={100}
+                step={0.1}
+                disabled={disabled}
+                onChange={handleForceFieldRangeChange}
+              />
+
+              <Separator className="bg-white/[0.06]" />
+
+              {/* 类型专用参数 */}
+              {forceField.kind === 'uniform' && (
+                <>
+                  <Vector3Field
+                    label="方向向量"
+                    value={forceField.direction}
+                    min={-100}
+                    max={100}
+                    step={0.1}
+                    disabled={disabled}
+                    onChange={handleForceFieldDirectionChange}
+                  />
+                  <PhysicsField
+                    label="强度"
+                    value={forceField.strength}
+                    unit="N"
+                    min={-1000}
+                    max={1000}
+                    step={1}
+                    disabled={disabled}
+                    onChange={handleForceFieldStrengthChange}
+                  />
+                </>
+              )}
+
+              {forceField.kind === 'gravity' && (
+                <>
+                  <PhysicsField
+                    label="G·M 强度"
+                    value={forceField.strength}
+                    unit="N·m²"
+                    min={0}
+                    max={10000}
+                    step={1}
+                    disabled={disabled}
+                    onChange={handleForceFieldStrengthChange}
+                  />
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm text-[#a0a0a0]">1/r² 衰减</label>
+                    <Switch
+                      checked={forceField.decay}
+                      onCheckedChange={handleForceFieldDecayChange}
+                      disabled={disabled}
+                    />
+                  </div>
+                </>
+              )}
+
+              {forceField.kind === 'electric' && (
+                <>
+                  <PhysicsField
+                    label="场源电荷"
+                    value={forceField.charge}
+                    unit="C"
+                    min={-100}
+                    max={100}
+                    step={0.1}
+                    disabled={disabled}
+                    onChange={handleForceFieldChargeChange}
+                  />
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm text-[#a0a0a0]">1/r² 衰减</label>
+                    <Switch
+                      checked={forceField.decay}
+                      onCheckedChange={handleForceFieldDecayChange}
+                      disabled={disabled}
+                    />
+                  </div>
+                </>
+              )}
+
+              {forceField.kind === 'magnetic' && (
+                <>
+                  <Vector3Field
+                    label="B 场方向"
+                    value={forceField.direction}
+                    min={-100}
+                    max={100}
+                    step={0.1}
+                    disabled={disabled}
+                    onChange={handleForceFieldDirectionChange}
+                  />
+                  <PhysicsField
+                    label="B 场强度"
+                    value={forceField.strength}
+                    unit="T"
+                    min={0}
+                    max={1000}
+                    step={0.1}
+                    disabled={disabled}
+                    onChange={handleForceFieldStrengthChange}
+                  />
+                </>
+              )}
+
+              <Separator className="bg-white/[0.06]" />
+
+              {/* 删除按钮 */}
+              <Button
+                variant="destructive"
+                className="w-full"
+                size="default"
+                onClick={openDeleteDialog}
+                style={{ marginBottom: '8px' }}
+              >
+                删除力场
+              </Button>
+            </>
           ) : isSpring ? (
             /* ── Spring Property Editor ── */
             <>
@@ -689,6 +937,16 @@ export default function PropertyPanel() {
                     step={0.01}
                     disabled={disabled}
                     onChange={handleFrictionChange}
+                  />
+                  <PhysicsField
+                    label="电荷"
+                    value={rigidBody?.charge ?? 0}
+                    unit="C"
+                    min={-10}
+                    max={10}
+                    step={0.1}
+                    disabled={disabled}
+                    onChange={handleChargeChange}
                   />
                 </div>
               </div>
