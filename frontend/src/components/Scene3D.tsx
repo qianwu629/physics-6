@@ -10,6 +10,7 @@ import EntityRenderer from './EntityRenderer';
 import SpringRenderer from './SpringRenderer';
 import { TrajectoryRenderer } from './TrajectoryRenderer';
 import { VectorRenderer } from './VectorRenderer';
+import { ForceFieldSystem } from './ForceFieldSystem';
 import { ChartSampler } from '../ecs/ChartSampler';
 import { RigidBodyRefContext } from './RigidBodyRefContext';
 
@@ -296,6 +297,9 @@ export default function Scene3D() {
 
           {/* Phase 4: 矢量渲染 — VectorRenderer */}
           <VectorRenderer />
+
+          {/* Phase 3: 力场注入 — ForceFieldSystem (useBeforePhysicsStep) */}
+          <ForceFieldSystem />
 
           {/* Phase 2: 图表采样 — ChartSampler */}
           <ChartSampler />
