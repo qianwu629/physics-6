@@ -16,7 +16,7 @@ Physis 已交付 v1.0 物理沙盒 MVP（5 阶段，12/12 需求闭环）。v2.0
 - [x] **Phase 1: 持久化与场景库** - JSON 文件 IO + localStorage 快照 + 预设场景库 + 测试基线修复 (completed 2026-05-04)
 - [ ] **Phase 01.1: ui重构 (INSERTED)** - UI 全面重构：bug修复 + shadcn设计系统 + 栅格化 + 响应式 + a11y + Phase 3/5预留 (planned 2026-05-10)
 - [ ] **Phase 2: 实时物理量图表** - 位置/速度/加速度/能量曲线 + 多实体多曲线 + 浮动图表面板
-- [ ] **Phase 3: 通用力场系统** - ForceField 框架 + 4 种预设（方向/引力/电场/磁场）+ 力线可视化
+- [ ] **Phase 3: 通用力场系统** - ForceField 框架 + 4 种预设（方向/引力/电场/磁场）+ 力线可视化 (planned 2026-05-17)
 - [ ] **Phase 4: 表达式驱动外加力** - 解析器集成 + 实体级公式力计算
 - [ ] **Phase 5: 自由飞行摄像机 + 2D 模式** - FPS WSAD/鼠标控制 + 触控 fallback + z 轴约束 + 正交相机
 - [ ] **Phase 6: 弹簧选中精度 + 多体稳定性 + 性能优化** - DEBT-01..03 闭环
@@ -91,8 +91,19 @@ Plans:
   3. 用户可通过 Toolbox + CreationDialog 添加力场实体，PropertyPanel 编辑参数；力场体积/箭头矩阵 3D 可视化
   4. 力线可视化（流线/电场线/磁感线）可通过 Toolbar toggle 开启，密度反映场强
   5. 带电荷的实体响应电磁场作用力（与重力叠加），物理行为正确（如圆周运动 / 抛物线偏转）
-**Plans**: TBD (run /gsd-plan-phase 3)
+**Plans**: 5 plans in 3 waves
 **UI hint**: yes
+
+Plans:
+- [ ] 03-01-PLAN.md — ECS 类型扩展 + Entity 工厂 + RigidBody charge (Wave 1)
+- [ ] 03-02-PLAN.md — 力场计算引擎 + Rapier useBeforeStep 注入 (Wave 1)
+- [ ] 03-03-PLAN.md — UI: ForceFieldDialog + Toolbox + PropertyPanel (Wave 2)
+- [ ] 03-04-PLAN.md — 3D 可视化: 箭头矩阵 + 半透明球体 (Wave 2)
+- [ ] 03-05-PLAN.md — 力线 + 序列化 + 点电荷预设场景 (Wave 3)
+
+**Wave dependency notes:**
+- **Wave 2** *(blocked on Wave 1 completion)*
+- **Wave 3** *(blocked on Wave 1+2 completion)*
 
 ### Phase 4: 表达式驱动外加力
 **Goal**: 用户可为任意实体绑定数学表达式，每帧根据实体状态（pos/vel/time/mass）计算外加力矢量；表达式语法错误即时反馈；性能合理（50+ 实体每帧 <2ms 解析开销）。
@@ -141,7 +152,7 @@ Phases execute in numeric order: 1 → 01.1 → 2 → 3 → 4 → 5 → 6
 | 1. 持久化与场景库              | 6/6 | Complete    | 2026-05-04 |
 | 01.1. ui重构 (INSERTED)         | 0/9 | Planned     | -          |
 | 2. 实时物理量图表              | 6/6 | Planned     | 2026-05-05 |
-| 3. 通用力场系统                | 0/0 | Not started | -          |
+| 3. 通用力场系统                | 0/5 | Planned     | 2026-05-17 |
 | 4. 表达式驱动外加力            | 0/0 | Not started | -          |
 | 5. 自由飞行摄像机 + 2D 模式    | 0/0 | Not started | -          |
 | 6. 弹簧选中 + 稳定性 + 性能    | 0/0 | Not started | -          |

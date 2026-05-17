@@ -9,7 +9,7 @@ last_activity: 2026-05-17 -- Phase 02 execution started
 progress:
   total_phases: 7
   completed_phases: 2
-  total_plans: 21
+  total_plans: 26
   completed_plans: 12
   percent: 57
 ---
@@ -25,18 +25,17 @@ See: .planning/PROJECT.md (updated 2026-05-04 after v1.0 milestone)
 
 ## Current Position
 
-Phase: 02 (实时物理量图表) — EXECUTING
-Plan: 1 of 6
-Status: Executing Phase 02
-Last activity: 2026-05-17 -- Phase 02 execution started
+Phase: 03 (通用力场系统) — PLANNED
+Plan: 5 plans in 3 waves
+Status: Ready to execute
+Last activity: 2026-05-17 -- Phase 03 planning completed
 
 ## Next Steps
 
-1. **执行 Phase 01.1 Wave 1** — `/gsd-execute-phase 01.1` 从 01.1-01-PLAN.md（CSS token + z-index + shadcn 5 组件）开始；Wave 1 含 01.1-01/01.1-02 两份 plan
-2. **执行 Phase 01.1 Wave 2-4** — Wave 2: 栅格化骨架（01.1-03/04/05）；Wave 3: 图表修复（01.1-06/07）；Wave 4: 响应式 + a11y 收尾（01.1-08/09）
-3. **修复 Phase 2 数据层 Critical Bugs** — C-01/C-04/C-05/C-06/C-07 由 Phase 02 review-fix 承接（C-02/C-03/W-01/W-02 由 01.1 承接）
-4. **执行 Phase 2 UAT** — 14 项人工验收测试 (`02-UAT.md`)
-5. **开始 Phase 3 规划** — 通用力场系统 (`/gsd-plan-phase 3`)，UI 入口已在 01.1-04 预留
+1. **执行 Phase 3** — `/gsd-execute-phase 3` 从 03-01-PLAN.md（ECS 类型 + Entity 工厂）开始
+2. **Phase 3 Waves**: Wave 1: 03-01/03-02（类型+计算）；Wave 2: 03-03/03-04（UI+可视化）；Wave 3: 03-05（力线+序列化+预设）
+3. **执行 Phase 01.1** — UI 重构（如需要前置执行）
+4. **修复 Phase 2 数据层 Critical Bugs** — C-01/C-04/C-05/C-06/C-07 待修复
 
 ## Performance Metrics
 
@@ -100,7 +99,7 @@ None yet.
 
 - **Phase 2 Critical Bugs:** 7 个 Critical 问题待修复（详见 `02-REVIEW.md`），其中 C-01（时间基准 mismatch）和 C-02（Draggable ref 错误）会导致生产环境功能完全不可用
 - **Phase 2 UAT Pending:** 14 项人工验收测试尚未执行
-- **Phase 3+ 未规划:** Phase 3-6 尚未创建计划文件
+- **Phase 3 Ready:** 5 plans 已规划完成，等待执行
 
 ## Session Continuity
 
