@@ -2,15 +2,19 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import {
   createEntity, createSphereEntity, createBoxEntity,
   createCylinderEntity, createSlopeEntity, resetEntityCounter,
+  createForceFieldEntity,
 } from '../Entity';
-import type { TransformComponent, RigidBodyComponent, ColliderComponent, VelocityComponent, MaterialComponent } from '../types';
+import type {
+  TransformComponent, RigidBodyComponent, ColliderComponent, VelocityComponent, MaterialComponent,
+  ForceFieldComponent,
+} from '../types';
 
 describe('ECS Entity Factory', () => {
   beforeEach(() => resetEntityCounter());
 
   it('createEntity assembles components into a Map', () => {
     const transform: TransformComponent = { type: 'transform', position: [0,0,0], rotation: [0,0,0], scale: [1,1,1] };
-    const rigidBody: RigidBodyComponent = { type: 'rigidBody', kind: 'dynamic', mass: 1.0, restitution: 0.5, friction: 0.3 };
+    const rigidBody: RigidBodyComponent = { type: 'rigidBody', kind: 'dynamic', mass: 1.0, restitution: 0.5, friction: 0.3, charge: 0 };
     const entity = createEntity('test-1', 'Test', [transform, rigidBody]);
     expect(entity.id).toBe('test-1');
     expect(entity.name).toBe('Test');
@@ -103,5 +107,41 @@ describe('ECS Entity Factory', () => {
     expect(vector!.type).toBe('vector');
     expect((vector as any).showVelocity).toBe(true);
     expect((vector as any).showForces).toBe(true);
+  });
+
+  // ── Phase 3 D-03-01 / D-03-02 新增 ──
+
+  it('createSphereEntity rigidBody has charge=0 by default (D-03-02)', () => {
+    const e = createSphereEntity(1.0, 1.0, 0.5, 0.3);
+    const rb = e.components.get('rigidBody') as RigidBodyComponent;
+    expect(rb.charge).toBe(0);
+  });
+
+  it('createForceFieldEntity returns entity with forcefield- ID prefix (D-03-01)', () => {
+    const e = createForceFieldEntity('uniform', [0, 5, 0], 10, {
+      direction: [0, 1, 0],
+      strength: 5,
+    });
+    expect(e.id).toMatch(/^forcefield-\d+$/);
+    expect(e.name).toBe('力场-uniform-1');
+  });
+
+  it('createForceFieldEntity attaches transform + forceField components', () => {
+    const e = createForceFieldEntity('gravity', [1, 2, 3], 20, {
+      strength: 9.81,
+      decay: true,
+    });
+    expect(e.components.has('transform')).toBe(true);
+    expect(e.components.has('forceField')).toBe(true);
+    const t = e.components.get('transform') as TransformComponent;
+    expect(t.position).toEqual([1, 2, 3]);
+    const f = e.components.get('forceField') as ForceFieldComponent;
+    expect(f.kind).toBe('gravity');
+    expect(f.range).toBe(20);
+    expect(f.position).toEqual([1, 2, 3]);
+    if (f.kind === 'gravity') {
+      expect(f.strength).toBe(9.81);
+      expect(f.decay).toBe(true);
+    }
   });
 });

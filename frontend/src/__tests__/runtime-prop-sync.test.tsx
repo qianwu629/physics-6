@@ -120,6 +120,7 @@ function makeEntity(
     mass: overrides?.mass ?? 1,
     restitution: overrides?.restitution ?? 0.5,
     friction: overrides?.friction ?? 0.5,
+    charge: 0,
   };
   components.set('rigidBody', rb);
   components.set('collider', {

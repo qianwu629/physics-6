@@ -1,4 +1,10 @@
-import type { Entity, Component, ComponentType, TransformComponent, RigidBodyComponent, ColliderComponent, VelocityComponent, MaterialComponent, ConstraintComponent, TrailComponent, VectorComponent, SpringConstraintParams } from './types';
+import type {
+  Entity, Component, ComponentType,
+  TransformComponent, RigidBodyComponent, ColliderComponent, VelocityComponent, MaterialComponent,
+  ConstraintComponent, TrailComponent, VectorComponent, SpringConstraintParams,
+  ForceFieldKind, ForceFieldComponent,
+  UniformFieldComponent, GravityFieldComponent, ElectricFieldComponent, MagneticFieldComponent,
+} from './types';
 import { DEFAULT_COLORS, DEFAULT_MATERIAL } from './components/Material';
 
 export const DEFAULT_SPRING_PARAMS: SpringConstraintParams = {
@@ -62,6 +68,7 @@ export function createSphereEntity(
       mass,
       restitution,
       friction,
+      charge: 0,
     } as RigidBodyComponent,
     {
       type: 'collider',
@@ -97,7 +104,7 @@ export function createBoxEntity(
   const n = nextNumber();
   const components: Component[] = [
     { type: 'transform', position: position ?? [0, 5, 0], rotation: [0, 0, 0], scale: [1, 1, 1] } as TransformComponent,
-    { type: 'rigidBody', kind: 'dynamic', mass, restitution, friction } as RigidBodyComponent,
+    { type: 'rigidBody', kind: 'dynamic', mass, restitution, friction, charge: 0 } as RigidBodyComponent,
     { type: 'collider', shape: 'cuboid', params: { halfWidth, halfHeight, halfDepth } } as ColliderComponent,
     { type: 'material', color: color ?? DEFAULT_COLORS.box, roughness: DEFAULT_MATERIAL.roughness, metalness: DEFAULT_MATERIAL.metalness } as MaterialComponent,
     { type: 'velocity', linearVelocity: velocity ?? [0, 0, 0], angularVelocity: [0, 0, 0] } as VelocityComponent,
@@ -118,7 +125,7 @@ export function createCylinderEntity(
   const n = nextNumber();
   const components: Component[] = [
     { type: 'transform', position: position ?? [0, 5, 0], rotation: [0, 0, 0], scale: [1, 1, 1] } as TransformComponent,
-    { type: 'rigidBody', kind: 'dynamic', mass, restitution, friction } as RigidBodyComponent,
+    { type: 'rigidBody', kind: 'dynamic', mass, restitution, friction, charge: 0 } as RigidBodyComponent,
     { type: 'collider', shape: 'cylinder', params: { halfHeight, radius } } as ColliderComponent,
     { type: 'material', color: color ?? DEFAULT_COLORS.cylinder, roughness: DEFAULT_MATERIAL.roughness, metalness: DEFAULT_MATERIAL.metalness } as MaterialComponent,
     { type: 'velocity', linearVelocity: velocity ?? [0, 0, 0], angularVelocity: [0, 0, 0] } as VelocityComponent,
@@ -142,7 +149,7 @@ export function createSlopeEntity(
       rotation: [0, 0, Math.PI / 6],  // 绕 Z 轴 30° — 标准斜面角度
       scale: [1, 1, 1],
     } as TransformComponent,
-    { type: 'rigidBody', kind: 'fixed', mass: 0, restitution: 0.5, friction } as RigidBodyComponent,
+    { type: 'rigidBody', kind: 'fixed', mass: 0, restitution: 0.5, friction, charge: 0 } as RigidBodyComponent,
     { type: 'collider', shape: 'cuboid', params: { halfWidth, halfHeight, halfDepth } } as ColliderComponent,
     { type: 'material', color: color ?? DEFAULT_COLORS.slope, roughness: DEFAULT_MATERIAL.roughness, metalness: DEFAULT_MATERIAL.metalness } as MaterialComponent,
     { type: 'velocity', linearVelocity: [0, 0, 0], angularVelocity: [0, 0, 0] } as VelocityComponent,
@@ -173,4 +180,48 @@ export function createSpringEntity(
     params: mergedParams,
   };
   return createEntity(`spring-${n}`, `弹簧-${n}`, [constraintComp]);
+}
+
+// ── Phase 3: ForceField 工厂 (D-03-01) ──
+
+/**
+ * 力场工厂的「额外参数」映射 — 按 kind 决定具体字段形状。
+ * 与 ForceFieldComponent 判别联合保持一致（types.ts D-03-03）。
+ */
+export type ForceFieldKindParams = {
+  uniform: Omit<UniformFieldComponent, 'type' | 'kind' | 'position' | 'range'>;
+  gravity: Omit<GravityFieldComponent, 'type' | 'kind' | 'position' | 'range'>;
+  electric: Omit<ElectricFieldComponent, 'type' | 'kind' | 'position' | 'range'>;
+  magnetic: Omit<MagneticFieldComponent, 'type' | 'kind' | 'position' | 'range'>;
+};
+
+/**
+ * 创建力场实体 (D-03-01)
+ * 仅含 transform + forceField — 不参与碰撞，不参与 EntityRenderer。
+ */
+export function createForceFieldEntity<K extends ForceFieldKind>(
+  kind: K,
+  position: [number, number, number],
+  range: number,
+  params: ForceFieldKindParams[K],
+): Entity {
+  const n = nextNumber();
+  const transformComp: TransformComponent = {
+    type: 'transform',
+    position,
+    rotation: [0, 0, 0],
+    scale: [1, 1, 1],
+  };
+  const forceFieldComp = {
+    type: 'forceField' as const,
+    kind,
+    position,
+    range,
+    ...params,
+  } as ForceFieldComponent;
+  return createEntity(
+    `forcefield-${n}`,
+    `力场-${kind}-${n}`,
+    [transformComp, forceFieldComp],
+  );
 }
