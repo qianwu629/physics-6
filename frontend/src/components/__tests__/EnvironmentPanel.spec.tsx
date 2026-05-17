@@ -135,16 +135,22 @@ describe('EnvironmentPanel', () => {
 
     it('disables all sliders when running', () => {
       renderPanel({ isRunning: true });
+      const peSection = document.querySelector('[data-testid="pe-reference-section"]');
       const sliders = document.querySelectorAll('input[type="range"]');
       sliders.forEach((s) => {
+        // Phase 2: peReferenceY slider remains enabled while running
+        if (peSection?.contains(s)) return;
         expect((s as HTMLInputElement).disabled).toBe(true);
       });
     });
 
     it('disables all number inputs when running', () => {
       renderPanel({ isRunning: true });
+      const peSection = document.querySelector('[data-testid="pe-reference-section"]');
       const numberInputs = document.querySelectorAll('input[type="number"]');
       numberInputs.forEach((input) => {
+        // Phase 2: peReferenceY inputs remain enabled while running
+        if (peSection?.contains(input)) return;
         expect((input as HTMLInputElement).disabled).toBe(true);
       });
     });

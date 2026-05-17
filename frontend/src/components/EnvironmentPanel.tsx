@@ -251,7 +251,7 @@ export default function EnvironmentPanel() {
       <div className="h-px bg-[rgba(255,255,255,0.06)] my-3" />
 
       {/* Phase 2: 势能参考高度 */}
-      <div className="mb-2">
+      <div className="mb-2" data-testid="pe-reference-section">
         <div className="text-xs font-medium text-[#a0a0a0] mb-2">势能参考高度 (y=0)</div>
         <HighlightSlider
           value={peReferenceY}
