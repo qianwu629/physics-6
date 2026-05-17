@@ -9,6 +9,7 @@ import CreationDialog from './CreationDialog';
 import EnvironmentPanel from './EnvironmentPanel';
 import SpringCreationBanner from './SpringCreationBanner';
 import SpringCreationDialog from './SpringCreationDialog';
+import ForceFieldDialog from './ForceFieldDialog';
 import LoadingScreen from './LoadingScreen';
 import ErrorFallback from './ErrorFallback';
 import type { ErrorType } from './ErrorFallback';
@@ -312,6 +313,7 @@ export default function App() {
       <EnvironmentPanel />
       <SpringCreationBanner />
       <SpringCreationDialog />
+      <ForceFieldDialog />
     </>
   );
 }
