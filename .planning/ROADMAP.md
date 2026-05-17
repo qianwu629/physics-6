@@ -95,9 +95,9 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 03-01-PLAN.md — ECS 类型扩展 + Entity 工厂 + RigidBody charge (Wave 1)
-- [ ] 03-02-PLAN.md — 力场计算引擎 + Rapier useBeforeStep 注入 (Wave 1)
-- [ ] 03-03-PLAN.md — UI: ForceFieldDialog + Toolbox + PropertyPanel (Wave 2)
+- [x] 03-01-PLAN.md — ECS 类型扩展 + Entity 工厂 + RigidBody charge (Wave 1)
+- [x] 03-02-PLAN.md — 力场计算引擎 + Rapier useBeforeStep 注入 (Wave 1)
+- [x] 03-03-PLAN.md — UI: ForceFieldDialog + Toolbox + PropertyPanel (Wave 2)
 - [ ] 03-04-PLAN.md — 3D 可视化: 箭头矩阵 + 半透明球体 (Wave 2)
 - [ ] 03-05-PLAN.md — 力线 + 序列化 + 点电荷预设场景 (Wave 3)
 
