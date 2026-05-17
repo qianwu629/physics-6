@@ -1,12 +1,20 @@
-import { Circle, Square, Database, TriangleAlert, Link2, Plus, X } from 'lucide-react';
+import { Circle, Square, Database, TriangleAlert, Link2, Plus, X, ArrowUp, Crosshair, Zap, Magnet } from 'lucide-react';
 import { useSimulationStore } from '../store';
 import type { ShapeType } from '../store/uiSlice';
+import type { ForceFieldKind } from '../ecs/types';
 
 const SHAPES: { type: ShapeType; label: string; tooltip: string; shortcut: string; Icon: typeof Circle }[] = [
   { type: 'sphere', label: '添加球体', tooltip: '添加球体', shortcut: 'B', Icon: Circle },
   { type: 'box', label: '添加方块', tooltip: '添加方块', shortcut: 'N', Icon: Square },
   { type: 'cylinder', label: '添加圆柱', tooltip: '添加圆柱', shortcut: 'C', Icon: Database },
   { type: 'slope', label: '添加斜面', tooltip: '添加斜面', shortcut: 'S', Icon: TriangleAlert },
+];
+
+const FORCE_FIELDS: { kind: ForceFieldKind; label: string; Icon: typeof Circle }[] = [
+  { kind: 'uniform', label: '均匀方向场', Icon: ArrowUp },
+  { kind: 'gravity', label: '点引力源', Icon: Crosshair },
+  { kind: 'electric', label: '点电荷电场', Icon: Zap },
+  { kind: 'magnetic', label: '均匀磁场', Icon: Magnet },
 ];
 
 export default function Toolbox() {
@@ -16,6 +24,7 @@ export default function Toolbox() {
   const enterSpringMode = useSimulationStore((s) => s.enterSpringMode);
   const exitSpringMode = useSimulationStore((s) => s.exitSpringMode);
   const springCreationStage = useSimulationStore((s) => s.springCreationStage);
+  const openForceFieldDialog = useSimulationStore((s) => s.openForceFieldDialog);
 
   const isSpringMode = springCreationStage !== 'idle';
 
@@ -82,6 +91,26 @@ export default function Toolbox() {
           >
             <Link2 size={20} strokeWidth={2} />
           </button>
+
+          {/* 力场按钮分隔线 — Phase 3 (03-03) D-03-05 */}
+          <div className="w-6 h-px my-1" style={{ background: 'rgba(255,255,255,0.08)' }} />
+
+          {/* 力场按钮组 — 4 个图标按钮 (D-03-05) */}
+          {FORCE_FIELDS.map(({ kind, label, Icon }) => (
+            <button
+              key={kind}
+              type="button"
+              aria-label={label}
+              title={label}
+              onClick={() => openForceFieldDialog(kind)}
+              className="flex items-center justify-center w-10 h-10 rounded-lg
+                text-[#a0a0a0] hover:bg-[rgba(59,130,246,0.15)] hover:text-[#3b82f6]
+                active:bg-[rgba(59,130,246,0.3)] active:scale-95
+                transition-all duration-150"
+            >
+              <Icon size={20} strokeWidth={2} />
+            </button>
+          ))}
 
           {/* 折叠按钮 */}
           <button

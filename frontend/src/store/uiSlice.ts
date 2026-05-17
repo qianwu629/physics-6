@@ -1,4 +1,5 @@
 import type { StateCreator } from 'zustand';
+import type { ForceFieldKind } from '../ecs/types';
 
 /**
  * UI 状态切片
@@ -30,6 +31,12 @@ export interface UiSlice {
   springDialogOpen: boolean;
   environmentPanelOpen: boolean;
 
+  // ── Phase 3 (03-03): 力场创建对话框 (D-03-04 / D-03-05) ──
+  /** 力场创建对话框是否打开 */
+  forceFieldDialogOpen: boolean;
+  /** 当前预选的力场类型 (来自 Toolbox 按钮点击) */
+  forceFieldDialogKind: ForceFieldKind | null;
+
   // ── Actions ──
 
   toggleToolbox: () => void;
@@ -53,6 +60,11 @@ export interface UiSlice {
 
   toggleEnvironmentPanel: () => void;
   closeEnvironmentPanel: () => void;
+
+  // ── Force Field Dialog Actions (D-03-04 / D-03-05) ──
+
+  openForceFieldDialog: (kind: ForceFieldKind) => void;
+  closeForceFieldDialog: () => void;
 }
 
 export type UiStore = UiSlice;
@@ -70,6 +82,10 @@ export const createUiSlice: StateCreator<UiSlice, [], [], UiSlice> = (set) => ({
   springEntityBId: null,
   springDialogOpen: false,
   environmentPanelOpen: false,
+
+  // Phase 3 (03-03): 力场对话框
+  forceFieldDialogOpen: false,
+  forceFieldDialogKind: null,
 
   toggleToolbox: () => set((s) => ({ toolboxCollapsed: !s.toolboxCollapsed })),
   openDialog: (shape: ShapeType) => set({ dialogOpen: true, dialogDefaultShape: shape }),
@@ -91,4 +107,11 @@ export const createUiSlice: StateCreator<UiSlice, [], [], UiSlice> = (set) => ({
 
   toggleEnvironmentPanel: () => set((s) => ({ environmentPanelOpen: !s.environmentPanelOpen })),
   closeEnvironmentPanel: () => set({ environmentPanelOpen: false }),
+
+  // ── Force Field Dialog Actions (D-03-04 / D-03-05) ──
+
+  openForceFieldDialog: (kind: ForceFieldKind) =>
+    set({ forceFieldDialogOpen: true, forceFieldDialogKind: kind }),
+  closeForceFieldDialog: () =>
+    set({ forceFieldDialogOpen: false, forceFieldDialogKind: null }),
 });
