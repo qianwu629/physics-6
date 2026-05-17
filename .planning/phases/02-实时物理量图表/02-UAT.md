@@ -96,12 +96,18 @@ blocked: 0
 ## Gaps
 
 - truth: "ChartPanel 中应同时显示最多 16 条曲线（4 实体 × 4 指标），按颜色区分不同实体"
-  status: failed
+  status: resolved
   reason: "User reported: 同时显示，但是颜色都是蓝色"
   severity: major
   test: 5
-  artifacts: []
-  missing: []
+  root_cause: "ChartCanvas.tsx:127 使用 entityIdx % colors.length 取色——单实体下 entityIdx=0 导致 x/y/z 三条曲线全部取 colors[0]（同一蓝）。调色板仅 3 色/指标，无多实体余量。"
+  artifacts:
+    - path: "frontend/src/components/ChartCanvas.tsx"
+      issue: "entityIdx % colors.length → 应使用 (entityIdx + axisIdx)"
+  missing:
+    - "改用 axisIdx 参与颜色索引，使同实体不同轴取不同色"
+    - "扩展调色板从 3 色到 6 色/指标，支持多实体区分"
+  debug_session: ""
 - truth: "拖拽面板标题栏可移动面板位置；拖拽右下角可调整面板大小；面板尺寸变化后图表自适应"
   status: failed
   reason: "User reported: 不能拖拽也不能调整大小"

@@ -13,10 +13,10 @@ import { nowSeconds } from '../utils/nowSeconds';
 
 // ── 配色方案 — D-02-03 指标优先 ──
 const METRIC_COLORS: Record<MetricType, string[]> = {
-  position: ['#3b82f6', '#60a5fa', '#93c5fd'],   // 蓝系
-  velocity: ['#22c55e', '#4ade80', '#86efac'],   // 绿系
-  acceleration: ['#f97316', '#fb923c', '#fdba74'], // 橙系
-  energy: ['#a855f7', '#c084fc', '#d8b4fe'],     // 紫系
+  position: ['#3b82f6', '#60a5fa', '#93c5fd', '#06b6d4', '#14b8a6', '#10b981'],     // 蓝/青/绿系
+  velocity: ['#22c55e', '#4ade80', '#86efac', '#84cc16', '#facc15', '#eab308'],     // 绿/黄系
+  acceleration: ['#f97316', '#fb923c', '#fdba74', '#ef4444', '#dc2626', '#f43f5e'], // 橙/红系
+  energy: ['#a855f7', '#c084fc', '#d8b4fe', '#ec4899', '#f472b6', '#6366f1'],       // 紫/粉/靛系
 };
 
 const METRIC_NAMES: Record<MetricType, string[]> = {
@@ -124,7 +124,7 @@ export const ChartCanvas = forwardRef<ChartCanvasHandle, ChartCanvasProps>(
           currentKeys.add(key);
 
           if (!seriesMapRef.current.has(key)) {
-            const color = colors[entityIdx % colors.length];
+            const color = colors[(entityIdx + axisIdx) % colors.length];
             const series = chart.addSeries(LineSeries, {
               color,
               lineWidth: 2,
