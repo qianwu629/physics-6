@@ -20,7 +20,7 @@ import { ChartPanel } from './ChartPanel';
 import SnapshotManager from './SnapshotManager';
 import type { Snapshot } from '../store/snapshotSlice';
 import PresetSelector from './PresetSelector';
-import { SceneBanner, ConfirmDialogRoot, loadSceneWithConfirm } from './SceneLoader';
+import { SceneBanner, ConfirmDialogRoot, loadSceneWithConfirm, useSceneBanner } from './SceneLoader';
 import { deserializeScene } from '../utils/sceneSerializer';
 
 /**
@@ -265,6 +265,10 @@ export default function App() {
           const result = deserializeScene(sceneJSON);
           if (result.success && result.data) {
             await loadSceneWithConfirm(result.data);
+          } else {
+            // WR-05: Handle deserializeScene failure
+            const { addWarning } = useSceneBanner.getState?.() || {};
+            result.errors.forEach((e) => addWarning?.(e));
           }
         }}
       />
