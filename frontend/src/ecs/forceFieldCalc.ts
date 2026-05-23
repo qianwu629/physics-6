@@ -18,7 +18,7 @@
  *
  * 防御性编程：
  * - 任意分量为 NaN/Infinity → 整个结果返回 {0,0,0}（T-03-03）
- * - r < EPS_R 时早退 → 0（避免除零放大）
+ * - r < EPS_DISTANCE 时早退 → 0（避免除零放大）
  * - charge=0 短路（磁场无效）
  */
 
@@ -30,7 +30,8 @@ import type {
   MagneticFieldComponent,
 } from './types';
 
-const EPS_R = 0.001;        // 距离下限（小于则视为重合，力为 0）
+const EPS_DIRECTION = 1e-6; // 方向向量归一化阈值（无量纲）
+const EPS_DISTANCE = 0.001; // 物理距离下限（小于则视为重合，力为 0）
 
 type Vec3 = { x: number; y: number; z: number };
 
@@ -42,7 +43,10 @@ function isFiniteVec(v: Vec3): boolean {
 
 function normalize3(v: [number, number, number]): [number, number, number] {
   const len = Math.hypot(v[0], v[1], v[2]);
-  if (len < EPS_R) return [0, 0, 0];
+  if (len < EPS_DIRECTION) {
+    console.warn(`Direction vector too small: [${v.join(',')}], using zero vector`);
+    return [0, 0, 0];
+  }
   return [v[0] / len, v[1] / len, v[2] / len];
 }
 
@@ -66,7 +70,7 @@ function gravity(field: GravityFieldComponent, pos: Vec3): Vec3 {
   const rz = field.position[2] - pos.z;
   const r = Math.hypot(rx, ry, rz);
 
-  if (r > field.range || r < EPS_R) return ZERO;
+  if (r > field.range || r < EPS_DISTANCE) return ZERO;
 
   if (field.decay) {
     // |F| = strength / r^2; 方向 = r_hat（指向场源）
@@ -86,7 +90,7 @@ function electric(field: ElectricFieldComponent, pos: Vec3, bodyCharge: number):
   const rz = field.position[2] - pos.z;
   const r = Math.hypot(rx, ry, rz);
 
-  if (r > field.range || r < EPS_R) return ZERO;
+  if (r > field.range || r < EPS_DISTANCE) return ZERO;
 
   // 严格遵循 PLAN 公式：E = Q * r_vec / r^3, F = q * E（k=1 数值缩放）。
   // 注：r_vec 指向场源，这与教科书库仑公式（E 从源指向场点）方向相反；
