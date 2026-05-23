@@ -300,9 +300,8 @@ function sanitizeWarning(value: string, maxLen = 100): string {
   if (value.length > maxLen) {
     return value.slice(0, maxLen) + '...';
   }
-  return value.replace(/[ -]/g, '');
+  return value.replace(/[\x00-\x1f\x7f]/g, '');
 }
-
 /**
  * Validate scene JSON with tolerance:
  * - schemaVersion mismatch → warning (still loads)
