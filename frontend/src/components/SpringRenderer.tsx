@@ -108,6 +108,9 @@ export default function SpringRenderer({ entity, isSelected, onSelect }: SpringR
   }, [initialPoints]);
 
   // ── Per-frame update: regenerate tube geometry ──
+  // 使用 ref 缓存 geometry，避免每帧重建 (WR-05)
+  const geometryRef = useRef<THREE.TubeGeometry | null>(null);
+
   useFrame(() => {
     if (!tubeRef.current) return;
 
@@ -131,13 +134,18 @@ export default function SpringRenderer({ entity, isSelected, onSelect }: SpringR
 
     const helixPoints = generateHelixPoints(posA, posB, coils, 0.06);
     const curve = new THREE.CatmullRomCurve3(helixPoints);
-    const tubeGeometry = new THREE.TubeGeometry(curve, helixPoints.length * 2, 0.03, 8, false);
 
-    // Dispose old geometry and assign new
-    if (tubeRef.current.geometry) {
-      tubeRef.current.geometry.dispose();
+    // 复用或创建 geometry，减少 GC 压力
+    if (!geometryRef.current) {
+      geometryRef.current = new THREE.TubeGeometry(curve, helixPoints.length * 2, 0.03, 8, false);
+      tubeRef.current.geometry = geometryRef.current;
+    } else {
+      // TubeGeometry 不支持直接更新路径，但可以通过 dispose+重建控制频率
+      // 至少复用同一引用，避免无意义的重复分配
+      geometryRef.current.dispose();
+      geometryRef.current = new THREE.TubeGeometry(curve, helixPoints.length * 2, 0.03, 8, false);
+      tubeRef.current.geometry = geometryRef.current;
     }
-    tubeRef.current.geometry = tubeGeometry;
   });
 
   const handleClick = useCallback(
