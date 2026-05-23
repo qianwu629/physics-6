@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 import { useSimulationStore } from '../store';
 import { useVisualizationStore } from '../store/visualizationStore';
@@ -267,6 +267,12 @@ function FieldLineSegments({ field }: { field: ForceFieldComponent }) {
     geo.setAttribute('color', new THREE.BufferAttribute(data.colors, 3));
     return geo;
   }, [field]);
+
+  useEffect(() => {
+    return () => {
+      geometry?.dispose();
+    };
+  }, [geometry]);
 
   if (!geometry) return null;
 
