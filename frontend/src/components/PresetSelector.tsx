@@ -69,6 +69,15 @@ const PRESET_DEFINITIONS: PresetDefinition[] = [
   },
 ];
 
+const PRESET_MODULES: Record<string, () => Promise<any>> = {
+  projectile: () => import('../presets/projectile.json'),
+  'inclined-plane': () => import('../presets/inclined-plane.json'),
+  'free-fall-stack': () => import('../presets/free-fall-stack.json'),
+  'spring-oscillator': () => import('../presets/spring-oscillator.json'),
+  'double-spring': () => import('../presets/double-spring.json'),
+  'point-charge': () => import('../presets/point-charge.json'),
+};
+
 const ALLOWED_PRESETS = new Set(PRESET_DEFINITIONS.map(p => p.id));
 
 const ICON_MAP: Record<string, React.ComponentType<{ size?: number }>> = {
@@ -104,7 +113,7 @@ export default function PresetSelector({
     setLoadingId(presetId);
     try {
       // 动态导入 JSON 预设文件
-      const presetModule = await import(`../presets/${presetId}.json`);
+      const presetModule = await PRESET_MODULES[presetId]();
       const presetData = presetModule.default || presetModule;
 
       // 反序列化
