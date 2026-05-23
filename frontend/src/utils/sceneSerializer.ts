@@ -157,6 +157,10 @@ export function deserializeScene(json: unknown): DeserializeResult {
             warnings.push(`忽略实体 "${serializedEntity.id}" 中的未知组件类型: ${key}`);
             continue;
           }
+          // CR-01: Defensively ensure rigidBody.charge is not undefined
+          if (key === 'rigidBody' && (comp as any).charge === undefined) {
+            (comp as any).charge = 0;
+          }
           entity.components.set(key as ComponentType, comp as Component);
         }
       }
