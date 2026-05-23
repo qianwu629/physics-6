@@ -14,7 +14,7 @@ import { ForceFieldSystem } from './ForceFieldSystem';
 import { ForceFieldRenderer } from './ForceFieldRenderer';
 import { ForceFieldLines } from './ForceFieldLines';
 import { ChartSampler } from '../ecs/ChartSampler';
-import { RigidBodyRefContext } from './RigidBodyRefContext';
+import { RigidBodyRefContext, type RigidBodyAPI } from './RigidBodyRefContext';
 
 // ──── 地面 (Phase 1 遗留 — 保持不变) ────
 // D-02: 地面是隐式基础设施——不属于"物体"，始终存在
@@ -213,8 +213,8 @@ export default function Scene3D() {
   );
 
   // ── RigidBody Ref Registry — enables SpringRenderer to find entity refs ──
-  const rigidBodyRefMap = useRef<Map<string, React.RefObject<any>>>(new Map());
-  const registerRef = useCallback((entityId: string, ref: React.RefObject<any>) => {
+  const rigidBodyRefMap = useRef<Map<string, React.RefObject<RigidBodyAPI | null>>>(new Map());
+  const registerRef = useCallback((entityId: string, ref: React.RefObject<RigidBodyAPI | null>) => {
     rigidBodyRefMap.current.set(entityId, ref);
   }, []);
   const unregisterRef = useCallback((entityId: string) => {
