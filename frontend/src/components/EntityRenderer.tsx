@@ -76,6 +76,7 @@ export default function EntityRenderer({ entity, isSelected, onSelect }: EntityR
       col.setFriction(Math.min(rigidBody.friction * frictionScale, 2.0));
     }
   }, [
+    entity.id,
     rigidBody?.mass,
     rigidBody?.restitution,
     rigidBody?.friction,
