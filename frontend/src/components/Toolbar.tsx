@@ -1,4 +1,4 @@
-import { Play, Pause, RotateCcw, Bug, Globe, Gauge, Boxes } from 'lucide-react';
+import { Play, Pause, RotateCcw, Bug, Globe, Gauge, Boxes, GitBranch } from 'lucide-react';
 import { useSimulationStore } from '../store';
 import { useVisualizationStore, type VectorDisplayMode } from '../store/visualizationStore';
 import { cn } from '../lib/utils';
@@ -32,8 +32,8 @@ export default function Toolbar({ chartPanelOpen, onToggleChartPanel }: ToolbarP
   const toggleEnvironmentPanel = useSimulationStore((s) => s.toggleEnvironmentPanel);
 
   const {
-    showTrails, showVelocityVectors, showForceVectors, vectorDisplayMode,
-    toggleTrails, toggleVelocityVectors, toggleForceVectors, setVectorDisplayMode,
+    showTrails, showVelocityVectors, showForceVectors, showForceLines, vectorDisplayMode,
+    toggleTrails, toggleVelocityVectors, toggleForceVectors, toggleForceLines, setVectorDisplayMode,
   } = useVisualizationStore();
 
   const isPlaying = isRunning;
@@ -198,6 +198,17 @@ export default function Toolbar({ chartPanelOpen, onToggleChartPanel }: ToolbarP
           title={showForceVectors ? '隐藏受力矢量' : '显示受力矢量'}
         >
           受力
+        </button>
+        <button
+          type="button"
+          onClick={toggleForceLines}
+          className={cn(
+            'px-2 py-1 text-xs rounded',
+            showForceLines ? 'bg-white/15 text-white' : 'text-white/50 hover:text-white/80'
+          )}
+          title={showForceLines ? '隐藏力线' : '显示力线'}
+        >
+          力线
         </button>
         <button
           type="button"

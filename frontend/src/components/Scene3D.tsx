@@ -12,6 +12,7 @@ import { TrajectoryRenderer } from './TrajectoryRenderer';
 import { VectorRenderer } from './VectorRenderer';
 import { ForceFieldSystem } from './ForceFieldSystem';
 import { ForceFieldRenderer } from './ForceFieldRenderer';
+import { ForceFieldLines } from './ForceFieldLines';
 import { ChartSampler } from '../ecs/ChartSampler';
 import { RigidBodyRefContext } from './RigidBodyRefContext';
 
@@ -318,6 +319,9 @@ export default function Scene3D() {
 
       {/* Phase 3: 力场可视化 — ForceFieldRenderer（Physics 外部，无物理体） */}
       <ForceFieldRenderer />
+
+      {/* Phase 3 (03-05): 力线可视化 — ForceFieldLines（Physics 外部） */}
+      <ForceFieldLines />
 
       {/* ── 摄像机控制 (D-05) ── */}
       <OrbitControls
