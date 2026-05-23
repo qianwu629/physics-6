@@ -71,6 +71,7 @@ export default function MenuBar({ onOpenSnapshots, onOpenPresets }: MenuBarProps
   const [aboutOpen, setAboutOpen] = useState(false);
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
+  const [resultWarnings, setResultWarnings] = useState<string[]>([]);
 
   // Store bindings
   const showDebug = useSimulationStore((s) => s.showDebug);
@@ -88,6 +89,7 @@ export default function MenuBar({ onOpenSnapshots, onOpenPresets }: MenuBarProps
     const file = e.target.files?.[0];
     if (!file) return;
 
+    setResultWarnings([]);
     const result = await importSceneFromFile(file);
 
     // Reset input so the same file can be re-selected
@@ -98,6 +100,7 @@ export default function MenuBar({ onOpenSnapshots, onOpenPresets }: MenuBarProps
     if (!result.success || !result.data) {
       // D-01-08: Modal 显示错误
       setErrorMessages(result.errors.length > 0 ? result.errors : ['场景加载失败']);
+      setResultWarnings(result.warnings);
       setErrorDialogOpen(true);
 
       // 如果有 warnings，也通过 banner 显示
@@ -321,6 +324,11 @@ export default function MenuBar({ onOpenSnapshots, onOpenPresets }: MenuBarProps
               <p key={i}>{msg}</p>
             ))}
           </div>
+          {resultWarnings.length > 0 && (
+            <div className="text-sm text-yellow-500 space-y-1 py-2">
+              {resultWarnings.map((w, i) => <p key={`w-${i}`}>{w}</p>)}
+            </div>
+          )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setErrorDialogOpen(false)}>
               关闭
