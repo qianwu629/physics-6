@@ -11,6 +11,7 @@ import SpringRenderer from './SpringRenderer';
 import { TrajectoryRenderer } from './TrajectoryRenderer';
 import { VectorRenderer } from './VectorRenderer';
 import { ForceFieldSystem } from './ForceFieldSystem';
+import { ForceFieldRenderer } from './ForceFieldRenderer';
 import { ChartSampler } from '../ecs/ChartSampler';
 import { RigidBodyRefContext } from './RigidBodyRefContext';
 
@@ -314,6 +315,9 @@ export default function Scene3D() {
           </mesh>
         </RigidBodyRefContext.Provider>
       </Physics>
+
+      {/* Phase 3: 力场可视化 — ForceFieldRenderer（Physics 外部，无物理体） */}
+      <ForceFieldRenderer />
 
       {/* ── 摄像机控制 (D-05) ── */}
       <OrbitControls

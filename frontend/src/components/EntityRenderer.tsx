@@ -84,6 +84,11 @@ export default function EntityRenderer({ entity, isSelected, onSelect }: EntityR
     drag,
   ]);
 
+  // Phase 3: 力场实体跳过 EntityRenderer（由 ForceFieldRenderer 专门渲染）
+  if (entity.components.has('forceField')) {
+    return null;
+  }
+
   // T-02-01: Defensive null check — corrupt ECS data won't crash the render tree
   if (!transform || !rigidBody || !collider || !material) {
     console.warn(`Entity ${entity.id} missing required components for rendering`);
