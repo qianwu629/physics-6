@@ -57,18 +57,16 @@ function generateGridPoints(
   const halfRange = range / 2;
   const steps = Math.floor(range / actualSpacing) + 1;
 
-  for (let ix = 0; ix < steps; ix++) {
+  outer: for (let ix = 0; ix < steps; ix++) {
     for (let iy = 0; iy < steps; iy++) {
       for (let iz = 0; iz < steps; iz++) {
-        if (points.length >= maxInstances) break;
+        if (points.length >= maxInstances) break outer;
         const x = center[0] - halfRange + ix * actualSpacing;
         const y = center[1] - halfRange + iy * actualSpacing;
         const z = center[2] - halfRange + iz * actualSpacing;
         points.push(new THREE.Vector3(x, y, z));
       }
-      if (points.length >= maxInstances) break;
     }
-    if (points.length >= maxInstances) break;
   }
 
   return points;
