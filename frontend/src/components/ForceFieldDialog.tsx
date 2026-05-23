@@ -25,7 +25,10 @@ import { Switch } from './ui/switch';
 // ── Zod Schema (D-03-04: discriminated union) ──
 
 const positionTuple = z.tuple([z.number(), z.number(), z.number()]);
-const directionTuple = z.tuple([z.number(), z.number(), z.number()]);
+const directionTuple = z.tuple([z.number(), z.number(), z.number()])
+  .refine((v) => Math.hypot(v[0], v[1], v[2]) > 1e-6, {
+    message: '方向向量不能为零向量',
+  });
 
 const uniformSchema = z.object({
   kind: z.literal('uniform'),
