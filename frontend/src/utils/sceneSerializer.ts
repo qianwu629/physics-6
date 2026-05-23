@@ -237,8 +237,9 @@ export function importJSONToScene(jsonString: string): ImportResult {
   const errors: string[] = [];
 
   // File size check (D-01-08)
-  if (jsonString.length > MAX_FILE_SIZE) {
-    errors.push(`文件大小超过 5MB 限制（当前 ${(jsonString.length / (1024 * 1024)).toFixed(1)}MB），无法加载`);
+  const byteSize = new TextEncoder().encode(jsonString).length;
+  if (byteSize > MAX_FILE_SIZE) {
+    errors.push(`文件大小超过 5MB 限制（当前 ${(byteSize / (1024 * 1024)).toFixed(1)}MB），无法加载`);
     return { success: false, warnings, errors };
   }
 
