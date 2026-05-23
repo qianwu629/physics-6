@@ -30,6 +30,17 @@ export function TrajectoryRenderer() {
 
     const now = performance.now() / 1000;
 
+    // 快速检查是否有任何实体需要采样（WR-06）
+    let needsSample = false;
+    for (const [entityId] of entities) {
+      const prevTime = lastSampleTime.current.get(entityId);
+      if (prevTime === undefined || now - prevTime >= SAMPLE_INTERVAL) {
+        needsSample = true;
+        break;
+      }
+    }
+    if (!needsSample) return;
+
     for (const [entityId, entity] of entities) {
       const trailComp = entity.components.get('trail') as
         | TrailComponent
