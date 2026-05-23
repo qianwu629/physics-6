@@ -36,7 +36,7 @@ export interface ImportResult {
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const KNOWN_COMPONENT_TYPES = new Set<string>([
-  'transform', 'rigidBody', 'collider', 'velocity', 'material', 'constraint',
+  'transform', 'rigidBody', 'collider', 'velocity', 'material', 'constraint', 'forceField',
 ]);
 
 // ── serializeScene ──

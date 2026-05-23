@@ -7,11 +7,13 @@ interface VisualizationState {
   showTrails: boolean;
   showVelocityVectors: boolean;
   showForceVectors: boolean;
+  showForceLines: boolean;
   vectorDisplayMode: VectorDisplayMode;
 
   toggleTrails: () => void;
   toggleVelocityVectors: () => void;
   toggleForceVectors: () => void;
+  toggleForceLines: () => void;
   setVectorDisplayMode: (mode: VectorDisplayMode) => void;
 }
 
@@ -21,6 +23,7 @@ export const useVisualizationStore = create<VisualizationState>()(
       showTrails: true,
       showVelocityVectors: false,
       showForceVectors: false,
+      showForceLines: false,
       vectorDisplayMode: 'all',
 
       toggleTrails: () => set((s) => ({ showTrails: !s.showTrails })),
@@ -28,6 +31,7 @@ export const useVisualizationStore = create<VisualizationState>()(
         set((s) => ({ showVelocityVectors: !s.showVelocityVectors })),
       toggleForceVectors: () =>
         set((s) => ({ showForceVectors: !s.showForceVectors })),
+      toggleForceLines: () => set((s) => ({ showForceLines: !s.showForceLines })),
       setVectorDisplayMode: (mode) => set({ vectorDisplayMode: mode }),
     }),
     { name: 'physis-visualization' }

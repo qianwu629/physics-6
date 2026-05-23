@@ -23,6 +23,7 @@ vi.mock('@react-three/rapier', () => ({
   CylinderCollider: ({ args }: { args: [number, number] }) => (
     <div data-testid={`cylinder-collider-${args.join('-')}`} />
   ),
+  useBeforePhysicsStep: vi.fn(),
 }));
 
 vi.mock('@react-three/drei', () => ({

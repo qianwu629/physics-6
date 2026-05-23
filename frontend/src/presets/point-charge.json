@@ -1,0 +1,108 @@
+{
+  "schemaVersion": "1.0",
+  "savedAt": "2026-05-23T00:00:00Z",
+  "simulation": {
+    "environment": {
+      "gravity": [0, -9.81, 0],
+      "frictionScale": 1.0,
+      "restitutionScale": 1.0,
+      "drag": 0.05,
+      "peReferenceY": 0
+    },
+    "entities": [
+      {
+        "id": "charge-ball-a",
+        "name": "正电荷球A",
+        "components": {
+          "transform": {
+            "type": "transform",
+            "position": [-3, 5, 0],
+            "rotation": [0, 0, 0],
+            "scale": [1, 1, 1]
+          },
+          "rigidBody": {
+            "type": "rigidBody",
+            "kind": "dynamic",
+            "mass": 1,
+            "restitution": 0.5,
+            "friction": 0.3,
+            "charge": 5
+          },
+          "collider": {
+            "type": "collider",
+            "shape": "sphere",
+            "params": { "radius": 0.5 }
+          },
+          "material": {
+            "type": "material",
+            "color": "#ff4444",
+            "roughness": 0.6,
+            "metalness": 0.1
+          },
+          "velocity": {
+            "type": "velocity",
+            "linearVelocity": [0, 0, 2],
+            "angularVelocity": [0, 0, 0]
+          }
+        }
+      },
+      {
+        "id": "charge-ball-b",
+        "name": "负电荷球B",
+        "components": {
+          "transform": {
+            "type": "transform",
+            "position": [3, 5, 0],
+            "rotation": [0, 0, 0],
+            "scale": [1, 1, 1]
+          },
+          "rigidBody": {
+            "type": "rigidBody",
+            "kind": "dynamic",
+            "mass": 1,
+            "restitution": 0.5,
+            "friction": 0.3,
+            "charge": -5
+          },
+          "collider": {
+            "type": "collider",
+            "shape": "sphere",
+            "params": { "radius": 0.5 }
+          },
+          "material": {
+            "type": "material",
+            "color": "#4444ff",
+            "roughness": 0.6,
+            "metalness": 0.1
+          },
+          "velocity": {
+            "type": "velocity",
+            "linearVelocity": [0, 0, -2],
+            "angularVelocity": [0, 0, 0]
+          }
+        }
+      },
+      {
+        "id": "point-charge-field",
+        "name": "点电荷电场",
+        "components": {
+          "transform": {
+            "type": "transform",
+            "position": [0, 5, 0],
+            "rotation": [0, 0, 0],
+            "scale": [1, 1, 1]
+          },
+          "forceField": {
+            "type": "forceField",
+            "kind": "electric",
+            "position": [0, 5, 0],
+            "range": 20,
+            "charge": 10,
+            "decay": true
+          }
+        }
+      }
+    ],
+    "constraints": []
+  }
+}

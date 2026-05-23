@@ -1,5 +1,5 @@
 import React from 'react';
-import { Target, Triangle, Layers, Waves, GitBranch } from 'lucide-react';
+import { Target, Triangle, Layers, Waves, GitBranch, Zap } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -59,6 +59,13 @@ const PRESET_DEFINITIONS: PresetDefinition[] = [
     icon: 'GitBranch',
     color: '#ef4444',
   },
+  {
+    id: 'point-charge',
+    title: '点电荷力场',
+    description: '两个带电球体在点电荷电场中相互作用，观察库仑力效应',
+    icon: 'Zap',
+    color: '#f59e0b',
+  },
 ];
 
 const ALLOWED_PRESETS = new Set(PRESET_DEFINITIONS.map(p => p.id));
@@ -69,6 +76,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ size?: number }>> = {
   'free-fall-stack': Layers,
   'spring-oscillator': Waves,
   'double-spring': GitBranch,
+  'point-charge': Zap,
 };
 
 /**
@@ -127,7 +135,7 @@ export default function PresetSelector({
         <DialogHeader>
           <DialogTitle>预设场景库</DialogTitle>
           <DialogDescription>
-            选择一个预设场景一键加载（共 5 个）
+            选择一个预设场景一键加载（共 6 个）
           </DialogDescription>
         </DialogHeader>
         <div className="grid grid-cols-2 gap-3 py-4">
