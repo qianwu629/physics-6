@@ -179,6 +179,8 @@ export default function App() {
   }, []);
 
   // ──── 重置计数器监听 (D-12: 工具栏重置按钮也需清空实体) ────
+  // 注意：KeyR 的 handler 中已经调用了 state.resetEntities() + state.reset()，
+  // reset() 会递增 resetCounter。为避免双重调用，订阅中仅处理非键盘触发的 resetCounter 变化。
   useEffect(() => {
     const unsub = useSimulationStore.subscribe(
       (state, prev) => {
