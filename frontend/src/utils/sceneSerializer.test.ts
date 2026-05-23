@@ -5,8 +5,8 @@ import {
   exportSceneToJSON,
   importJSONToScene,
 } from './sceneSerializer';
-import { createSphereEntity, createSpringEntity, createBoxEntity, resetEntityCounter } from '../ecs/Entity';
-import type { Entity, ConstraintComponent } from '../ecs/types';
+import { createSphereEntity, createSpringEntity, createBoxEntity, createForceFieldEntity, resetEntityCounter } from '../ecs/Entity';
+import type { Entity, ConstraintComponent, ForceFieldComponent } from '../ecs/types';
 import type { EnvironmentState, SceneData } from './sceneValidation';
 import type { ImportResult } from './sceneSerializer';
 
@@ -285,5 +285,148 @@ describe('exportSceneToJSON / importJSONToScene', () => {
     const result = importJSONToScene('{ invalid json }');
     expect(result.success).toBe(false);
     expect(result.errors.length).toBeGreaterThanOrEqual(1);
+  });
+});
+
+// ── ForceField & Charge Serialization Tests (03-05) ──
+
+describe('forceField serialization', () => {
+  it('序列化包含力场实体的场景 → forceField 出现在 JSON 中', () => {
+    resetEntityCounter();
+    const sphere = createSphereEntity(0.5, 1, 0.5, 0.3, '#ff0000', [0, 0, 0], [0, 5, 0]);
+    const field = createForceFieldEntity('uniform', [0, 0, 0], 10, { direction: [0, 1, 0], strength: 5 });
+    const entities = new Map<string, Entity>();
+    entities.set(sphere.id, sphere);
+    entities.set(field.id, field);
+
+    const state = makeStoreState(entities);
+    const result = serializeScene(state);
+
+    // forceField 实体应该在 entities 中（不是 constraints）
+    const fieldEntity = result.simulation.entities.find((e) => e.id === field.id);
+    expect(fieldEntity).toBeDefined();
+    expect(fieldEntity!.components.forceField).toBeDefined();
+    expect((fieldEntity!.components.forceField as any).kind).toBe('uniform');
+  });
+
+  it('反序列化包含 charge 的 rigidBody → charge 正确还原', () => {
+    resetEntityCounter();
+    const sceneData: SceneData = {
+      schemaVersion: '1.0',
+      savedAt: new Date().toISOString(),
+      simulation: {
+        environment: {
+          gravity: [0, -9.81, 0],
+          frictionScale: 1.0,
+          restitutionScale: 1.0,
+          drag: 0.1,
+          peReferenceY: 0,
+        },
+        entities: [
+          {
+            id: 'charged-ball',
+            name: '带电球',
+            components: {
+              transform: {
+                type: 'transform',
+                position: [0, 5, 0],
+                rotation: [0, 0, 0],
+                scale: [1, 1, 1],
+              },
+              rigidBody: {
+                type: 'rigidBody',
+                kind: 'dynamic',
+                mass: 1,
+                restitution: 0.5,
+                friction: 0.3,
+                charge: 2.5,
+              },
+              collider: {
+                type: 'collider',
+                shape: 'sphere',
+                params: { radius: 0.5 },
+              },
+              material: {
+                type: 'material',
+                color: '#ff0000',
+                roughness: 0.6,
+                metalness: 0.1,
+              },
+              velocity: {
+                type: 'velocity',
+                linearVelocity: [0, 0, 0],
+                angularVelocity: [0, 0, 0],
+              },
+            },
+          },
+        ],
+        constraints: [],
+      },
+    };
+
+    const result = deserializeScene(sceneData);
+    expect(result.success).toBe(true);
+    expect(result.data).toBeDefined();
+
+    const restored = result.data!.entities.get('charged-ball');
+    expect(restored).toBeDefined();
+
+    const rb = restored!.components.get('rigidBody') as { charge: number } | undefined;
+    expect(rb).toBeDefined();
+    expect(rb!.charge).toBe(2.5);
+  });
+
+  it('反序列化包含 forceField 的实体 → components Map 包含 forceField', () => {
+    resetEntityCounter();
+    const sceneData: SceneData = {
+      schemaVersion: '1.0',
+      savedAt: new Date().toISOString(),
+      simulation: {
+        environment: {
+          gravity: [0, -9.81, 0],
+          frictionScale: 1.0,
+          restitutionScale: 1.0,
+          drag: 0.1,
+          peReferenceY: 0,
+        },
+        entities: [
+          {
+            id: 'electric-field',
+            name: '电场',
+            components: {
+              transform: {
+                type: 'transform',
+                position: [0, 5, 0],
+                rotation: [0, 0, 0],
+                scale: [1, 1, 1],
+              },
+              forceField: {
+                type: 'forceField',
+                kind: 'electric',
+                position: [0, 5, 0],
+                range: 20,
+                charge: 10,
+                decay: true,
+              } as any,
+            },
+          },
+        ],
+        constraints: [],
+      },
+    };
+
+    const result = deserializeScene(sceneData);
+    expect(result.success).toBe(true);
+    expect(result.data).toBeDefined();
+
+    const restored = result.data!.entities.get('electric-field');
+    expect(restored).toBeDefined();
+    expect(restored!.components.has('forceField')).toBe(true);
+
+    const ff = restored!.components.get('forceField') as ForceFieldComponent | undefined;
+    expect(ff).toBeDefined();
+    expect(ff!.kind).toBe('electric');
+    expect((ff as any).charge).toBe(10);
+    expect((ff as any).range).toBe(20);
   });
 });
