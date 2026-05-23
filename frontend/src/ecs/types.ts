@@ -3,7 +3,7 @@
  * Transform | RigidBody | Collider | Velocity | Material
  */
 
-export type ComponentType = 'transform' | 'rigidBody' | 'collider' | 'velocity' | 'material' | 'constraint' | 'trail' | 'vector' | 'forceField';
+export type ComponentType = AnyComponent['type'];
 
 export interface Component {
   type: ComponentType;
