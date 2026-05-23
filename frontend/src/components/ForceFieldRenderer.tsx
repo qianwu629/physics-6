@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useSimulationStore } from '../store';
@@ -126,17 +126,13 @@ function UniformFieldArrows({ field }: { field: UniformFieldComponent | Magnetic
     return { shaftMesh: shaft, headMesh: head, instanceCount: points.length };
   }, [field.position, field.range, direction, color]);
 
-  // 清理几何体和材质
-  const disposedRef = useRef(false);
-  useMemo(() => {
+  // 清理几何体和材质 — 使用 useEffect 确保卸载时释放资源 (CR-02)
+  useEffect(() => {
     return () => {
-      if (!disposedRef.current) {
-        disposedRef.current = true;
-        shaftMesh.geometry.dispose();
-        headMesh.geometry.dispose();
-        (shaftMesh.material as THREE.Material).dispose();
-        (headMesh.material as THREE.Material).dispose();
-      }
+      shaftMesh.geometry.dispose();
+      headMesh.geometry.dispose();
+      (shaftMesh.material as THREE.Material).dispose();
+      (headMesh.material as THREE.Material).dispose();
     };
   }, [shaftMesh, headMesh]);
 
