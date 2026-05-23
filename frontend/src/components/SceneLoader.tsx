@@ -313,10 +313,13 @@ export async function loadSceneWithConfirm(sceneData: {
 
   // 先添加非约束实体
   const addedEntityIds = new Set<string>();
+  let allAdded = true;
   for (const entity of nonConstraints) {
     const added = store.addEntity(entity);
     if (added) {
       addedEntityIds.add(entity.id);
+    } else {
+      allAdded = false;
     }
   }
 
@@ -346,6 +349,8 @@ export async function loadSceneWithConfirm(sceneData: {
     const added = store.addEntity(entity);
     if (added) {
       addedEntityIds.add(entity.id);
+    } else {
+      allAdded = false;
     }
   }
 
@@ -357,5 +362,5 @@ export async function loadSceneWithConfirm(sceneData: {
     notifyBannerListeners();
   }
 
-  return true;
+  return allAdded;
 }
