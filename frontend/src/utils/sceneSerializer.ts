@@ -174,10 +174,14 @@ export function deserializeScene(json: unknown): DeserializeResult {
     ...data.simulation.constraints,
   ];
 
+  const failedEntityIds = new Set<string>();
+
   for (const serializedEntity of allSerializedEntities) {
     const entity = buildEntity(serializedEntity);
     if (entity) {
       entitiesMap.set(entity.id, entity);
+    } else {
+      failedEntityIds.add(serializedEntity.id);
     }
   }
 
@@ -189,6 +193,8 @@ export function deserializeScene(json: unknown): DeserializeResult {
     if (constraintComp) {
       const entityAExists = entitiesMap.has(constraintComp.entityAId);
       const entityBExists = entitiesMap.has(constraintComp.entityBId);
+      const entityAFailed = failedEntityIds.has(constraintComp.entityAId);
+      const entityBFailed = failedEntityIds.has(constraintComp.entityBId);
 
       if (!entityAExists || !entityBExists) {
         const missingIds: string[] = [];
@@ -196,6 +202,15 @@ export function deserializeScene(json: unknown): DeserializeResult {
         if (!entityBExists) missingIds.push(constraintComp.entityBId);
         warnings.push(
           `约束实体 "${entity.id}" 引用的实体 ${missingIds.join(', ')} 不存在，已跳过该约束`
+        );
+        entitiesMap.delete(entity.id);
+        skippedConstraints++;
+      } else if (entityAFailed || entityBFailed) {
+        const failedIds: string[] = [];
+        if (entityAFailed) failedIds.push(constraintComp.entityAId);
+        if (entityBFailed) failedIds.push(constraintComp.entityBId);
+        warnings.push(
+          `实体 ${failedIds.join(', ')} 创建失败，导致约束 "${entity.id}" 被跳过`
         );
         entitiesMap.delete(entity.id);
         skippedConstraints++;
