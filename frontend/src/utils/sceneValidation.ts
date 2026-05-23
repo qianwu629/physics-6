@@ -225,18 +225,24 @@ const MagneticFieldSchema = z.object({
   strength: z.number(),
 });
 
-const ComponentSchema = z.discriminatedUnion('type', [
+const BaseComponentSchema = z.discriminatedUnion('type', [
   TransformSchema,
   RigidBodySchema,
   ColliderSchema,
   VelocitySchema,
   MaterialSchema,
   ConstraintSchema,
+]);
+
+const ForceFieldSchema = z.discriminatedUnion('kind', [
   UniformFieldSchema,
   GravityFieldSchema,
   ElectricFieldSchema,
   MagneticFieldSchema,
 ]);
+
+// 联合两种 schema — 用于 lenient 校验时接受任何组件
+const ComponentSchema = z.union([BaseComponentSchema, ForceFieldSchema]);
 
 // Known component type keys for filtering
 const KNOWN_COMPONENT_TYPES = new Set(['transform', 'rigidBody', 'collider', 'velocity', 'material', 'constraint', 'forceField']);
