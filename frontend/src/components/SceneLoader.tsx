@@ -58,8 +58,15 @@ function notifyBannerListeners() {
 // ── Module-Level Confirm Dialog State ──
 
 type ConfirmResolver = (confirmed: boolean) => void;
-let _confirmResolver: ConfirmResolver | null = null;
-let _confirmMessage: string = '';
+
+interface ConfirmRequest {
+  id: number;
+  resolver: ConfirmResolver;
+  message: string;
+}
+
+let _currentRequest: ConfirmRequest | null = null;
+let _nextRequestId = 1;
 let _confirmListeners: Array<() => void> = [];
 
 function notifyConfirmListeners() {
@@ -132,31 +139,33 @@ export function SceneBanner() {
 
 export function ConfirmDialogRoot() {
   const [, forceUpdate] = useState(0);
+  const [activeRequestId, setActiveRequestId] = useState<number | null>(null);
 
   useEffect(() => {
-    const listener = () => forceUpdate((n) => n + 1);
+    const listener = () => {
+      forceUpdate((n) => n + 1);
+      setActiveRequestId(_currentRequest?.id ?? null);
+    };
     _confirmListeners.push(listener);
     return () => {
       _confirmListeners = _confirmListeners.filter((l) => l !== listener);
     };
   }, []);
 
-  const isOpen = _confirmResolver !== null;
+  const isOpen = _currentRequest !== null;
 
   const handleConfirm = () => {
-    if (_confirmResolver) {
-      _confirmResolver(true);
-      _confirmResolver = null;
-      _confirmMessage = '';
+    if (_currentRequest) {
+      _currentRequest.resolver(true);
+      _currentRequest = null;
       notifyConfirmListeners();
     }
   };
 
   const handleCancel = () => {
-    if (_confirmResolver) {
-      _confirmResolver(false);
-      _confirmResolver = null;
-      _confirmMessage = '';
+    if (_currentRequest) {
+      _currentRequest.resolver(false);
+      _currentRequest = null;
       notifyConfirmListeners();
     }
   };
@@ -166,7 +175,7 @@ export function ConfirmDialogRoot() {
       <DialogContent showCloseButton={false}>
         <DialogHeader>
           <DialogTitle>确认操作</DialogTitle>
-          <DialogDescription>{_confirmMessage}</DialogDescription>
+          <DialogDescription>{_currentRequest?.message ?? ''}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline" onClick={handleCancel}>取消</Button>
@@ -180,14 +189,9 @@ export function ConfirmDialogRoot() {
 // ── Export: showConfirmDialog ──
 
 export function showConfirmDialog(message: string): Promise<boolean> {
-  // If there's already a pending dialog, ignore the new request
-  if (_confirmResolver) {
-    return Promise.resolve(false);
-  }
-
   return new Promise<boolean>((resolve) => {
-    _confirmResolver = resolve;
-    _confirmMessage = message;
+    const requestId = _nextRequestId++;
+    _currentRequest = { id: requestId, resolver: resolve, message };
     notifyConfirmListeners();
   });
 }
