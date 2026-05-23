@@ -380,7 +380,9 @@ export default function PropertyPanel() {
   const handleForceFieldStrengthChange = useCallback(
     (val: number) => {
       if (!selectedEntityId || !forceField) return;
-      updateComponent(selectedEntityId, 'forceField', { strength: val } as Partial<ForceFieldComponent>);
+      if (forceField.kind === 'uniform' || forceField.kind === 'gravity' || forceField.kind === 'magnetic') {
+        updateComponent(selectedEntityId, 'forceField', { strength: val });
+      }
     },
     [selectedEntityId, forceField, updateComponent],
   );
@@ -388,7 +390,9 @@ export default function PropertyPanel() {
   const handleForceFieldChargeChange = useCallback(
     (val: number) => {
       if (!selectedEntityId || !forceField) return;
-      updateComponent(selectedEntityId, 'forceField', { charge: val } as Partial<ForceFieldComponent>);
+      if (forceField.kind === 'electric') {
+        updateComponent(selectedEntityId, 'forceField', { charge: val });
+      }
     },
     [selectedEntityId, forceField, updateComponent],
   );
@@ -396,7 +400,9 @@ export default function PropertyPanel() {
   const handleForceFieldDecayChange = useCallback(
     (val: boolean) => {
       if (!selectedEntityId || !forceField) return;
-      updateComponent(selectedEntityId, 'forceField', { decay: val } as Partial<ForceFieldComponent>);
+      if (forceField.kind === 'gravity' || forceField.kind === 'electric') {
+        updateComponent(selectedEntityId, 'forceField', { decay: val });
+      }
     },
     [selectedEntityId, forceField, updateComponent],
   );
@@ -410,7 +416,7 @@ export default function PropertyPanel() {
           : [0, 0, 0];
       const newDir: [number, number, number] = [current[0], current[1], current[2]];
       newDir[index] = val;
-      updateComponent(selectedEntityId, 'forceField', { direction: newDir } as Partial<ForceFieldComponent>);
+      updateComponent(selectedEntityId, 'forceField', { direction: newDir });
     },
     [selectedEntityId, forceField, updateComponent],
   );
