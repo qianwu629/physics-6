@@ -8,6 +8,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { deserializeScene } from '@/utils/sceneSerializer';
+import { toast } from 'sonner';
 import { loadSceneWithConfirm } from '@/components/SceneLoader';
 
 interface PresetSelectorProps {
@@ -109,7 +110,7 @@ export default function PresetSelector({
       // 反序列化
       const result = deserializeScene(presetData);
       if (!result.success || !result.data) {
-        alert(`预设加载失败: ${result.errors.join(', ')}`);
+        toast.error(`预设加载失败: ${result.errors.join(', ')}`);
         return;
       }
 
@@ -123,7 +124,7 @@ export default function PresetSelector({
       }
     } catch (err) {
       console.error(`预设文件 "${presetId}" 加载失败`, err);
-      alert(`预设文件 "${presetId}" 加载失败，请稍后重试。`);
+      toast.error(`预设文件 "${presetId}" 加载失败，请稍后重试。`);
     } finally {
       setLoadingId(null);
     }
