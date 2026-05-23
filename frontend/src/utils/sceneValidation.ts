@@ -355,19 +355,46 @@ export function validateSceneJSON(json: unknown): ValidationResult {
 
   const data = parsed.data;
 
-  // 4. Per-entity validation: detect unknown component types
-  for (const entity of [...data.simulation.entities, ...data.simulation.constraints]) {
+  // 4. Per-entity validation: detect unknown component types and missing transform
+  const validEntities: typeof data.simulation.entities = [];
+  const validConstraints: typeof data.simulation.constraints = [];
+
+  for (const entity of data.simulation.entities) {
+    if (!entity.components || !('transform' in entity.components)) {
+      warnings.push(`实体 "${sanitizeWarning(entity.id)}" 缺少 transform 组件，已跳过`);
+      continue;
+    }
     if (entity.components && typeof entity.components === 'object') {
       const unknownTypes = Object.keys(entity.components).filter(
         k => !KNOWN_COMPONENT_TYPES.has(k)
       );
       for (const ut of unknownTypes) {
         warnings.push(`忽略实体 "${sanitizeWarning(entity.id)}" 中的未知组件类型: ${sanitizeWarning(ut)}`);
-        // Filter out unknown component types
         delete entity.components[ut];
       }
     }
+    validEntities.push(entity);
   }
+
+  for (const entity of data.simulation.constraints) {
+    if (!entity.components || !('transform' in entity.components)) {
+      warnings.push(`约束实体 "${sanitizeWarning(entity.id)}" 缺少 transform 组件，已跳过`);
+      continue;
+    }
+    if (entity.components && typeof entity.components === 'object') {
+      const unknownTypes = Object.keys(entity.components).filter(
+        k => !KNOWN_COMPONENT_TYPES.has(k)
+      );
+      for (const ut of unknownTypes) {
+        warnings.push(`忽略约束实体 "${sanitizeWarning(entity.id)}" 中的未知组件类型: ${sanitizeWarning(ut)}`);
+        delete entity.components[ut];
+      }
+    }
+    validConstraints.push(entity);
+  }
+
+  data.simulation.entities = validEntities;
+  data.simulation.constraints = validConstraints;
 
   return { success: true, data: data as unknown as SceneData, warnings, errors };
 }
