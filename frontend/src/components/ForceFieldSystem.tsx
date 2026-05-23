@@ -31,32 +31,42 @@ export function ForceFieldSystem() {
     const entities = state.entities;
     if (entities.size === 0) return;
 
-    // ── 1. 收集所有力场组件 ──
+    // ── 1. 先收集所有力场和 dynamic 实体快照，避免迭代期间访问被修改的 Map ──
     const fields: ForceFieldComponent[] = [];
-    for (const entity of entities.values()) {
+    const dynamicBodies: Array<{ entityId: string; rb: RigidBodyComponent; ref: any }> = [];
+
+    for (const [entityId, entity] of entities) {
       const f = entity.components.get('forceField') as ForceFieldComponent | undefined;
       if (f) fields.push(f);
+
+      const rb = entity.components.get('rigidBody') as RigidBodyComponent | undefined;
+      if (rb && rb.kind === 'dynamic') {
+        const ref = getRef(entityId);
+        const body = ref?.current;
+        if (body && typeof body.translation === 'function' && typeof body.applyForce === 'function') {
+          dynamicBodies.push({ entityId, rb, ref });
+        }
+      }
     }
+
     if (fields.length === 0) return;
 
-    // ── 2. 对每个 dynamic 刚体计算并注入合力 ──
-    for (const [entityId, entity] of entities) {
-      const rb = entity.components.get('rigidBody') as RigidBodyComponent | undefined;
-      if (!rb || rb.kind !== 'dynamic') continue;
-
-      const ref = getRef(entityId);
-      const body = ref?.current;
-      if (!body) continue;
-
+    // ── 2. 对快照中的 dynamic 刚体计算并注入合力 ──
+    for (const { entityId, rb, ref } of dynamicBodies) {
+      const body = ref.current;
+      // 再次验证 body 有效性（防止迭代期间被 unregister）
+      if (!body || typeof body.translation !== 'function') continue;
       const pos = body.translation();
+      if (typeof body.linvel !== 'function') continue;
       const vel = body.linvel();
       const F = computeTotalForce(fields, pos, vel, rb.charge ?? 0);
 
       // 零向量短路（避免唤醒静止刚体）
       if (F.x === 0 && F.y === 0 && F.z === 0) continue;
 
-      // applyForce(force, wakeUp=true) —— 单步累积，下一物理步生效
-      body.applyForce(F, true);
+      if (typeof body.applyForce === 'function') {
+        body.applyForce(F, true);
+      }
     }
   });
 
