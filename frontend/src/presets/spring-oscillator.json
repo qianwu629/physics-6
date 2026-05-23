@@ -3,10 +3,15 @@
   "savedAt": "2026-05-04T00:00:00Z",
   "simulation": {
     "environment": {
-      "gravity": [0, -9.81, 0],
+      "gravity": [
+        0,
+        -9.81,
+        0
+      ],
       "frictionScale": 1.0,
       "restitutionScale": 1.0,
-      "drag": 0.1
+      "drag": 0.1,
+      "peReferenceY": 0
     },
     "entities": [
       {
@@ -15,9 +20,21 @@
         "components": {
           "transform": {
             "type": "transform",
-            "position": [0, 6, 0],
-            "rotation": [0, 0, 0],
-            "scale": [1, 1, 1]
+            "position": [
+              0,
+              6,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ]
           },
           "rigidBody": {
             "type": "rigidBody",
@@ -29,7 +46,9 @@
           "collider": {
             "type": "collider",
             "shape": "sphere",
-            "params": { "radius": 0.2 }
+            "params": {
+              "radius": 0.2
+            }
           },
           "material": {
             "type": "material",
@@ -39,8 +58,16 @@
           },
           "velocity": {
             "type": "velocity",
-            "linearVelocity": [0, 0, 0],
-            "angularVelocity": [0, 0, 0]
+            "linearVelocity": [
+              0,
+              0,
+              0
+            ],
+            "angularVelocity": [
+              0,
+              0,
+              0
+            ]
           }
         }
       },
@@ -50,9 +77,21 @@
         "components": {
           "transform": {
             "type": "transform",
-            "position": [0, 3, 0],
-            "rotation": [0, 0, 0],
-            "scale": [1, 1, 1]
+            "position": [
+              0,
+              3,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ]
           },
           "rigidBody": {
             "type": "rigidBody",
@@ -64,7 +103,9 @@
           "collider": {
             "type": "collider",
             "shape": "sphere",
-            "params": { "radius": 0.5 }
+            "params": {
+              "radius": 0.5
+            }
           },
           "material": {
             "type": "material",
@@ -74,8 +115,16 @@
           },
           "velocity": {
             "type": "velocity",
-            "linearVelocity": [0, 0, 0],
-            "angularVelocity": [0, 0, 0]
+            "linearVelocity": [
+              0,
+              0,
+              0
+            ],
+            "angularVelocity": [
+              0,
+              0,
+              0
+            ]
           }
         }
       }
