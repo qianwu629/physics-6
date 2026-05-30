@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: 力场与多维模拟
 status: executing
-stopped_at: Phase 03 verified complete
-last_updated: "2026-05-23T17:58:00.000Z"
-last_activity: 2026-05-23 -- Phase 03 execution complete (5/5 plans)
+stopped_at: Phase 07 context gathered
+last_updated: "2026-05-30T22:48:00.000Z"
+last_activity: 2026-05-30 -- Phase 07 context gathered, 9 decisions locked
 progress:
-  total_phases: 7
+  total_phases: 9
   completed_phases: 3
   total_plans: 26
   completed_plans: 17
-  percent: 65
+  percent: 58
 ---
 
 # Project State
@@ -21,20 +21,22 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-04 after v1.0 milestone)
 
 **Core value:** 用户可以将任意基础物理组件自由组合，搭建任意场景——不受预设模板限制
-**Current focus:** Phase 03 — 通用力场系统（执行完成，待 verification）
+**Current focus:** Phase 04 — 表达式驱动外加力（上下文已收集，待规划）
 
 ## Current Position
 
 Phase: 03 (通用力场系统) — COMPLETE
-Plan: 5/5 plans complete in 3 waves
-Status: Verified (14/14 must-haves)
-Completed: 2026-05-23
-Last activity: 2026-05-23 -- Phase 03 execution complete (5/5 plans)
+Phase: 3.5 (力场系统修复) — INSERTED (URGENT)
+Phase: 04 (表达式驱动外加力) — CONTEXT gathered, BLOCKED by Phase 3.5
+Plan: 5/5 plans complete in 3 waves (Phase 3)
+Status: Phase 3.5 紧急插入，修复设计缺陷
+Completed: 2026-05-23 (Phase 3)
+Last activity: 2026-05-24 -- Inserted Phase 3.5 to fix Phase 3 design defects
 
 ## Next Steps
 
-1. **Phase 3 已完成** — 5/5 plans verified, 14/14 must-haves pass
-2. **执行 Phase 4** — `/gsd-discuss-phase 4` 或 `/gsd-plan-phase 4`（表达式驱动外加力）
+1. **Phase 3.5 紧急修复** — 修复力场系统设计缺陷：API 语义统一、计算/渲染分层、决策一致性审计
+2. **Phase 4 阻塞中** — 等待 Phase 3.5 完成后才能安全执行
 3. **执行 Phase 01.1** — UI 重构（如需要前置执行）
 4. **修复 Phase 2 数据层 Critical Bugs** — C-01/C-04/C-05/C-06/C-07 待修复
 
@@ -65,6 +67,8 @@ Last activity: 2026-05-23 -- Phase 03 execution complete (5/5 plans)
 
 ### Roadmap Evolution
 
+- Phase 8 added: 物理引擎重写
+- Phase 7 added: 底层引擎重构
 - Phase 1.1 inserted after Phase 1: ui重构 (URGENT)
 
 ### Decisions
@@ -100,10 +104,11 @@ None yet.
 
 - **Phase 2 Critical Bugs:** 7 个 Critical 问题待修复（详见 `02-REVIEW.md`），其中 C-01（时间基准 mismatch）和 C-02（Draggable ref 错误）会导致生产环境功能完全不可用
 - **Phase 2 UAT Pending:** 14 项人工验收测试尚未执行
-- **Phase 3 Ready:** 5 plans 已规划完成，等待执行
+- **Phase 3.5 URGENT:** Phase 3 力场系统设计缺陷阻塞 Phase 4，已插入紧急修复阶段
+- **Phase 4 Blocked:** 等待 Phase 3.5 完成后才能安全执行
 
 ## Session Continuity
 
-Last session: 2026-05-17T05:51:27.771Z
-Stopped at: Phase 03 context gathered
-Resume file: .planning/phases/03-通用力场系统/03-CONTEXT.md
+Last session: 2026-05-30T22:48:00.000Z
+Stopped at: Phase 07 context gathered
+Resume file: .planning/phases/07-/07-CONTEXT.md

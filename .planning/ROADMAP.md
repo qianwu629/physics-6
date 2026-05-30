@@ -17,6 +17,7 @@ Physis 已交付 v1.0 物理沙盒 MVP（5 阶段，12/12 需求闭环）。v2.0
 - [ ] **Phase 01.1: ui重构 (INSERTED)** - UI 全面重构：bug修复 + shadcn设计系统 + 栅格化 + 响应式 + a11y + Phase 3/5预留 (planned 2026-05-10)
 - [ ] **Phase 2: 实时物理量图表** - 位置/速度/加速度/能量曲线 + 多实体多曲线 + 浮动图表面板
 - [x] **Phase 3: 通用力场系统** - ForceField 框架 + 4 种预设（方向/引力/电场/磁场）+ 力线可视化 (completed 2026-05-23)
+- [ ] **Phase 3.5: 力场系统修复 (INSERTED)** - 修复 Phase 3 设计缺陷：API 语义统一、计算/渲染分层、决策一致性审计
 - [ ] **Phase 4: 表达式驱动外加力** - 解析器集成 + 实体级公式力计算
 - [ ] **Phase 5: 自由飞行摄像机 + 2D 模式** - FPS WSAD/鼠标控制 + 触控 fallback + z 轴约束 + 正交相机
 - [ ] **Phase 6: 弹簧选中精度 + 多体稳定性 + 性能优化** - DEBT-01..03 闭环
@@ -105,9 +106,23 @@ Plans:
 - **Wave 2** *(blocked on Wave 1 completion)*
 - **Wave 3** *(blocked on Wave 1+2 completion)*
 
+### Phase 3.5: 力场系统修复 (INSERTED)
+
+**Goal:** 系统性修复 Phase 3 力场系统的设计缺陷和实现偏差，包括 API 语义统一、力场计算与可视化渲染分层、设计决策一致性审计，确保 Phase 4 可安全建立在稳定的力场架构上。
+**Depends on:** Phase 3（必须基于 Phase 3 已完成代码进行修复）
+**Requirements:** FIELD-01, FIELD-02, FIELD-03, FIELD-04（重新验证）
+**Success Criteria** (what must be TRUE):
+  1. `ForceFieldSystem` 中力注入 API 与 Rapier 官方 API 完全一致（`addForce`）
+  2. `VectorRenderer` 中不再包含力场计算逻辑，仅负责渲染；力场力计算回归力场层
+  3. Phase 3 CONTEXT 中所有锁定决策在代码中有明确对应
+  4. 所有力场相关测试通过（含新增回归测试）
+  5. Phase 4 可安全接入力场系统（表达式力与力场力正确叠加）
+**Plans:** TBD (run /gsd-plan-phase 3.5)
+**UI hint:** no（纯修复阶段，无新 UI）
+
 ### Phase 4: 表达式驱动外加力
 **Goal**: 用户可为任意实体绑定数学表达式，每帧根据实体状态（pos/vel/time/mass）计算外加力矢量；表达式语法错误即时反馈；性能合理（50+ 实体每帧 <2ms 解析开销）。
-**Depends on**: Phase 3（force machinery 已建立；外加力是力场的特例化输入）
+**Depends on**: Phase 3.5（必须等待力场架构修复完成）
 **Requirements**: EXPR-01, EXPR-02
 **Success Criteria** (what must be TRUE):
   1. 用户在 PropertyPanel 中为实体输入数学表达式（fx/fy/fz 三个分量）
@@ -145,17 +160,19 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 01.1 → 2 → 3 → 4 → 5 → 6
+Phases execute in numeric order: 1 → 01.1 → 2 → 3 → 3.5 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status      | Completed |
 |-------|----------------|-------------|-----------|
 | 1. 持久化与场景库              | 6/6 | Complete    | 2026-05-04 |
 | 01.1. ui重构 (INSERTED)         | 0/9 | Planned     | -          |
 | 2. 实时物理量图表              | 6/6 | Planned     | 2026-05-05 |
-| 3. 通用力场系统                | 0/5 | Planned     | 2026-05-17 |
-| 4. 表达式驱动外加力            | 0/0 | Not started | -          |
+| 3. 通用力场系统                | 5/5 | Complete    | 2026-05-23 |
+| 3.5. 力场系统修复 (INSERTED)   | 0/0 | Urgent      | -          |
+| 4. 表达式驱动外加力            | 0/0 | Blocked     | -          |
 | 5. 自由飞行摄像机 + 2D 模式    | 0/0 | Not started | -          |
 | 6. 弹簧选中 + 稳定性 + 性能    | 0/0 | Not started | -          |
+| 8. 物理引擎重写                | 0/0 | Not started | -          |
 
 ## See Also
 
@@ -164,3 +181,23 @@ Phases execute in numeric order: 1 → 01.1 → 2 → 3 → 4 → 5 → 6
 - `.planning/REQUIREMENTS.md` — v2.0 需求清单（21 项 / 7 类别）
 - `.planning/milestones/v1.0-ROADMAP.md` — v1.0 完整阶段历史
 - `.planning/milestones/v1.0-phases/` — v1.0 阶段执行档案归档
+
+### Phase 7: 底层引擎重构
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 6
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 7 to break down)
+
+### Phase 8: 物理引擎重写
+
+**Goal:** 评估并实施从 Rapier 迁移到更适合电磁学/复杂物理场景的引擎（Cannon.js/Ammo.js/PhysX.js/自定义方案），或基于 Rapier 扩展更多物理模型支持。
+**Requirements**: TBD
+**Depends on:** Phase 7
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 8 to break down)
