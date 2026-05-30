@@ -109,6 +109,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-30T22:48:00.000Z
-Stopped at: Phase 07 context gathered
-Resume file: .planning/phases/07-/07-CONTEXT.md
+Last session: 2026-05-31T00:00:00.000Z
+Stopped at: Phase 08 context gathered
+Resume file: .planning/phases/08-物理引擎重写/08-CONTEXT.md
