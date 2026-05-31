@@ -160,7 +160,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 01.1 → 2 → 3 → 3.5 → 4 → 5 → 6
+Phases execute in numeric order: 1 → 01.1 → 2 → 3 → 3.5 → 4 → 5 → 6 → 7 → 8
 
 | Phase | Plans Complete | Status      | Completed |
 |-------|----------------|-------------|-----------|
@@ -172,7 +172,7 @@ Phases execute in numeric order: 1 → 01.1 → 2 → 3 → 3.5 → 4 → 5 → 
 | 4. 表达式驱动外加力            | 0/0 | Blocked     | -          |
 | 5. 自由飞行摄像机 + 2D 模式    | 0/0 | Not started | -          |
 | 6. 弹簧选中 + 稳定性 + 性能    | 0/0 | Not started | -          |
-| 8. 物理引擎重写                | 0/0 | Not started | -          |
+| 8. 电磁学增强                | 0/6 | Planned     | -          |
 
 ## See Also
 
@@ -184,20 +184,42 @@ Phases execute in numeric order: 1 → 01.1 → 2 → 3 → 3.5 → 4 → 5 → 
 
 ### Phase 7: 底层引擎重构
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** 物理引擎集成层增量式重构 — 修复 RigidBodyRefContext 竞态条件、ForceField position 双源、VectorRenderer 性能瓶颈、SpringRenderer 内存分配、EntityRenderer 环境同步性能问题；扩展 RigidBodyAPI 类型定义消除 as any 逃逸；引入 Playwright E2E 测试作为重构安全网。
+**Requirements**: DEBT-03, FIELD-01, FIELD-02, FIELD-03
 **Depends on:** Phase 6
-**Plans:** 0 plans
+**Plans:** 6 plans in 3 waves
+**UI hint:** no（纯重构阶段，无新 UI）
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 7 to break down)
+- [ ] 07-01-PLAN.md — RigidBodyRefContext 竞态修复 + 类型安全（Wave 1）
+- [ ] 07-02-PLAN.md — ForceField position 双源修复（Wave 1）
+- [ ] 07-03-PLAN.md — ForceFieldSystem 缓存 + VectorRenderer 性能优化（Wave 2）
+- [ ] 07-04-PLAN.md — SpringRenderer BufferGeometry 内存优化（Wave 2）
+- [ ] 07-05-PLAN.md — EntityRenderer EnvironmentSync 提取（Wave 3）
+- [ ] 07-06-PLAN.md — Playwright E2E 测试基础设施（Wave 3）
 
-### Phase 8: 物理引擎重写
+**Wave dependency notes:**
+- **Wave 2** *(blocked on Wave 1 completion — 依赖稳定的 RigidBodyRefContext 注册表)*
+- **Wave 3** *(blocked on Wave 1+2 completion — 依赖缓存系统和渲染优化就绪)*
 
-**Goal:** 评估并实施从 Rapier 迁移到更适合电磁学/复杂物理场景的引擎（Cannon.js/Ammo.js/PhysX.js/自定义方案），或基于 Rapier 扩展更多物理模型支持。
-**Requirements**: TBD
+
+### Phase 8: 电磁学增强 — 场-源关系与自定义力场层升级 (REVISED)
+
+**Goal:** 在 Rapier 上增强自定义力场层，实现场-源关系（电荷产生电场、电流产生磁场）、时变电磁场简化模型、空间哈希性能优化；保持与 Phase 3 预设力场的向后兼容。
+**Requirements**: FIELD-01, FIELD-02, FIELD-03, FIELD-04
 **Depends on:** Phase 7
-**Plans:** 0 plans
+**Plans:** 6 plans in 4 waves
+**UI hint:** yes
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 8 to break down)
+- [ ] 08-01-PLAN.md — ECS 类型扩展: FieldSourceComponent + RigidBodyAPI resetForces (Wave 1)
+- [ ] 08-02-PLAN.md — 场-源计算引擎: fieldSourceCalc.ts + 时变场 + 力上限 (Wave 1)
+- [ ] 08-03-PLAN.md — ForceFieldSystem 改造: 场-源力叠加 + resetForces + world.timestep (Wave 2)
+- [ ] 08-04-PLAN.md — 空间哈希 + 序列化: spatialHash.ts + sceneSerializer fieldSource 支持 (Wave 3)
+- [ ] 08-05-PLAN.md — UI: PropertyPanel 场源控制面板 (Wave 4)
+- [ ] 08-06-PLAN.md — 集成验证: 空间哈希可选集成 + 全量测试 + 性能基准 (Wave 4)
+
+**Wave dependency notes:**
+- **Wave 2** *(blocked on Wave 1 completion — 依赖 FieldSourceComponent 类型定义和 fieldSourceCalc 计算引擎)*
+- **Wave 3** *(blocked on Wave 1+2 completion — 依赖 ForceFieldSystem 改造完成)*
+- **Wave 4** *(blocked on Wave 1-3 completion — 依赖核心功能就绪)*
