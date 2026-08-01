@@ -6,7 +6,6 @@ import { useRef, useEffect, useCallback } from 'react';
 import * as THREE from 'three';
 import { Box3, Vector3, type PerspectiveCamera } from 'three';
 import { useSimulationStore } from '../store';
-import { useShallow } from 'zustand/react/shallow';
 import EntityRenderer from './EntityRenderer';
 import SpringRenderer from './SpringRenderer';
 import FixedJointRenderer from './FixedJointRenderer';
@@ -168,7 +167,6 @@ function CameraFitter({ controlsRef }: { controlsRef: React.MutableRefObject<any
 export default function Scene3D() {
   const isRunning = useSimulationStore((s) => s.isRunning);
   const showDebug = useSimulationStore((s) => s.showDebug);
-  const resetCounter = useSimulationStore((s) => s.resetCounter);
   const gravity = useSimulationStore((s) => s.environment.gravity);
   const restitutionScale = useSimulationStore((s) => s.environment.restitutionScale);
 

@@ -26,8 +26,6 @@ import {
 import { Button } from './ui/button';
 import { Switch } from './ui/switch';
 import { Slider } from './ui/slider';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
 import { useSimulationStore } from '../store';
 import { createPlaneTrackEntity, createArcTrackEntity, createWedgeTrackEntity, createDoubleArcTrackEntity, createSpliceEntity, attachFaces } from '../ecs/Entity';
 import { getShapeFaces, type FaceDefinition } from '../ecs/faceGeometry';
@@ -635,10 +633,10 @@ export default function TrackBuilder() {
     }
 
     // 覆盖 transform 为对齐位姿
-    const tr = entity.components.get('transform');
+    const tr = entity.components.get('transform') as TransformComponent | undefined;
     if (tr) {
       const newComponents = new Map(entity.components);
-      newComponents.set('transform', { ...tr, position: pose.position, rotation: pose.rotation });
+      newComponents.set('transform', { ...tr, position: pose.position, rotation: pose.rotation } as TransformComponent);
       entity = { ...entity, components: newComponents };
     }
 

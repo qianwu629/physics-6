@@ -23,8 +23,6 @@ import {
   DialogDescription,
 } from './ui/dialog';
 import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
 import { Slider } from './ui/slider';
 import { useSimulationStore } from '../store';
 import { computeHullPoints, getShapeFaces, type FaceDefinition } from '../ecs/faceGeometry';

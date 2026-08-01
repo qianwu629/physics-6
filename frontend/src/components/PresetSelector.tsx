@@ -202,7 +202,9 @@ export default function PresetSelector({
                   style={{ backgroundColor: iconBgColor }}
                 >
                   {IconComponent && (
-                    <IconComponent size={20} style={{ color: preset.color }} />
+                    <span style={{ color: preset.color }}>
+                      <IconComponent size={20} />
+                    </span>
                   )}
                 </div>
                 <div className="text-sm font-medium text-[var(--foreground)]">

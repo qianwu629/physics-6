@@ -26,7 +26,6 @@ const COLORS = {
 // T-03-11: 力线数量上限
 const MAX_LINES_UNIFORM = 64;
 const MAX_LINES_GRAVITY = 64;
-const MAX_LINES_MAGNETIC = 64;
 const MAX_LINES_ELECTRIC = 32;
 const SEGMENTS_PER_LINE = 20;
 
@@ -402,7 +401,7 @@ export function ForceFieldLines() {
 
   // 收集所有力场实体 + 载流导线实体
   const forceFieldEntries: { id: string; field: ForceFieldComponent }[] = [];
-  const wireEntries: WireLineSegmentsProps & { id: string }[] = [];
+  const wireEntries: (WireLineSegmentsProps & { id: string })[] = [];
   for (const [id, entity] of entities) {
     const field = entity.components.get('forceField') as ForceFieldComponent | undefined;
     if (field) forceFieldEntries.push({ id, field });

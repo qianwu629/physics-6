@@ -1,6 +1,6 @@
 import type { StateCreator } from 'zustand';
 import type { ForceFieldKind } from '../ecs/types';
-import type { BuilderState, PlacementSnapshot } from '../components/objectFactory';
+import type { PlacementSnapshot } from '../components/objectFactory';
 
 /**
  * UI 状态切片

@@ -32,6 +32,7 @@ const {
 vi.mock('lightweight-charts', () => ({
   createChart: mockCreateChart,
   LineSeries: vi.fn(),
+  ColorType: { Solid: 'solid', VerticalGradient: 'gradient' },
 }));
 
 // Need to import ChartCanvas after mocks

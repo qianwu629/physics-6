@@ -17,7 +17,7 @@
  *   - useSceneBanner(): 暴露 { warnings, addWarning, clearWarnings, dismissWarning }
  */
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { TriangleAlert, X } from 'lucide-react';
 import { useSimulationStore } from '../store';
 import { useChartDataStore } from '../store/chartDataStore';
@@ -139,7 +139,7 @@ export function SceneBanner() {
 
 export function ConfirmDialogRoot() {
   const [, forceUpdate] = useState(0);
-  const [activeRequestId, setActiveRequestId] = useState<number | null>(null);
+  const [, setActiveRequestId] = useState<number | null>(null);
 
   useEffect(() => {
     const listener = () => {

@@ -436,7 +436,6 @@ function SlotCard({
   onStartRename,
   onRenameValueChange,
   onCommitRename,
-  onCancelRename,
   onRenameKeyDown,
   renameInputRef,
   onDelete,

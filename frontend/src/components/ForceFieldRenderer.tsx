@@ -1,5 +1,4 @@
-import { useMemo, useRef, useEffect } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 import { useSimulationStore } from '../store';
 import type {
@@ -27,11 +26,6 @@ const DEFAULT_UP = new THREE.Vector3(0, 1, 0);
 
 // T-03-09: 实例数量上限
 const MAX_INSTANCES = 200;
-
-interface ArrowInstanceData {
-  position: THREE.Vector3;
-  quaternion: THREE.Quaternion;
-}
 
 /**
  * 生成均匀场网格点（按 2m 间距）
@@ -87,7 +81,7 @@ function UniformFieldArrows({ field }: { field: UniformFieldComponent | Magnetic
   const color = field.kind === 'uniform' ? COLORS.uniform : COLORS.magnetic;
   const direction = field.direction;
 
-  const { shaftMesh, headMesh, instanceCount } = useMemo(() => {
+  const { shaftMesh, headMesh } = useMemo(() => {
     const points = generateGridPoints(field.position, field.range, MAX_INSTANCES);
     const quat = getArrowQuaternion(direction);
 
@@ -121,7 +115,7 @@ function UniformFieldArrows({ field }: { field: UniformFieldComponent | Magnetic
     shaft.instanceMatrix.needsUpdate = true;
     head.instanceMatrix.needsUpdate = true;
 
-    return { shaftMesh: shaft, headMesh: head, instanceCount: points.length };
+    return { shaftMesh: shaft, headMesh: head };
   }, [field.position, field.range, direction, color]);
 
   // 清理几何体和材质 — 使用 useEffect 确保卸载时释放资源 (CR-02)

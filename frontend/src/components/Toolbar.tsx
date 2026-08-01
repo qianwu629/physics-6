@@ -1,6 +1,6 @@
-import { Play, Pause, RotateCcw, Bug, Globe, Gauge, Boxes, GitBranch } from 'lucide-react';
+import { Play, Pause, RotateCcw, Bug, Globe, Gauge, Boxes } from 'lucide-react';
 import { useSimulationStore } from '../store';
-import { useVisualizationStore, type VectorDisplayMode } from '../store/visualizationStore';
+import { useVisualizationStore } from '../store/visualizationStore';
 import { useDock } from './dock/DockApiContext';
 import { cn } from '../lib/utils';
 

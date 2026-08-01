@@ -15,6 +15,7 @@ const { mockCreateChart, mockAddSeries, mockRemoveSeries, mockRemove } = vi.hois
 vi.mock('lightweight-charts', () => ({
   createChart: mockCreateChart,
   LineSeries: vi.fn(),
+  ColorType: { Solid: 'solid', VerticalGradient: 'gradient' },
 }));
 
 // Helper to reset store between tests

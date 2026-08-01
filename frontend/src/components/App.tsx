@@ -48,6 +48,9 @@ export default function App() {
   const [appState, setAppState] = useState<AppState>('loading');
   const [errorType, setErrorType] = useState<ErrorType | null>(null);
 
+  // WR-05: 场景加载警告 banner（供 onLoadSnapshot 失败分支使用）
+  const { addWarning } = useSceneBanner();
+
   // Phase 1: 快照 Drawer + 预设 Dialog 开关状态
   const [snapshotDrawerOpen, setSnapshotDrawerOpen] = useState(false);
   const [presetSelectorOpen, setPresetSelectorOpen] = useState(false);
@@ -237,7 +240,6 @@ export default function App() {
             await loadSceneWithConfirm(result.data);
           } else {
             // WR-05: Handle deserializeScene failure
-            const { addWarning } = useSceneBanner.getState?.() || {};
             result.errors.forEach((e) => addWarning?.(e));
           }
         }}

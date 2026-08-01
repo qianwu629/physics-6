@@ -2,10 +2,12 @@ import { useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import {
   createChart,
   LineSeries,
+  ColorType,
   type IChartApi,
   type ISeriesApi,
   type LineData,
   type Time,
+  type UTCTimestamp,
 } from 'lightweight-charts';
 import { useChartDataStore, type MetricType } from '../store/chartDataStore';
 import { chartBuffers } from '../store/chartBuffer';
@@ -73,7 +75,7 @@ export const ChartCanvas = forwardRef<ChartCanvasHandle, ChartCanvasProps>(
         width: container.clientWidth,
         height: container.clientHeight,
         layout: {
-          background: { type: 'solid', color: '#1a1a2e' },
+          background: { type: ColorType.Solid, color: '#1a1a2e' },
           textColor: '#d1d4dc',
         },
         timeScale: {
@@ -121,7 +123,7 @@ export const ChartCanvas = forwardRef<ChartCanvasHandle, ChartCanvasProps>(
       const names = METRIC_NAMES[metric];
       const indices = METRIC_INDICES[metric];
 
-      trackedEntityIds.forEach((entityId, entityIdx) => {
+      Array.from(trackedEntityIds).forEach((entityId, entityIdx) => {
         indices.forEach((metricIndex, axisIdx) => {
           const key = makeSeriesKey(entityId, metric, axisIdx);
           currentKeys.add(key);
@@ -174,9 +176,9 @@ export const ChartCanvas = forwardRef<ChartCanvasHandle, ChartCanvasProps>(
       const now = nowSeconds();
       try {
         if (timeWindow === '5s') {
-          chart.timeScale().setVisibleRange({ from: now - 5, to: now });
+          chart.timeScale().setVisibleRange({ from: (now - 5) as UTCTimestamp, to: now as UTCTimestamp });
         } else if (timeWindow === '30s') {
-          chart.timeScale().setVisibleRange({ from: now - 30, to: now });
+          chart.timeScale().setVisibleRange({ from: (now - 30) as UTCTimestamp, to: now as UTCTimestamp });
         } else {
           chart.timeScale().fitContent();
         }
@@ -248,9 +250,9 @@ export const ChartCanvas = forwardRef<ChartCanvasHandle, ChartCanvasProps>(
         const now = nowSeconds();
         try {
           if (window === '5s') {
-            chart.timeScale().setVisibleRange({ from: now - 5, to: now });
+            chart.timeScale().setVisibleRange({ from: (now - 5) as UTCTimestamp, to: now as UTCTimestamp });
           } else if (window === '30s') {
-            chart.timeScale().setVisibleRange({ from: now - 30, to: now });
+            chart.timeScale().setVisibleRange({ from: (now - 30) as UTCTimestamp, to: now as UTCTimestamp });
           } else {
             chart.timeScale().fitContent();
           }

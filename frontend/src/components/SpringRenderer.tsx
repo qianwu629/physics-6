@@ -73,7 +73,6 @@ export default function SpringRenderer({ entity, isSelected, onSelect }: SpringR
   const { getRef } = useRigidBodyRefRegistry();
 
   const tubeRef = useRef<THREE.Mesh>(null);
-  const dynTubeRef = useRef<THREE.Mesh>(null);
 
   // Get rigid body refs for the two endpoints
   const bodyARef = getRef(constraintComp.entityAId);

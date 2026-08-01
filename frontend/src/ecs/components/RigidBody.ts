@@ -6,4 +6,5 @@ export const DEFAULT_RIGID_BODY: Omit<RigidBodyComponent, 'type'> = {
   mass: 1.0,
   restitution: 0.5,
   friction: 0.3,
+  charge: 0,
 };

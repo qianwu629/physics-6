@@ -3,7 +3,7 @@ import { Circle, Square, Database, Link2 } from 'lucide-react';
 import { useSimulationStore } from '../store';
 import { ScrollArea } from './ui/scroll-area';
 import type { Entity } from '../ecs/types';
-import type { ColliderComponent, MaterialComponent, ConstraintComponent } from '../ecs/types';
+import type { ColliderComponent, MaterialComponent } from '../ecs/types';
 
 const SHAPE_ICONS: Record<string, typeof Circle> = {
   sphere: Circle,

@@ -270,3 +270,13 @@ export type AnyComponent =
   | VectorComponent
   | ForceFieldComponent
   | CurrentSourceComponent;
+
+/**
+ * updateComponent 的按组件类型分布的补丁类型。
+ * 对 kind 联合组件（constraint / forceField）展开为各 kind 的 Partial 联合，
+ * 使 kind 专属字段（stiffness / strength / charge 等）可通过类型检查。
+ */
+export type ComponentPatch<T extends ComponentType> =
+  Extract<AnyComponent, { type: T }> extends infer C
+    ? C extends AnyComponent ? Partial<C> : never
+    : never;

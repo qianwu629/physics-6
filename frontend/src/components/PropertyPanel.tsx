@@ -19,7 +19,6 @@ import {
 } from './ui/dialog';
 import { useDock } from './dock/DockApiContext';
 import type {
-  Entity,
   TransformComponent,
   RigidBodyComponent,
   ColliderComponent,
@@ -33,9 +32,9 @@ import type {
   ForceFieldKind,
   CurrentSourceComponent,
   FaceFriction,
+  ComponentPatch,
 } from '../ecs/types';
 import { getShapeFaces } from '../ecs/faceGeometry';
-import { DEFAULT_COLORS } from '../ecs/components/Material';
 
 /** 7 preset color swatches for the color picker */
 const COLOR_SWATCHES = [
@@ -201,10 +200,8 @@ export default function PropertyPanel() {
   const selectedEntityId = useSimulationStore((s) => s.selectedEntityId);
   const selectEntity = useSimulationStore((s) => s.selectEntity);
   const updateComponent = useSimulationStore((s) => s.updateComponent);
-  const removeEntity = useSimulationStore((s) => s.removeEntity);
   const deleteDialogOpen = useSimulationStore((s) => s.deleteDialogOpen);
   const openDeleteDialog = useSimulationStore((s) => s.openDeleteDialog);
-  const closeDeleteDialog = useSimulationStore((s) => s.closeDeleteDialog);
   const togglePropertyPanel = useSimulationStore((s) => s.togglePropertyPanel);
   const dock = useDock();
   const toggleTrailVisibility = useSimulationStore((s) => s.toggleTrailVisibility);
@@ -438,12 +435,6 @@ export default function PropertyPanel() {
     [selectedEntityId, updateComponent],
   );
 
-  const handleDeleteConfirm = useCallback(() => {
-    if (!selectedEntityId) return;
-    removeEntity(selectedEntityId);
-    closeDeleteDialog();
-  }, [selectedEntityId, removeEntity, closeDeleteDialog]);
-
   // ── Spring property handlers ──
   const handleSpringStiffnessChange = useCallback(
     (val: number) => {
@@ -479,9 +470,10 @@ export default function PropertyPanel() {
   const handleFixedJointShowLinkChange = useCallback(
     (show: boolean) => {
       if (!selectedEntityId || !constraint || constraint.kind === 'spring') return;
+      // 运行时已由 constraint.kind !== 'spring' 保证安全（5 种非 spring 参数均含 showLink）
       updateComponent(selectedEntityId, 'constraint', {
         params: { ...constraint.params, showLink: show },
-      });
+      } as ComponentPatch<'constraint'>);
     },
     [selectedEntityId, constraint, updateComponent],
   );

@@ -1,5 +1,14 @@
 import type { StateCreator } from 'zustand';
-import type { Entity, ComponentType, Component, ConstraintComponent } from '../ecs/types';
+import type {
+  Entity,
+  ComponentType,
+  AnyComponent,
+  ConstraintComponent,
+  ComponentPatch,
+  TrailComponent,
+  VectorComponent,
+  CurrentSourceComponent,
+} from '../ecs/types';
 import { disposeBuffer, chartBuffers } from './chartBuffer';
 import { useChartDataStore } from './chartDataStore';
 
@@ -28,7 +37,7 @@ export interface EntitySlice {
   /** 选中/取消选中实体 (D-07: 3D click selection) */
   selectEntity: (id: string | null) => void;
   /** 更新实体指定组件的部分字段 (D-10: property panel edit) */
-  updateComponent: (entityId: string, componentType: ComponentType, data: Partial<Component>) => void;
+  updateComponent: <T extends ComponentType>(entityId: string, componentType: T, data: ComponentPatch<T>) => void;
   /** 重置——清空所有实体 (D-12: reset = empty scene) */
   resetEntities: () => void;
 
@@ -92,7 +101,7 @@ export const createEntitySlice: StateCreator<EntitySlice, [], [], EntitySlice> =
 
   selectEntity: (id: string | null) => set({ selectedEntityId: id }),
 
-  updateComponent: (entityId: string, componentType: ComponentType, data: Partial<Component>) =>
+  updateComponent: <T extends ComponentType>(entityId: string, componentType: T, data: ComponentPatch<T>) =>
     set((state) => {
       const entity = state.entities.get(entityId);
       if (!entity) return state;
@@ -100,7 +109,8 @@ export const createEntitySlice: StateCreator<EntitySlice, [], [], EntitySlice> =
       if (!comp) return state;
 
       // 深层不可变更新: new component → new components Map → new Entity → new entities Map
-      const updatedComp = { ...comp, ...data } as Component;
+      // 注意: ComponentPatch<T> 是未解析的条件类型, spread 前需先断言为具体组件类型
+      const updatedComp = { ...comp, ...(data as AnyComponent) } as AnyComponent;
       const newComponents = new Map(entity.components);
       newComponents.set(componentType, updatedComp);
       const updatedEntity: Entity = { ...entity, components: newComponents };
@@ -133,7 +143,7 @@ export const createEntitySlice: StateCreator<EntitySlice, [], [], EntitySlice> =
       newComponents.set('trail', {
         type: 'trail',
         visible,
-      });
+      } as TrailComponent);
       const updated: Entity = { ...entity, components: newComponents };
       const next = new Map(state.entities);
       next.set(entityId, updated);
@@ -149,7 +159,7 @@ export const createEntitySlice: StateCreator<EntitySlice, [], [], EntitySlice> =
         type: 'vector',
         showVelocity: visible,
         showForces: visible,
-      });
+      } as VectorComponent);
       const updated: Entity = { ...entity, components: newComponents };
       const next = new Map(state.entities);
       next.set(entityId, updated);
@@ -166,7 +176,7 @@ export const createEntitySlice: StateCreator<EntitySlice, [], [], EntitySlice> =
           type: 'currentSource',
           magnitude: params.magnitude,
           direction: params.direction,
-        });
+        } as CurrentSourceComponent);
       } else {
         if (!newComponents.has('currentSource')) return state;
         newComponents.delete('currentSource');

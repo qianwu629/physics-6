@@ -102,8 +102,8 @@ function updateArrowGroup(
   group: Group,
   origin: [number, number, number],
   direction: [number, number, number],
-  shaftRadius: number,
-  headRadius: number,
+  _shaftRadius: number,
+  _headRadius: number,
   length: number,
   label?: string
 ) {
@@ -206,6 +206,8 @@ export function VectorRenderer() {
             | ConstraintComponent
             | undefined;
           if (!constraintComp?.params) continue;
+          // 矢量力可视化仅针对弹簧（restLength/stiffness 为 spring 专属）
+          if (constraintComp.kind !== 'spring') continue;
 
           const bodyARef = getRef(constraintComp.entityAId);
           const bodyBRef = getRef(constraintComp.entityBId);
