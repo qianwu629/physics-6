@@ -1,0 +1,93 @@
+{
+  "schemaVersion": "1.0",
+  "savedAt": "2026-07-27T00:00:00Z",
+  "simulation": {
+    "environment": {
+      "gravity": [0, 0, 0],
+      "frictionScale": 1.0,
+      "restitutionScale": 1.0,
+      "drag": 0,
+      "peReferenceY": 0
+    },
+    "entities": [
+      {
+        "id": "current-wire",
+        "name": "载流导线",
+        "components": {
+          "transform": {
+            "type": "transform",
+            "position": [0, 3, 0],
+            "rotation": [0, 0, 0],
+            "scale": [1, 1, 1]
+          },
+          "rigidBody": {
+            "type": "rigidBody",
+            "kind": "fixed",
+            "mass": 1,
+            "restitution": 0.5,
+            "friction": 0.3,
+            "charge": 0
+          },
+          "collider": {
+            "type": "collider",
+            "shape": "cylinder",
+            "params": { "radius": 0.15, "halfHeight": 6 }
+          },
+          "material": {
+            "type": "material",
+            "color": "#888888",
+            "roughness": 0.4,
+            "metalness": 0.8
+          },
+          "velocity": {
+            "type": "velocity",
+            "linearVelocity": [0, 0, 0],
+            "angularVelocity": [0, 0, 0]
+          },
+          "currentSource": {
+            "type": "currentSource",
+            "magnitude": 50,
+            "direction": [0, 1, 0]
+          }
+        }
+      },
+      {
+        "id": "wire-particle",
+        "name": "带电粒子",
+        "components": {
+          "transform": {
+            "type": "transform",
+            "position": [3, 3, 0],
+            "rotation": [0, 0, 0],
+            "scale": [1, 1, 1]
+          },
+          "rigidBody": {
+            "type": "rigidBody",
+            "kind": "dynamic",
+            "mass": 1,
+            "restitution": 0.5,
+            "friction": 0.3,
+            "charge": 1
+          },
+          "collider": {
+            "type": "collider",
+            "shape": "sphere",
+            "params": { "radius": 0.3 }
+          },
+          "material": {
+            "type": "material",
+            "color": "#ffaa00",
+            "roughness": 0.6,
+            "metalness": 0.1
+          },
+          "velocity": {
+            "type": "velocity",
+            "linearVelocity": [0, 2, 0],
+            "angularVelocity": [0, 0, 0]
+          }
+        }
+      }
+    ],
+    "constraints": []
+  }
+}

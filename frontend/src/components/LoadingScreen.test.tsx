@@ -61,17 +61,17 @@ describe('LoadingScreen', () => {
     render(<LoadingScreen />);
     const icon = screen.getByTestId('icon-loader2');
     expect(icon).toBeInTheDocument();
-    expect(icon.dataset.color).toBe('#3b82f6');
+    expect(icon.dataset.color).toBe('var(--holo)');
     expect(icon.dataset.size).toBe('40');
   });
 
-  it('has dark background #0a0a0a', () => {
+  it('has sci-fi well background', () => {
     render(<LoadingScreen />);
     // The LoadingScreen is a fixed full-screen div — the <p> is its direct child
     const textElement = screen.getByText('正在加载物理引擎...');
     const container = textElement.parentElement;
     expect(container).not.toBeNull();
-    expect(container?.style.backgroundColor).toBe('rgb(10, 10, 10)'); // #0a0a0a
+    expect(container?.style.backgroundColor).toBe('var(--well)'); // Sci-fi Lab 深井底色
   });
 
   it('has centered layout', () => {
@@ -107,15 +107,15 @@ describe('ErrorFallback', () => {
       render(<ErrorFallback type="webgl" />);
       const icon = screen.getByTestId('icon-alert-triangle');
       expect(icon).toBeInTheDocument();
-      expect(icon.dataset.color).toBe('#ef4444');
+      expect(icon.dataset.color).toBe('var(--destructive)');
     });
 
-    it('has dark background #0a0a0a', () => {
+    it('has sci-fi well background', () => {
       render(<ErrorFallback type="webgl" />);
       const heading = screen.getByText('WebGL 不可用');
       const outerContainer = heading.parentElement?.parentElement;
       expect(outerContainer).not.toBeNull();
-      expect(outerContainer?.style.backgroundColor).toBe('rgb(10, 10, 10)'); // #0a0a0a
+      expect(outerContainer?.style.backgroundColor).toBe('var(--well)'); // Sci-fi Lab 深井底色
     });
   });
 
@@ -134,7 +134,7 @@ describe('ErrorFallback', () => {
       render(<ErrorFallback type="wasm" />);
       const icon = screen.getByTestId('icon-alert-triangle');
       expect(icon).toBeInTheDocument();
-      expect(icon.dataset.color).toBe('#ef4444');
+      expect(icon.dataset.color).toBe('var(--destructive)');
     });
   });
 

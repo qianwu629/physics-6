@@ -5,7 +5,7 @@ import {
   exportSceneToJSON,
   importJSONToScene,
 } from './sceneSerializer';
-import { createSphereEntity, createSpringEntity, createBoxEntity, createForceFieldEntity, resetEntityCounter } from '../ecs/Entity';
+import { createSphereEntity, createSpringEntity, createBoxEntity, createForceFieldEntity, createConvexEntity, createFixedJointEntity, createRevoluteJointEntity, createSphericalJointEntity, createRopeJointEntity, createRodLinkEntity, createArcTrackEntity, createPlaneTrackEntity, createSpliceEntity, attachFaces, resetEntityCounter } from '../ecs/Entity';
 import type { Entity, ConstraintComponent, ForceFieldComponent } from '../ecs/types';
 import type { EnvironmentState, SceneData } from './sceneValidation';
 import type { ImportResult } from './sceneSerializer';
@@ -428,5 +428,425 @@ describe('forceField serialization', () => {
     expect(ff!.kind).toBe('electric');
     expect((ff as any).charge).toBe(10);
     expect((ff as any).range).toBe(20);
+  });
+});
+
+// ── CurrentSource Serialization Tests (Phase 8) ──
+
+describe('currentSource serialization', () => {
+  it('currentSource 组件导出 → 导入 round-trip 完整还原', () => {
+    resetEntityCounter();
+    const wire = createBoxEntity(1, 1, 1, 0, 0.3, 0.1, '#888888', [0, 0, 0], [0, 2, 0]);
+    wire.components.set('currentSource', {
+      type: 'currentSource',
+      magnitude: 10,
+      direction: [0, 0, 1],
+    });
+    const entities = new Map<string, Entity>();
+    entities.set(wire.id, wire);
+
+    // 导出
+    const jsonStr = exportSceneToJSON(makeStoreState(entities));
+    const parsed = JSON.parse(jsonStr);
+    const wireData = parsed.simulation.entities.find((e: { id: string }) => e.id === wire.id);
+    expect(wireData).toBeDefined();
+    expect(wireData.components.currentSource).toEqual({
+      type: 'currentSource',
+      magnitude: 10,
+      direction: [0, 0, 1],
+    });
+
+    // 导入
+    const result = importJSONToScene(jsonStr);
+    expect(result.success).toBe(true);
+    const restored = result.data!.entities.get(wire.id);
+    expect(restored).toBeDefined();
+    const cs = restored!.components.get('currentSource');
+    expect(cs).toBeDefined();
+    expect(cs).toMatchObject({ type: 'currentSource', magnitude: 10, direction: [0, 0, 1] });
+    // 不触发「未知组件类型」警告
+    expect(result.warnings.some((w) => w.includes('未知组件类型'))).toBe(false);
+  });
+
+  it('负电流与非法结构：负 magnitude 原样还原（物理上表示反向）', () => {
+    resetEntityCounter();
+    const sceneData: SceneData = {
+      schemaVersion: '1.0',
+      savedAt: new Date().toISOString(),
+      simulation: {
+        environment: {
+          gravity: [0, -9.81, 0],
+          frictionScale: 1.0,
+          restitutionScale: 1.0,
+          drag: 0.1,
+          peReferenceY: 0,
+        },
+        entities: [
+          {
+            id: 'wire-1',
+            name: '导线',
+            components: {
+              transform: {
+                type: 'transform',
+                position: [0, 1, 0],
+                rotation: [0, 0, 0],
+                scale: [1, 1, 1],
+              },
+              currentSource: {
+                type: 'currentSource',
+                magnitude: -5,
+                direction: [0, 1, 0],
+              },
+            } as SceneData['simulation']['entities'][number]['components'],
+          },
+        ],
+        constraints: [],
+      },
+    };
+
+    const result = deserializeScene(sceneData);
+    expect(result.success).toBe(true);
+    const restored = result.data!.entities.get('wire-1');
+    expect(restored).toBeDefined();
+    const cs = restored!.components.get('currentSource') as { magnitude: number; direction: number[] } | undefined;
+    expect(cs).toBeDefined();
+    expect(cs!.magnitude).toBe(-5);
+    expect(cs!.direction).toEqual([0, 1, 0]);
+  });
+});
+
+// ── ConvexProfile Serialization Tests (自定义凸形) ──
+
+describe('convexProfile serialization', () => {
+  it('凸形实体的 profile/thickness/mode 导出 → 导入 round-trip 完整还原', () => {
+    resetEntityCounter();
+    const profile: [number, number][] = [[-1, -1], [1, -1], [1, 1], [-1, 1]];
+    const convex = createConvexEntity(profile, 1.5, 2, 0.5, 0.3, '#2a9d8f', [0, 0, 0], [0, 5, 0], 1);
+    const entities = new Map<string, Entity>();
+    entities.set(convex.id, convex);
+
+    const jsonStr = exportSceneToJSON(makeStoreState(entities));
+    const parsed = JSON.parse(jsonStr);
+    const data = parsed.simulation.entities.find((e: { id: string }) => e.id === convex.id);
+    expect(data).toBeDefined();
+    expect(data.components.collider.shape).toBe('convexProfile');
+    expect(data.components.collider.params.profile).toEqual(profile);
+    expect(data.components.collider.params.thickness).toBe(1.5);
+    expect(data.components.collider.params.mode).toBe('extrude');
+
+    const result = importJSONToScene(jsonStr);
+    expect(result.success).toBe(true);
+    const restored = result.data!.entities.get(convex.id);
+    expect(restored).toBeDefined();
+    const col = restored!.components.get('collider') as
+      | { shape: string; params: { profile?: [number, number][]; thickness?: number; mode?: string } }
+      | undefined;
+    expect(col).toBeDefined();
+    expect(col!.shape).toBe('convexProfile');
+    expect(col!.params.profile).toEqual(profile);
+    expect(col!.params.thickness).toBe(1.5);
+    expect(col!.params.mode).toBe('extrude');
+    // 电荷也随 rigidBody 还原
+    const rb = restored!.components.get('rigidBody') as { charge: number } | undefined;
+    expect(rb!.charge).toBe(1);
+    expect(result.warnings.some((w) => w.includes('未知组件类型'))).toBe(false);
+  });
+});
+
+// ── Face Friction Serialization Tests (W3 面摩擦) ──
+
+describe('face friction serialization', () => {
+  it('collider.faces 导出 → 导入 round-trip 完整还原（含固定面）', () => {
+    resetEntityCounter();
+    const box = createBoxEntity(1, 1, 1, 2, 0.5, 0.3, '#457b9d', [0, 0, 0], [0, 5, 0]);
+    const faced = attachFaces(box, [
+      { id: 'top', label: '上面', friction: 0.8, pinned: false },
+      { id: 'bottom', label: '底面', friction: 0.1, pinned: true },
+      { id: 'front', label: '前面', friction: 0.3, pinned: false },
+      { id: 'back', label: '后面', friction: 0.3, pinned: false },
+      { id: 'right', label: '右面', friction: 0.3, pinned: false },
+      { id: 'left', label: '左面', friction: 0.3, pinned: false },
+    ]);
+    const entities = new Map<string, Entity>();
+    entities.set(faced.id, faced);
+
+    const jsonStr = exportSceneToJSON(makeStoreState(entities));
+    const result = importJSONToScene(jsonStr);
+    expect(result.success).toBe(true);
+
+    const restored = result.data!.entities.get(faced.id);
+    expect(restored).toBeDefined();
+    const col = restored!.components.get('collider') as
+      | { faces?: { id: string; friction: number; pinned: boolean }[] }
+      | undefined;
+    expect(col?.faces).toHaveLength(6);
+    const bottom = col!.faces!.find((f) => f.id === 'bottom');
+    expect(bottom).toMatchObject({ friction: 0.1, pinned: true });
+    const top = col!.faces!.find((f) => f.id === 'top');
+    expect(top).toMatchObject({ friction: 0.8, pinned: false });
+    expect(result.warnings.some((w) => w.includes('未知组件类型'))).toBe(false);
+  });
+
+  it('无 faces 的实体导入后保持单面模式（向后兼容）', () => {
+    resetEntityCounter();
+    const sphere = createSphereEntity(0.5, 1, 0.5, 0.3, '#ff0000', [0, 0, 0], [0, 5, 0]);
+    const entities = new Map<string, Entity>();
+    entities.set(sphere.id, sphere);
+
+    const jsonStr = exportSceneToJSON(makeStoreState(entities));
+    const result = importJSONToScene(jsonStr);
+    expect(result.success).toBe(true);
+    const restored = result.data!.entities.get(sphere.id);
+    const col = restored!.components.get('collider') as { faces?: unknown[] } | undefined;
+    expect(col?.faces).toBeUndefined();
+  });
+});
+
+// ── Fixed Joint Serialization Tests (W4) ──
+
+describe('fixed joint serialization', () => {
+  it('fixed 约束实体导出 → 导入 round-trip 完整还原（锚点/坐标架/showLink）', () => {
+    resetEntityCounter();
+    const a = createBoxEntity(1, 1, 1, 1, 0.5, 0.3, '#ff0000', [0, 0, 0], [-2, 5, 0]);
+    const b = createBoxEntity(1, 1, 1, 1, 0.5, 0.3, '#00ff00', [0, 0, 0], [2, 5, 0]);
+    const joint = createFixedJointEntity(a.id, b.id, {
+      anchorA: [1, 0, 0],
+      anchorB: [-1, 0, 0],
+      frameB: [0, 0, Math.SQRT1_2, Math.SQRT1_2],
+      showLink: false,
+    });
+    const entities = new Map<string, Entity>();
+    entities.set(a.id, a);
+    entities.set(b.id, b);
+    entities.set(joint.id, joint);
+
+    const jsonStr = exportSceneToJSON(makeStoreState(entities));
+    const parsed = JSON.parse(jsonStr);
+    expect(parsed.simulation.constraints).toHaveLength(1);
+    expect(parsed.simulation.constraints[0].components.constraint.kind).toBe('fixed');
+
+    const result = importJSONToScene(jsonStr);
+    expect(result.success).toBe(true);
+    const restored = result.data!.entities.get(joint.id);
+    expect(restored).toBeDefined();
+    const c = restored!.components.get('constraint') as
+      | { kind: string; entityAId: string; entityBId: string; params: { anchorA: number[]; anchorB: number[]; frameB: number[]; showLink?: boolean } }
+      | undefined;
+    expect(c).toBeDefined();
+    expect(c!.kind).toBe('fixed');
+    expect(c!.entityAId).toBe(a.id);
+    expect(c!.entityBId).toBe(b.id);
+    expect(c!.params.anchorA).toEqual([1, 0, 0]);
+    expect(c!.params.anchorB).toEqual([-1, 0, 0]);
+    expect(c!.params.frameB[3]).toBeCloseTo(Math.SQRT1_2, 10);
+    expect(c!.params.showLink).toBe(false);
+    expect(result.warnings.some((w) => w.includes('未知组件类型'))).toBe(false);
+  });
+
+  it('固定连接两端实体被删时级联删除连接（复用约束级联机制）', () => {
+    resetEntityCounter();
+    const a = createBoxEntity(1, 1, 1, 1, 0.5, 0.3, '#ff0000', [0, 0, 0], [-2, 5, 0]);
+    const b = createBoxEntity(1, 1, 1, 1, 0.5, 0.3, '#00ff00', [0, 0, 0], [2, 5, 0]);
+    const joint = createFixedJointEntity(a.id, b.id, {
+      anchorA: [1, 0, 0],
+      anchorB: [-1, 0, 0],
+      frameB: [0, 0, 0, 1],
+    });
+    const entities = new Map<string, Entity>();
+    entities.set(a.id, a);
+    entities.set(b.id, b);
+    entities.set(joint.id, joint);
+
+    // 模拟删除 A：约束实体应被级联删除（entitySlice 机制，此处直接验证数据关系）
+    const c = joint.components.get('constraint') as { entityAId: string; entityBId: string };
+    expect([a.id, b.id]).toContain(c.entityAId);
+    expect([a.id, b.id]).toContain(c.entityBId);
+  });
+});
+
+// ── Revolve (车削) Serialization Tests (二期) ──
+
+describe('revolve profile serialization', () => {
+  it('mode=revolve 的凸形实体导出 → 导入 round-trip 完整还原', () => {
+    resetEntityCounter();
+    const profile: [number, number][] = [[0, -1], [1.5, -1], [0.8, 0.5], [1.2, 1.5], [0, 1.5]];
+    const vase = createConvexEntity(profile, 0, 2, 0.5, 0.3, '#e9c46a', [0, 0, 0], [0, 5, 0], 0, 'revolve');
+    const entities = new Map<string, Entity>();
+    entities.set(vase.id, vase);
+
+    const jsonStr = exportSceneToJSON(makeStoreState(entities));
+    const result = importJSONToScene(jsonStr);
+    expect(result.success).toBe(true);
+
+    const restored = result.data!.entities.get(vase.id);
+    const col = restored!.components.get('collider') as
+      | { shape: string; params: { profile?: [number, number][]; mode?: string } }
+      | undefined;
+    expect(col).toBeDefined();
+    expect(col!.shape).toBe('convexProfile');
+    expect(col!.params.mode).toBe('revolve');
+    expect(col!.params.profile).toEqual(profile);
+    expect(result.warnings.some((w) => w.includes('未知组件类型'))).toBe(false);
+  });
+});
+
+// ── Revolute / Spherical Joint Serialization Tests (二期) ──
+
+describe('revolute & spherical joint serialization', () => {
+  it('revolute 约束 round-trip（锚点 + 双局部轴）', () => {
+    resetEntityCounter();
+    const a = createBoxEntity(1, 1, 1, 1, 0.5, 0.3, '#ff0000', [0, 0, 0], [-2, 5, 0]);
+    const b = createBoxEntity(1, 1, 1, 1, 0.5, 0.3, '#00ff00', [0, 0, 0], [2, 5, 0]);
+    const joint = createRevoluteJointEntity(a.id, b.id, {
+      anchorA: [1, 0, 0],
+      anchorB: [-1, 0, 0],
+      axisA: [0, 1, 0],
+      axisB: [0, 1, 0],
+      showLink: true,
+    });
+    const entities = new Map<string, Entity>();
+    entities.set(a.id, a);
+    entities.set(b.id, b);
+    entities.set(joint.id, joint);
+
+    const result = importJSONToScene(exportSceneToJSON(makeStoreState(entities)));
+    expect(result.success).toBe(true);
+    const c = result.data!.entities.get(joint.id)!.components.get('constraint') as any;
+    expect(c.kind).toBe('revolute');
+    expect(c.params.axisA).toEqual([0, 1, 0]);
+    expect(c.params.axisB).toEqual([0, 1, 0]);
+    expect(c.params.anchorA).toEqual([1, 0, 0]);
+    expect(c.params.showLink).toBe(true);
+  });
+
+  it('spherical 约束 round-trip（锚点 + showLink 缺省）', () => {
+    resetEntityCounter();
+    const a = createSphereEntity(0.5, 1, 0.5, 0.3, '#ff0000', [0, 0, 0], [0, 8, 0]);
+    const b = createSphereEntity(0.5, 1, 0.5, 0.3, '#00ff00', [0, 0, 0], [0, 5, 0]);
+    const joint = createSphericalJointEntity(a.id, b.id, {
+      anchorA: [0, -1.5, 0],
+      anchorB: [0, 1.5, 0],
+    });
+    const entities = new Map<string, Entity>();
+    entities.set(a.id, a);
+    entities.set(b.id, b);
+    entities.set(joint.id, joint);
+
+    const result = importJSONToScene(exportSceneToJSON(makeStoreState(entities)));
+    expect(result.success).toBe(true);
+    const c = result.data!.entities.get(joint.id)!.components.get('constraint') as any;
+    expect(c.kind).toBe('spherical');
+    expect(c.params.anchorA).toEqual([0, -1.5, 0]);
+    expect(c.params.anchorB).toEqual([0, 1.5, 0]);
+  });
+});
+
+// ── Rope Joint Serialization Tests (W8 轻绳) ──
+
+describe('rope joint serialization', () => {
+  it('rope 约束 round-trip（锚点 + 绳长）', () => {
+    resetEntityCounter();
+    const a = createBoxEntity(1, 1, 1, 1, 0.5, 0.3, '#ff0000', [0, 0, 0], [0, 8, 0]);
+    const b = createBoxEntity(1, 1, 1, 1, 0.5, 0.3, '#00ff00', [0, 0, 0], [0, 5, 0]);
+    const rope = createRopeJointEntity(a.id, b.id, {
+      anchorA: [0, 0, 0],
+      anchorB: [0, 0, 0],
+      length: 3.5,
+      showLink: true,
+    });
+    const entities = new Map<string, Entity>();
+    entities.set(a.id, a);
+    entities.set(b.id, b);
+    entities.set(rope.id, rope);
+
+    const result = importJSONToScene(exportSceneToJSON(makeStoreState(entities)));
+    expect(result.success).toBe(true);
+    const c = result.data!.entities.get(rope.id)!.components.get('constraint') as any;
+    expect(c.kind).toBe('rope');
+    expect(c.params.length).toBe(3.5);
+    expect(c.params.anchorA).toEqual([0, 0, 0]);
+    expect(c.params.showLink).toBe(true);
+  });
+
+  it('轻杆连杆实体（cylinder + 微质量）序列化 round-trip', () => {
+    resetEntityCounter();
+    const rod = createRodLinkEntity([0, 5, 0], [0, 0, Math.PI / 4], 4);
+    const entities = new Map<string, Entity>();
+    entities.set(rod.id, rod);
+
+    const result = importJSONToScene(exportSceneToJSON(makeStoreState(entities)));
+    expect(result.success).toBe(true);
+    const restored = result.data!.entities.get(rod.id)!;
+    const rb = restored.components.get('rigidBody') as any;
+    const col = restored.components.get('collider') as any;
+    expect(rb.mass).toBeCloseTo(0.01, 10);
+    expect(col.shape).toBe('cylinder');
+    expect(col.params.halfHeight).toBe(2);
+  });
+});
+
+// ── Arc Track Serialization Tests (P4 圆弧轨道) ──
+
+describe('arc track serialization', () => {
+  it('圆弧轨道（arc 碰撞体 + faces）导出 → 导入 round-trip 完整还原', () => {
+    resetEntityCounter();
+    const arc = createArcTrackEntity(3, 0.5, 90, 2, 0.4, '#8b7fd4', [0, 3, 0]);
+    const faced = attachFaces(arc, [
+      { id: 'inner', label: '内弧面', friction: 0.05, pinned: false },
+      { id: 'outer', label: '主体面', friction: 0.4, pinned: false },
+    ]);
+    const entities = new Map<string, Entity>();
+    entities.set(faced.id, faced);
+
+    const jsonStr = exportSceneToJSON(makeStoreState(entities));
+    const result = importJSONToScene(jsonStr);
+    expect(result.success).toBe(true);
+
+    const restored = result.data!.entities.get(faced.id)!;
+    const col = restored.components.get('collider') as any;
+    expect(col.shape).toBe('arc');
+    expect(col.params.innerR).toBe(3);
+    expect(col.params.thickness).toBe(0.5);
+    expect(col.params.arcAngle).toBe(90);
+    expect(col.params.width).toBe(2);
+    expect(col.faces).toHaveLength(2);
+    expect(col.faces.find((f: { id: string }) => f.id === 'inner')).toMatchObject({ friction: 0.05 });
+    expect(result.warnings.some((w) => w.includes('未知组件类型'))).toBe(false);
+  });
+});
+
+// ── Splice Serialization Tests (P5 轨道拼接) ──
+
+describe('splice serialization', () => {
+  it('splice 约束 round-trip（接缝参数 + 损耗配置）', () => {
+    resetEntityCounter();
+    const master = createPlaneTrackEntity(3, 1.5, 0.3, '#8b7fd4', [0, 1, 0]);
+    const track = createPlaneTrackEntity(3, 1.5, 0.3, '#8b7fd4', [6, 1, 0]);
+    const splice = createSpliceEntity(master.id, track.id, {
+      faceId: 'right',
+      center: [3, 1, 0],
+      normal: [1, 0, 0],
+      halfExtents: [0.3, 2, 1.7],
+      quaternion: [0, 0, 0, 1],
+      lossType: 'percent',
+      loss: 0.3,
+      showLink: true,
+    });
+    const entities = new Map<string, Entity>();
+    entities.set(master.id, master);
+    entities.set(track.id, track);
+    entities.set(splice.id, splice);
+
+    const result = importJSONToScene(exportSceneToJSON(makeStoreState(entities)));
+    expect(result.success).toBe(true);
+    const c = result.data!.entities.get(splice.id)!.components.get('constraint') as any;
+    expect(c.kind).toBe('splice');
+    expect(c.entityAId).toBe(master.id);
+    expect(c.entityBId).toBe(track.id);
+    expect(c.params.faceId).toBe('right');
+    expect(c.params.center).toEqual([3, 1, 0]);
+    expect(c.params.halfExtents).toEqual([0.3, 2, 1.7]);
+    expect(c.params.lossType).toBe('percent');
+    expect(c.params.loss).toBeCloseTo(0.3, 10);
   });
 });

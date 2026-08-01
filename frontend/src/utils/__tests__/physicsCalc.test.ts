@@ -118,48 +118,100 @@ describe('computeEnergy', () => {
   });
 });
 
-describe('AccelerationSmoother', () => {
+describe('AccelerationSmoother（最小二乘拟合）', () => {
   /**
    * Test 5: Static body (vel=0 every frame)
-   * After 5 samples, acceleration should be exactly 0
-   * Must be < 0.05 m/s²
+   * Acceleration should be exactly 0
    */
   it('should report near-zero acceleration for a static body', () => {
-    const smoother = new AccelerationSmoother(5);
+    const smoother = new AccelerationSmoother();
     const dt = 1 / 60;
 
-    // Push 5 frames of zero velocity
-    for (let i = 0; i < 5; i++) {
-      smoother.push(0, 0, 0);
+    for (let i = 0; i < 16; i++) {
+      smoother.push(i * dt, 0, 0, 0);
     }
 
-    const [ax, ay, az] = smoother.getSmoothedAcceleration(dt);
+    const [ax, ay, az] = smoother.getSmoothedAcceleration();
 
-    expect(Math.abs(ax)).toBeLessThan(0.05);
-    expect(Math.abs(ay)).toBeLessThan(0.05);
-    expect(Math.abs(az)).toBeLessThan(0.05);
+    expect(ax).toBe(0);
+    expect(ay).toBe(0);
+    expect(az).toBe(0);
   });
 
   /**
-   * Test 6: Constant acceleration — velocity increases by 1 each frame
-   * After 5 frames, smoothed acceleration should be ~1/dt
+   * Test 6: Constant acceleration — velocity increases linearly
+   * Least-squares slope should recover the exact acceleration
    */
   it('should detect constant acceleration correctly', () => {
-    const smoother = new AccelerationSmoother(5);
+    const smoother = new AccelerationSmoother();
     const dt = 1 / 60;
 
-    // vel: 0, 1, 2, 3, 4 (constant +1 per frame)
-    for (let v = 0; v < 5; v++) {
-      smoother.push(v, v, v);
+    // v(t) = 60·t → a = 60 m/s²
+    for (let i = 0; i < 16; i++) {
+      const t = i * dt;
+      const v = 60 * t;
+      smoother.push(t, v, v, v);
     }
 
-    const [ax, ay, az] = smoother.getSmoothedAcceleration(dt);
-    const expectedAccel = 1 / dt; // 1 m/s per frame → 60 m/s²
+    const [ax, ay, az] = smoother.getSmoothedAcceleration();
 
-    // Allow 10% tolerance for SMA averaging
-    expect(ax).toBeCloseTo(expectedAccel, -1);
-    expect(ay).toBeCloseTo(expectedAccel, -1);
-    expect(az).toBeCloseTo(expectedAccel, -1);
+    expect(ax).toBeCloseTo(60, 6);
+    expect(ay).toBeCloseTo(60, 6);
+    expect(az).toBeCloseTo(60, 6);
+  });
+
+  /**
+   * Test 7: 采样时刻抖动（rAF ±3ms）下斜率仍稳定
+   * 旧固定 dt 差分法在此场景直接把时序抖动转成加速度抖动
+   */
+  it('should be robust to sampling-time jitter', () => {
+    const smoother = new AccelerationSmoother();
+    const dt = 1 / 60;
+    const jitter = [0.003, -0.002, 0.001, -0.003, 0.002, -0.001, 0.003, -0.002, 0.001, -0.003, 0.002, -0.001, 0.003, -0.002, 0.001, 0];
+
+    // v(t) = 60·t，采样时刻叠加抖动
+    for (let i = 0; i < 16; i++) {
+      const t = i * dt + jitter[i];
+      const v = 60 * t;
+      smoother.push(t, v, v, v);
+    }
+
+    const [ax] = smoother.getSmoothedAcceleration();
+    expect(Math.abs(ax - 60)).toBeLessThan(2); // 斜率偏差 < 3.3%
+  });
+
+  /**
+   * Test 8: 高频噪声衰减 — 带噪声的速度信号，拟合斜率接近真值
+   */
+  it('should damp high-frequency velocity noise', () => {
+    const smoother = new AccelerationSmoother();
+    const dt = 1 / 60;
+
+    // v(t) = 60·t + 0.1·sin(2π·30·t)（30Hz 噪声，幅值 0.1 m/s）
+    for (let i = 0; i < 16; i++) {
+      const t = i * dt;
+      const v = 60 * t + 0.1 * Math.sin(2 * Math.PI * 30 * t);
+      smoother.push(t, v, 0, 0);
+    }
+
+    const [ax] = smoother.getSmoothedAcceleration();
+    // 真值 60；噪声经 0.25s 窗口拟合后残余应远小于单步差分（0.1·2π·30 ≈ 18.8 m/s²）
+    expect(Math.abs(ax - 60)).toBeLessThan(4);
+  });
+
+  /**
+   * Test 9: 样本不足 2 个返回 [0,0,0]；reset 清空
+   */
+  it('should return zero with fewer than 2 samples and after reset', () => {
+    const smoother = new AccelerationSmoother();
+    expect(smoother.getSmoothedAcceleration()).toEqual([0, 0, 0]);
+    smoother.push(0, 5, 5, 5);
+    expect(smoother.getSmoothedAcceleration()).toEqual([0, 0, 0]);
+    smoother.push(1 / 60, 6, 6, 6);
+    const [ax] = smoother.getSmoothedAcceleration();
+    expect(ax).toBeCloseTo(60, 6);
+    smoother.reset();
+    expect(smoother.getSmoothedAcceleration()).toEqual([0, 0, 0]);
   });
 });
 

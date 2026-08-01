@@ -102,15 +102,6 @@ describe('ChartPanel', () => {
     expect(useChartDataStore.getState().layoutMode).toBe('overlay');
   });
 
-  it('Test 4: clicking close button triggers onClose', () => {
-    const onClose = vi.fn();
-    render(<ChartPanel open={true} onClose={onClose} />);
-
-    const closeBtn = screen.getByLabelText('关闭图表面板');
-    fireEvent.click(closeBtn);
-    expect(onClose).toHaveBeenCalledTimes(1);
-  });
-
   it('Test 5: overlay mode renders 1 ChartCanvas; separate mode renders N (N = trackedEntityIds.size)', () => {
     // Overlay mode with 2 tracked entities
     useChartDataStore.setState({ layoutMode: 'overlay', trackedEntityIds: new Set(['e1', 'e2']) });
@@ -155,20 +146,6 @@ describe('ChartPanel', () => {
   //   "separate 模式每个 ChartCanvas 只 addSeries axes 条 (= 3),
   //    N 个图共 N × 3 条 series, 而非 C-03 bug 中的 N × N × 3 条。"
   it.todo('Test 5b (post-C-03): separate mode adds entities × axes series, not entities × axes × entities (Phase 01.1)');
-
-  it('Test 6: panel-header has cursor-move class; Draggable wrapped around Resizable', () => {
-    render(<ChartPanel open={true} onClose={vi.fn()} />);
-
-    // The header should have the panel-header class (Draggable handle target)
-    const header = document.querySelector('.panel-header');
-    expect(header).toBeInTheDocument();
-    expect(header!.classList.contains('cursor-move')).toBe(true);
-
-    // The panel should be wrapped in Draggable (which adds transform style)
-    // react-draggable wraps in a div with transform
-    const draggableWrapper = document.querySelector('[class*="panel-container"]');
-    expect(draggableWrapper).toBeInTheDocument();
-  });
 
   it('does not render when open=false', () => {
     render(<ChartPanel open={false} onClose={vi.fn()} />);

@@ -106,14 +106,14 @@ export function ChartSampler() {
       const pos = rb.translation();
       const mass = rb.mass();
 
-      // 加速度：差分 + SMA(5) 平滑（每实体一个 smoother 实例）
+      // 加速度：最小二乘拟合（真实时间戳，每实体一个 smoother 实例）
       let smoother = smootherMap.current.get(entityId);
       if (!smoother) {
-        smoother = new AccelerationSmoother(5);
+        smoother = new AccelerationSmoother();
         smootherMap.current.set(entityId, smoother);
       }
-      smoother.push(vel.x, vel.y, vel.z);
-      const [ax, ay, az] = smoother.getSmoothedAcceleration(SAMPLE_INTERVAL);
+      smoother.push(now, vel.x, vel.y, vel.z);
+      const [ax, ay, az] = smoother.getSmoothedAcceleration();
 
       // 能量计算
       const { ke, peGravity, peSprings, total } = computeEnergy(
@@ -125,7 +125,7 @@ export function ChartSampler() {
         getEntityPosition,
       );
 
-      // ── 组装 12 指标 (METRICS_PER_ENTITY = 12) ──
+      // ── 组装 15 指标 (METRICS_PER_ENTITY = 15) ──
       // 索引约定:
       //   0-2:  位置 (x, y, z)
       //   3-5:  速度 (vx, vy, vz)
@@ -133,6 +133,7 @@ export function ChartSampler() {
       //   9:    动能 (KE)
       //   10:   势能 (PE_gravity + PE_springs)
       //   11:   总能量 (KE + PE = E)
+      //   12-14: 动量 (px, py, pz = m·v)
       const metrics = new Float64Array(METRICS_PER_ENTITY);
       metrics[0] = pos.x;
       metrics[1] = pos.y;
@@ -146,6 +147,9 @@ export function ChartSampler() {
       metrics[9] = ke;
       metrics[10] = peGravity + peSprings; // 总势能
       metrics[11] = total;
+      metrics[12] = mass * vel.x;
+      metrics[13] = mass * vel.y;
+      metrics[14] = mass * vel.z;
 
       const buf = getOrCreateBuffer(entityId);
       buf.push(now, metrics);

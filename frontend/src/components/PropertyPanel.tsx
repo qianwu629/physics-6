@@ -17,7 +17,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from './ui/dialog';
-import EntityList from './EntityList';
+import { useDock } from './dock/DockApiContext';
 import type {
   Entity,
   TransformComponent,
@@ -31,7 +31,10 @@ import type {
   ColliderParams,
   ForceFieldComponent,
   ForceFieldKind,
+  CurrentSourceComponent,
+  FaceFriction,
 } from '../ecs/types';
+import { getShapeFaces } from '../ecs/faceGeometry';
 import { DEFAULT_COLORS } from '../ecs/components/Material';
 
 /** 7 preset color swatches for the color picker */
@@ -42,7 +45,7 @@ const COLOR_SWATCHES = [
   '#9b5de5', // 淡紫
   '#e9c46a', // 柠檬黄
   '#e76f51', // 玫瑰粉
-  '#e0e0e0', // 珍珠白
+  '#fafafa', // 珍珠白（必须是具体 hex：该值会存入 ECS material.color 并随场景持久化，THREE.Color 无法解析 CSS 变量）
 ];
 
 /** Shape display names in Chinese */
@@ -50,6 +53,7 @@ const SHAPE_LABELS: Record<string, string> = {
   sphere: '球体',
   cuboid: '方块',
   cylinder: '圆柱',
+  convexProfile: '自定义凸形',
 };
 
 /** ForceField kind display names in Chinese (D-03-06) */
@@ -77,8 +81,8 @@ function PhysicsField({ label, value, unit, min, max, step, disabled, onChange }
   if (disabled) {
     return (
       <div className="flex items-center justify-between py-1">
-        <span className="text-sm" style={{ color: '#a0a0a0' }}>{label}</span>
-        <span className="text-sm font-mono" style={{ color: '#666' }}>
+        <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>{label}</span>
+        <span className="text-sm font-mono" style={{ color: 'var(--text-dim)' }}>
           {value.toFixed(2)}{unit ? ` ${unit}` : ''}
         </span>
       </div>
@@ -87,7 +91,7 @@ function PhysicsField({ label, value, unit, min, max, step, disabled, onChange }
 
   return (
     <div className="space-y-1.5">
-      <Label style={{ color: '#a0a0a0', fontSize: '14px' }}>{label}</Label>
+      <Label style={{ color: 'var(--muted-foreground)', fontSize: '14px' }}>{label}</Label>
       <div className="flex items-center gap-2">
         <Slider
           value={[value]}
@@ -109,13 +113,13 @@ function PhysicsField({ label, value, unit, min, max, step, disabled, onChange }
           }}
           className="w-20 text-sm font-mono"
           style={{
-            backgroundColor: '#222',
-            borderColor: 'rgba(255,255,255,0.1)',
-            color: '#fff',
+            backgroundColor: 'var(--well)',
+            borderColor: 'var(--glass-border)',
+            color: 'var(--foreground)',
             height: '32px',
           }}
         />
-        {unit && <span className="text-xs" style={{ color: '#888', minWidth: '32px' }}>{unit}</span>}
+        {unit && <span className="text-xs" style={{ color: 'var(--muted-foreground)', minWidth: '32px' }}>{unit}</span>}
       </div>
     </div>
   );
@@ -138,12 +142,12 @@ function Vector3Field({ label, value, unit, min, max, step, disabled, onChange }
   if (disabled) {
     return (
       <div className="space-y-1">
-        <span className="text-sm" style={{ color: '#a0a0a0' }}>{label}</span>
+        <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>{label}</span>
         <div className="flex gap-3">
           {['X', 'Y', 'Z'].map((axis, i) => (
             <div key={axis} className="flex-1">
-              <span className="block text-xs mb-0.5" style={{ color: '#666' }}>{axis}</span>
-              <span className="text-sm font-mono" style={{ color: '#666' }}>
+              <span className="block text-xs mb-0.5" style={{ color: 'var(--text-dim)' }}>{axis}</span>
+              <span className="text-sm font-mono" style={{ color: 'var(--text-dim)' }}>
                 {value[i]?.toFixed(2) ?? '0.00'}{unit ? ` ${unit}` : ''}
               </span>
             </div>
@@ -155,11 +159,11 @@ function Vector3Field({ label, value, unit, min, max, step, disabled, onChange }
 
   return (
     <div className="space-y-1.5">
-      <Label style={{ color: '#a0a0a0', fontSize: '14px' }}>{label}</Label>
+      <Label style={{ color: 'var(--muted-foreground)', fontSize: '14px' }}>{label}</Label>
       <div className="flex gap-2">
         {['X', 'Y', 'Z'].map((axis, i) => (
           <div key={axis} className="flex-1">
-            <span className="block text-xs mb-1" style={{ color: '#888' }}>{axis}</span>
+            <span className="block text-xs mb-1" style={{ color: 'var(--muted-foreground)' }}>{axis}</span>
             <Input
               type="number"
               value={value[i] ?? 0}
@@ -172,16 +176,16 @@ function Vector3Field({ label, value, unit, min, max, step, disabled, onChange }
               }}
               className="w-full text-sm font-mono"
               style={{
-                backgroundColor: '#222',
-                borderColor: 'rgba(255,255,255,0.1)',
-                color: '#fff',
+                backgroundColor: 'var(--well)',
+                borderColor: 'var(--glass-border)',
+                color: 'var(--foreground)',
                 height: '32px',
               }}
             />
           </div>
         ))}
         {unit && (
-          <span className="text-xs self-end pb-1.5" style={{ color: '#888', minWidth: '32px' }}>
+          <span className="text-xs self-end pb-1.5" style={{ color: 'var(--muted-foreground)', minWidth: '32px' }}>
             {unit}
           </span>
         )}
@@ -202,8 +206,10 @@ export default function PropertyPanel() {
   const openDeleteDialog = useSimulationStore((s) => s.openDeleteDialog);
   const closeDeleteDialog = useSimulationStore((s) => s.closeDeleteDialog);
   const togglePropertyPanel = useSimulationStore((s) => s.togglePropertyPanel);
+  const dock = useDock();
   const toggleTrailVisibility = useSimulationStore((s) => s.toggleTrailVisibility);
   const toggleVectorVisibility = useSimulationStore((s) => s.toggleVectorVisibility);
+  const setCurrentSource = useSimulationStore((s) => s.setCurrentSource);
 
   // Phase 2: 图表追踪
   const trackedIds = useChartDataStore((s) => s.trackedEntityIds);
@@ -243,9 +249,33 @@ export default function PropertyPanel() {
   const trailComp = selectedEntity?.components.get('trail') as TrailComponent | undefined;
   const vectorComp = selectedEntity?.components.get('vector') as VectorComponent | undefined;
   const forceField = selectedEntity?.components.get('forceField') as ForceFieldComponent | undefined;
+  const currentSource = selectedEntity?.components.get('currentSource') as CurrentSourceComponent | undefined;
 
-  const isSpring = !!constraint;
+  const isSpring = constraint?.kind === 'spring';
+  const isJoint =
+    constraint?.kind === 'fixed' ||
+    constraint?.kind === 'revolute' ||
+    constraint?.kind === 'spherical' ||
+    constraint?.kind === 'rope';
+  const isSplice = constraint?.kind === 'splice';
+  const springParams = constraint?.kind === 'spring' ? constraint.params : null;
+  const jointParams = isJoint ? constraint.params : null;
+  const spliceParams = constraint?.kind === 'splice' ? constraint.params : null;
+  const JOINT_KIND_LABELS: Record<string, string> = {
+    fixed: '固定连接（刚性）',
+    revolute: '铰链（绕轴旋转）',
+    spherical: '球窝（全向旋转）',
+    rope: '轻绳（只受拉）',
+  };
+  const jointKindLabel = constraint && isJoint ? JOINT_KIND_LABELS[constraint.kind] : '';
   const isForceField = !!forceField;
+  // 斜面/倾斜固定板：cuboid + fixed + 纯 z 旋转（斜面工厂与工具箱斜面均为此形态）
+  const isSlopeLike =
+    collider?.shape === 'cuboid' &&
+    rigidBody?.kind === 'fixed' &&
+    !!transform &&
+    transform.rotation[0] === 0 &&
+    transform.rotation[1] === 0;
 
   // Resolve endpoint entity names for spring editor
   const entityAName = useSimulationStore((s) => {
@@ -280,6 +310,29 @@ export default function PropertyPanel() {
     [selectedEntityId, velocity, updateComponent],
   );
 
+  // 斜面倾角（度 → rad 写 transform.rotation.z；@react-three/rapier 会响应式同步到物理体）
+  const handleSlopeAngleChange = useCallback(
+    (val: number) => {
+      if (!selectedEntityId || !transform) return;
+      updateComponent(selectedEntityId, 'transform', {
+        rotation: [transform.rotation[0], transform.rotation[1], (val * Math.PI) / 180],
+      });
+    },
+    [selectedEntityId, transform, updateComponent],
+  );
+
+  // 圆弧/双弧轨道整体旋转（欧拉 XYZ，度 → rad；同斜面倾角的同步机制，形状不变仅整体转）
+  const isArcTrack = collider?.shape === 'arc' || collider?.shape === 'doubleArc';
+  const handleRotationChange = useCallback(
+    (index: number, val: number) => {
+      if (!selectedEntityId || !transform) return;
+      const newRot: [number, number, number] = [...transform.rotation];
+      newRot[index] = (val * Math.PI) / 180;
+      updateComponent(selectedEntityId, 'transform', { rotation: newRot });
+    },
+    [selectedEntityId, transform, updateComponent],
+  );
+
   const handleMassChange = useCallback(
     (val: number) => {
       if (!selectedEntityId) return;
@@ -304,6 +357,33 @@ export default function PropertyPanel() {
     [selectedEntityId, updateComponent],
   );
 
+  // ── W3 面摩擦/固定 ──
+  const handleEnablePerFace = useCallback(() => {
+    if (!selectedEntityId || !collider) return;
+    const mu = rigidBody?.friction ?? 0.3;
+    const faces: FaceFriction[] = getShapeFaces(collider.shape, collider.params).map((d) => ({
+      id: d.id,
+      label: d.label,
+      friction: mu,
+      pinned: false,
+    }));
+    updateComponent(selectedEntityId, 'collider', { faces });
+  }, [selectedEntityId, collider, rigidBody, updateComponent]);
+
+  const handleDisablePerFace = useCallback(() => {
+    if (!selectedEntityId) return;
+    updateComponent(selectedEntityId, 'collider', { faces: undefined });
+  }, [selectedEntityId, updateComponent]);
+
+  const handleFaceChange = useCallback(
+    (faceId: string, patch: Partial<FaceFriction>) => {
+      if (!selectedEntityId || !collider?.faces) return;
+      const faces = collider.faces.map((f) => (f.id === faceId ? { ...f, ...patch } : f));
+      updateComponent(selectedEntityId, 'collider', { faces });
+    },
+    [selectedEntityId, collider, updateComponent],
+  );
+
   // Phase 3 (03-03): charge 字段 (D-03-06)
   const handleChargeChange = useCallback(
     (val: number) => {
@@ -311,6 +391,33 @@ export default function PropertyPanel() {
       updateComponent(selectedEntityId, 'rigidBody', { charge: val });
     },
     [selectedEntityId, updateComponent],
+  );
+
+  // Phase 8: 电流源（实体等效为无限长直导线，产生环形磁场）
+  const handleToggleCurrentSource = useCallback(
+    (on: boolean) => {
+      if (!selectedEntityId) return;
+      setCurrentSource(selectedEntityId, on ? { magnitude: 10, direction: [0, 0, 1] } : null);
+    },
+    [selectedEntityId, setCurrentSource],
+  );
+
+  const handleCurrentMagnitudeChange = useCallback(
+    (val: number) => {
+      if (!selectedEntityId) return;
+      updateComponent(selectedEntityId, 'currentSource', { magnitude: val });
+    },
+    [selectedEntityId, updateComponent],
+  );
+
+  const handleCurrentDirectionChange = useCallback(
+    (index: number, val: number) => {
+      if (!selectedEntityId || !currentSource) return;
+      const newDir: [number, number, number] = [...currentSource.direction];
+      newDir[index] = val;
+      updateComponent(selectedEntityId, 'currentSource', { direction: newDir });
+    },
+    [selectedEntityId, currentSource, updateComponent],
   );
 
   const handleColliderParamChange = useCallback(
@@ -340,7 +447,7 @@ export default function PropertyPanel() {
   // ── Spring property handlers ──
   const handleSpringStiffnessChange = useCallback(
     (val: number) => {
-      if (!selectedEntityId || !constraint) return;
+      if (!selectedEntityId || !constraint || constraint.kind !== 'spring') return;
       updateComponent(selectedEntityId, 'constraint', {
         params: { ...constraint.params, stiffness: val },
       });
@@ -350,7 +457,7 @@ export default function PropertyPanel() {
 
   const handleSpringRestLengthChange = useCallback(
     (val: number) => {
-      if (!selectedEntityId || !constraint) return;
+      if (!selectedEntityId || !constraint || constraint.kind !== 'spring') return;
       updateComponent(selectedEntityId, 'constraint', {
         params: { ...constraint.params, restLength: val },
       });
@@ -360,9 +467,52 @@ export default function PropertyPanel() {
 
   const handleSpringDampingChange = useCallback(
     (val: number) => {
-      if (!selectedEntityId || !constraint) return;
+      if (!selectedEntityId || !constraint || constraint.kind !== 'spring') return;
       updateComponent(selectedEntityId, 'constraint', {
         params: { ...constraint.params, damping: val },
+      });
+    },
+    [selectedEntityId, constraint, updateComponent],
+  );
+
+  // ── W4/W6 关节 handlers ──
+  const handleFixedJointShowLinkChange = useCallback(
+    (show: boolean) => {
+      if (!selectedEntityId || !constraint || constraint.kind === 'spring') return;
+      updateComponent(selectedEntityId, 'constraint', {
+        params: { ...constraint.params, showLink: show },
+      });
+    },
+    [selectedEntityId, constraint, updateComponent],
+  );
+
+  // ── W8 轻绳 handlers ──
+  const handleRopeLengthChange = useCallback(
+    (val: number) => {
+      if (!selectedEntityId || !constraint || constraint.kind !== 'rope') return;
+      updateComponent(selectedEntityId, 'constraint', {
+        params: { ...constraint.params, length: val },
+      });
+    },
+    [selectedEntityId, constraint, updateComponent],
+  );
+
+  // ── P5 拼接损耗 handlers ──
+  const handleSpliceLossTypeChange = useCallback(
+    (t: 'value' | 'percent') => {
+      if (!selectedEntityId || !constraint || constraint.kind !== 'splice') return;
+      updateComponent(selectedEntityId, 'constraint', {
+        params: { ...constraint.params, lossType: t },
+      });
+    },
+    [selectedEntityId, constraint, updateComponent],
+  );
+
+  const handleSpliceLossChange = useCallback(
+    (val: number) => {
+      if (!selectedEntityId || !constraint || constraint.kind !== 'splice') return;
+      updateComponent(selectedEntityId, 'constraint', {
+        params: { ...constraint.params, loss: val },
       });
     },
     [selectedEntityId, constraint, updateComponent],
@@ -439,33 +589,30 @@ export default function PropertyPanel() {
     [selectedEntityId, forceField, transform, updateComponent],
   );
 
-  // Panel border based on editable/readonly state
+  // Panel border based on editable/readonly state：可编辑时全息青描边 + 发光
   const panelBorder = disabled
-    ? '1px solid rgba(255, 255, 255, 0.06)'
-    : '1px solid rgba(255, 255, 255, 0.12)';
+    ? '1px solid var(--glass-border)'
+    : '1px solid var(--holo)';
 
   return (
     <>
       <div
-        className="fixed z-40 rounded-xl flex flex-col"
+        className="h-full w-full flex flex-col"
         style={{
-          right: '16px',
-          top: '80px',
-          bottom: '16px',
-          width: '280px',
-          backgroundColor: 'rgba(26, 26, 26, 0.85)',
+          backgroundColor: 'var(--glass-bg)',
           backdropFilter: 'blur(8px)',
           WebkitBackdropFilter: 'blur(8px)',
           border: panelBorder,
+          boxShadow: disabled ? 'none' : 'var(--glow-sm)',
           overflow: 'hidden',
         }}
       >
         {/* Header */}
         <div
           className="flex items-center justify-between px-3 shrink-0"
-          style={{ height: '40px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+          style={{ height: '40px', borderBottom: '1px solid var(--glass-border)' }}
         >
-          <span className="text-sm font-semibold" style={{ color: '#e0e0e0' }}>
+          <span className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
             实体属性
           </span>
           <button
@@ -473,21 +620,14 @@ export default function PropertyPanel() {
             className="rounded hover:bg-white/5 transition-colors p-1"
             onClick={() => {
               selectEntity(null);
-              togglePropertyPanel();
+              // dock 内：关闭 dock 面板；dock 外（旧测试独立渲染）：回退 store toggle
+              if (dock) dock.closePanel('property');
+              else togglePropertyPanel();
             }}
             aria-label="关闭面板"
           >
-            <X size={14} style={{ color: '#a0a0a0' }} />
+            <X size={14} style={{ color: 'var(--muted-foreground)' }} />
           </button>
-        </div>
-
-        {/* Entity List */}
-        <div className="shrink-0">
-          <EntityList />
-        </div>
-
-        <div className="px-3 shrink-0">
-          <Separator className="bg-white/[0.06]" />
         </div>
 
         {/* Scrollable body */}
@@ -500,7 +640,7 @@ export default function PropertyPanel() {
         >
           {!selectedEntity ? (
             /* No entity selected — hint */
-            <div className="text-sm text-center py-6" style={{ color: '#666' }}>
+            <div className="text-sm text-center py-6" style={{ color: 'var(--text-dim)' }}>
               点击场景中的实体或从上方列表选择以编辑属性
             </div>
           ) : isForceField && forceField ? (
@@ -508,21 +648,21 @@ export default function PropertyPanel() {
             <>
               {/* Running banner */}
               {disabled && (
-                <div className="mb-3 px-3 py-2 rounded-lg text-xs text-center bg-[rgba(59,130,246,0.1)] text-[#3b82f6] border border-[rgba(59,130,246,0.2)]">
+                <div className="mb-3 px-3 py-2 rounded-lg text-xs text-center bg-[var(--holo-a10)] text-[var(--holo)] border border-[var(--holo-a20)]">
                   运行中,请暂停后编辑
                 </div>
               )}
 
-              <div className="text-sm text-center" style={{ color: '#a0a0a0' }}>
-                当前选中: <span style={{ color: '#3b82f6' }}>{selectedEntity.name}</span>
+              <div className="text-sm text-center" style={{ color: 'var(--muted-foreground)' }}>
+                当前选中: <span style={{ color: 'var(--holo)' }}>{selectedEntity.name}</span>
               </div>
 
               <Separator className="bg-white/[0.06]" />
 
               {/* 力场类型 — 只读 */}
               <div className="flex items-center justify-between py-1">
-                <span className="text-sm" style={{ color: '#a0a0a0' }}>类型</span>
-                <span className="text-sm font-mono" style={{ color: '#e0e0e0' }}>
+                <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>类型</span>
+                <span className="text-sm font-mono" style={{ color: 'var(--foreground)' }}>
                   {FORCE_FIELD_KIND_LABELS[forceField.kind]}
                 </span>
               </div>
@@ -595,7 +735,7 @@ export default function PropertyPanel() {
                     onChange={handleForceFieldStrengthChange}
                   />
                   <div className="flex items-center justify-between">
-                    <label className="text-sm text-[#a0a0a0]">1/r² 衰减</label>
+                    <label className="text-sm text-[var(--muted-foreground)]">1/r² 衰减</label>
                     <Switch
                       checked={forceField.decay}
                       onCheckedChange={handleForceFieldDecayChange}
@@ -618,7 +758,7 @@ export default function PropertyPanel() {
                     onChange={handleForceFieldChargeChange}
                   />
                   <div className="flex items-center justify-between">
-                    <label className="text-sm text-[#a0a0a0]">1/r² 衰减</label>
+                    <label className="text-sm text-[var(--muted-foreground)]">1/r² 衰减</label>
                     <Switch
                       checked={forceField.decay}
                       onCheckedChange={handleForceFieldDecayChange}
@@ -670,25 +810,25 @@ export default function PropertyPanel() {
             <>
               {/* Running banner */}
               {disabled && (
-                <div className="mb-3 px-3 py-2 rounded-lg text-xs text-center bg-[rgba(59,130,246,0.1)] text-[#3b82f6] border border-[rgba(59,130,246,0.2)]">
+                <div className="mb-3 px-3 py-2 rounded-lg text-xs text-center bg-[var(--holo-a10)] text-[var(--holo)] border border-[var(--holo-a20)]">
                   运行中，请暂停后编辑
                 </div>
               )}
 
-              <div className="text-sm text-center" style={{ color: '#a0a0a0' }}>
-                当前选中: <span style={{ color: '#3b82f6' }}>{selectedEntity.name}</span>
+              <div className="text-sm text-center" style={{ color: 'var(--muted-foreground)' }}>
+                当前选中: <span style={{ color: 'var(--holo)' }}>{selectedEntity.name}</span>
               </div>
 
               <Separator className="bg-white/[0.06]" />
 
               {/* Endpoints */}
               <div className="space-y-1 py-1">
-                <div className="text-xs font-medium" style={{ color: '#a0a0a0' }}>端点</div>
+                <div className="text-xs font-medium" style={{ color: 'var(--muted-foreground)' }}>端点</div>
                 <div className="flex items-center justify-between text-xs">
-                  <span style={{ color: '#666' }}>A:</span>
+                  <span style={{ color: 'var(--text-dim)' }}>A:</span>
                   <button
                     type="button"
-                    className="text-[#3b82f6] hover:underline truncate ml-2"
+                    className="text-[var(--holo)] hover:underline truncate ml-2"
                     onClick={() => constraint?.entityAId && selectEntity(constraint.entityAId)}
                     disabled={disabled}
                   >
@@ -696,10 +836,10 @@ export default function PropertyPanel() {
                   </button>
                 </div>
                 <div className="flex items-center justify-between text-xs">
-                  <span style={{ color: '#666' }}>B:</span>
+                  <span style={{ color: 'var(--text-dim)' }}>B:</span>
                   <button
                     type="button"
-                    className="text-[#3b82f6] hover:underline truncate ml-2"
+                    className="text-[var(--holo)] hover:underline truncate ml-2"
                     onClick={() => constraint?.entityBId && selectEntity(constraint.entityBId)}
                     disabled={disabled}
                   >
@@ -713,7 +853,7 @@ export default function PropertyPanel() {
               {/* Spring parameters */}
               <PhysicsField
                 label="刚度"
-                value={constraint?.params.stiffness ?? 100}
+                value={springParams?.stiffness ?? 100}
                 unit="N/m"
                 min={1}
                 max={1000}
@@ -723,7 +863,7 @@ export default function PropertyPanel() {
               />
               <PhysicsField
                 label="原长"
-                value={constraint?.params.restLength ?? 2.0}
+                value={springParams?.restLength ?? 2.0}
                 unit="m"
                 min={0.1}
                 max={50}
@@ -733,7 +873,7 @@ export default function PropertyPanel() {
               />
               <PhysicsField
                 label="阻尼"
-                value={constraint?.params.damping ?? 0.1}
+                value={springParams?.damping ?? 0.1}
                 unit="N·s/m"
                 min={0}
                 max={50}
@@ -782,6 +922,195 @@ export default function PropertyPanel() {
                 删除弹簧
               </Button>
             </>
+          ) : isJoint ? (
+            /* ── Joint Property Editor (W4/W6：固定/铰链/球窝) ── */
+            <>
+              {disabled && (
+                <div className="mb-3 px-3 py-2 rounded-lg text-xs text-center bg-[var(--holo-a10)] text-[var(--holo)] border border-[var(--holo-a20)]">
+                  运行中，请暂停后编辑
+                </div>
+              )}
+
+              <div className="text-sm text-center" style={{ color: 'var(--muted-foreground)' }}>
+                当前选中: <span style={{ color: 'var(--holo)' }}>{selectedEntity.name}</span>
+              </div>
+
+              <Separator className="bg-white/[0.06]" />
+
+              {/* 类型 */}
+              <div className="flex items-center justify-between py-1">
+                <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>类型</span>
+                <span className="text-sm font-mono" style={{ color: 'var(--foreground)' }}>{jointKindLabel}</span>
+              </div>
+
+              <Separator className="bg-white/[0.06]" />
+
+              {/* Endpoints */}
+              <div className="space-y-1 py-1">
+                <div className="text-xs font-medium" style={{ color: 'var(--muted-foreground)' }}>端点</div>
+                <div className="flex items-center justify-between text-xs">
+                  <span style={{ color: 'var(--text-dim)' }}>A:</span>
+                  <button
+                    type="button"
+                    className="text-[var(--holo)] hover:underline truncate ml-2"
+                    onClick={() => constraint?.entityAId && selectEntity(constraint.entityAId)}
+                    disabled={disabled}
+                  >
+                    {entityAName}
+                  </button>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span style={{ color: 'var(--text-dim)' }}>B:</span>
+                  <button
+                    type="button"
+                    className="text-[var(--holo)] hover:underline truncate ml-2"
+                    onClick={() => constraint?.entityBId && selectEntity(constraint.entityBId)}
+                    disabled={disabled}
+                  >
+                    {entityBName}
+                  </button>
+                </div>
+              </div>
+
+              <Separator className="bg-white/[0.06]" />
+
+              {/* 轻绳：绳长编辑 */}
+              {constraint?.kind === 'rope' && (
+                <>
+                  <PhysicsField
+                    label="绳长"
+                    value={constraint.params.length}
+                    unit="m"
+                    min={0.1}
+                    max={50}
+                    step={0.1}
+                    disabled={disabled}
+                    onChange={handleRopeLengthChange}
+                  />
+                  <Separator className="bg-white/[0.06]" />
+                </>
+              )}
+
+              {/* 连接线开关 */}
+              <div className="flex items-center justify-between">
+                <label className="text-xs text-white/60">显示连接线</label>
+                <Switch
+                  checked={jointParams?.showLink ?? true}
+                  onCheckedChange={handleFixedJointShowLinkChange}
+                  disabled={disabled}
+                />
+              </div>
+
+              <Separator className="bg-white/[0.06]" />
+
+              {/* 删除按钮 */}
+              <Button
+                variant="destructive"
+                className="w-full"
+                size="default"
+                onClick={openDeleteDialog}
+                style={{ marginBottom: '8px' }}
+              >
+                删除连接
+              </Button>
+            </>
+          ) : isSplice ? (
+            /* ── Splice Property Editor (P5 轨道拼接) ── */
+            <>
+              {disabled && (
+                <div className="mb-3 px-3 py-2 rounded-lg text-xs text-center bg-[var(--holo-a10)] text-[var(--holo)] border border-[var(--holo-a20)]">
+                  运行中，请暂停后编辑
+                </div>
+              )}
+
+              <div className="text-sm text-center" style={{ color: 'var(--muted-foreground)' }}>
+                当前选中: <span style={{ color: 'var(--holo)' }}>{selectedEntity.name}</span>
+              </div>
+
+              <Separator className="bg-white/[0.06]" />
+
+              {/* 类型 */}
+              <div className="flex items-center justify-between py-1">
+                <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>类型</span>
+                <span className="text-sm font-mono" style={{ color: 'var(--foreground)' }}>轨道拼接</span>
+              </div>
+
+              <Separator className="bg-white/[0.06]" />
+
+              {/* Endpoints */}
+              <div className="space-y-1 py-1">
+                <div className="text-xs font-medium" style={{ color: 'var(--muted-foreground)' }}>端点</div>
+                <div className="flex items-center justify-between text-xs">
+                  <span style={{ color: 'var(--text-dim)' }}>母版:</span>
+                  <button
+                    type="button"
+                    className="text-[var(--holo)] hover:underline truncate ml-2"
+                    onClick={() => constraint?.entityAId && selectEntity(constraint.entityAId)}
+                    disabled={disabled}
+                  >
+                    {entityAName}
+                  </button>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span style={{ color: 'var(--text-dim)' }}>拼接:</span>
+                  <button
+                    type="button"
+                    className="text-[var(--holo)] hover:underline truncate ml-2"
+                    onClick={() => constraint?.entityBId && selectEntity(constraint.entityBId)}
+                    disabled={disabled}
+                  >
+                    {entityBName}
+                  </button>
+                </div>
+              </div>
+
+              <Separator className="bg-white/[0.06]" />
+
+              {/* 损耗类型 */}
+              <div className="space-y-1.5">
+                <span className="block text-sm" style={{ color: 'var(--muted-foreground)' }}>通过损耗</span>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {(['percent', 'value'] as const).map((t) => (
+                    <button
+                      key={t}
+                      type="button"
+                      disabled={disabled}
+                      onClick={() => handleSpliceLossTypeChange(t)}
+                      className="px-2 py-1 rounded-lg text-xs transition-all border"
+                      style={{
+                        borderColor: spliceParams?.lossType === t ? 'var(--holo)' : 'var(--glass-border)',
+                        backgroundColor: spliceParams?.lossType === t ? 'var(--holo-a15)' : 'transparent',
+                        color: spliceParams?.lossType === t ? 'var(--holo)' : 'var(--muted-foreground)',
+                      }}
+                    >
+                      {t === 'percent' ? '百分比' : '数值'}
+                    </button>
+                  ))}
+                </div>
+                <PhysicsField
+                  label="损耗量"
+                  value={spliceParams?.loss ?? 0}
+                  min={0}
+                  max={spliceParams?.lossType === 'percent' ? 1 : 10}
+                  step={spliceParams?.lossType === 'percent' ? 0.05 : 0.1}
+                  disabled={disabled}
+                  onChange={handleSpliceLossChange}
+                />
+              </div>
+
+              <Separator className="bg-white/[0.06]" />
+
+              {/* 删除按钮 */}
+              <Button
+                variant="destructive"
+                className="w-full"
+                size="default"
+                onClick={openDeleteDialog}
+                style={{ marginBottom: '8px' }}
+              >
+                删除拼接
+              </Button>
+            </>
           ) : (
             <>
               {/* Status badge */}
@@ -790,14 +1119,14 @@ export default function PropertyPanel() {
                   variant="outline"
                   className="gap-1.5 text-xs"
                   style={{
-                    borderColor: disabled ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.2)',
-                    color: disabled ? '#666' : '#e0e0e0',
+                    borderColor: disabled ? 'var(--glass-border)' : 'rgba(255,255,255,0.2)',
+                    color: disabled ? 'var(--text-dim)' : 'var(--foreground)',
                   }}
                 >
                   <span
                     className="inline-block w-2 h-2 rounded-full"
                     style={{
-                      backgroundColor: disabled ? '#666' : '#22c55e',
+                      backgroundColor: disabled ? 'var(--text-dim)' : '#22c55e',
                     }}
                   />
                   {disabled ? '只读 — 暂停后可编辑' : '可编辑'}
@@ -805,16 +1134,16 @@ export default function PropertyPanel() {
               </div>
 
               {/* Selected entity name */}
-              <div className="text-sm text-center" style={{ color: '#a0a0a0' }}>
-                当前选中: <span style={{ color: '#3b82f6' }}>{selectedEntity.name}</span>
+              <div className="text-sm text-center" style={{ color: 'var(--muted-foreground)' }}>
+                当前选中: <span style={{ color: 'var(--holo)' }}>{selectedEntity.name}</span>
               </div>
 
               <Separator className="bg-white/[0.06]" />
 
               {/* 形状 (display only) */}
               <div className="flex items-center justify-between py-1">
-                <span className="text-sm" style={{ color: '#a0a0a0' }}>形状</span>
-                <span className="text-sm font-mono" style={{ color: '#e0e0e0' }}>
+                <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>形状</span>
+                <span className="text-sm font-mono" style={{ color: 'var(--foreground)' }}>
                   {SHAPE_LABELS[collider?.shape ?? 'sphere'] ?? collider?.shape ?? '未知'}
                 </span>
               </div>
@@ -833,11 +1162,52 @@ export default function PropertyPanel() {
                 onChange={handlePositionChange}
               />
 
+              {/* 倾角（斜面/倾斜固定板） */}
+              {isSlopeLike && transform && (
+                <>
+                  <Separator className="bg-white/[0.06]" />
+                  <PhysicsField
+                    label="倾角"
+                    value={Math.round((transform.rotation[2] * 180) / Math.PI)}
+                    unit="°"
+                    min={5}
+                    max={60}
+                    step={1}
+                    disabled={disabled}
+                    onChange={handleSlopeAngleChange}
+                  />
+                </>
+              )}
+
+              {/* 整体旋转（圆弧/双弧轨道）：欧拉 XYZ，空间旋转但形状不变 */}
+              {isArcTrack && transform && (
+                <>
+                  <Separator className="bg-white/[0.06]" />
+                  <Vector3Field
+                    label="整体旋转"
+                    value={[
+                      Math.round((transform.rotation[0] * 180) / Math.PI),
+                      Math.round((transform.rotation[1] * 180) / Math.PI),
+                      Math.round((transform.rotation[2] * 180) / Math.PI),
+                    ]}
+                    unit="°"
+                    min={-180}
+                    max={180}
+                    step={1}
+                    disabled={disabled}
+                    onChange={handleRotationChange}
+                  />
+                  <p className="text-[10px] mt-1" style={{ color: 'var(--text-dim)' }}>
+                    已拼接轨道的接缝检测盒不随旋转更新，建议先旋转再拼接
+                  </p>
+                </>
+              )}
+
               <Separator className="bg-white/[0.06]" />
 
               {/* 尺寸 — dynamic based on shape */}
               <div>
-                <span className="block text-sm mb-1.5" style={{ color: '#a0a0a0' }}>尺寸</span>
+                <span className="block text-sm mb-1.5" style={{ color: 'var(--muted-foreground)' }}>尺寸</span>
                 {collider?.shape === 'sphere' && (
                   <PhysicsField
                     label="半径"
@@ -914,7 +1284,7 @@ export default function PropertyPanel() {
 
               {/* 物理参数 */}
               <div>
-                <span className="block text-sm mb-1.5" style={{ color: '#a0a0a0' }}>物理参数</span>
+                <span className="block text-sm mb-1.5" style={{ color: 'var(--muted-foreground)' }}>物理参数</span>
                 <div className="space-y-1.5">
                   <PhysicsField
                     label="质量"
@@ -935,15 +1305,17 @@ export default function PropertyPanel() {
                     disabled={disabled}
                     onChange={handleRestitutionChange}
                   />
-                  <PhysicsField
-                    label="摩擦系数"
-                    value={rigidBody?.friction ?? 0.3}
-                    min={0}
-                    max={1}
-                    step={0.01}
-                    disabled={disabled}
-                    onChange={handleFrictionChange}
-                  />
+                  {!collider?.faces && (
+                    <PhysicsField
+                      label="摩擦系数"
+                      value={rigidBody?.friction ?? 0.3}
+                      min={0}
+                      max={1}
+                      step={0.01}
+                      disabled={disabled}
+                      onChange={handleFrictionChange}
+                    />
+                  )}
                   <PhysicsField
                     label="电荷"
                     value={rigidBody?.charge ?? 0}
@@ -955,6 +1327,84 @@ export default function PropertyPanel() {
                     onChange={handleChargeChange}
                   />
                 </div>
+              </div>
+
+              <Separator className="bg-white/[0.06]" />
+
+              {/* 面摩擦与固定 — W3 */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>面摩擦与固定</span>
+                  {collider?.faces ? (
+                    <button
+                      type="button"
+                      className="text-xs px-2 py-0.5 rounded hover:bg-[var(--holo-a15)] transition-colors"
+                      style={{ color: 'var(--text-dim)' }}
+                      onClick={handleDisablePerFace}
+                      disabled={disabled}
+                    >
+                      恢复统一
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="text-xs px-2 py-0.5 rounded hover:bg-[var(--holo-a15)] transition-colors"
+                      style={{ color: 'var(--holo)' }}
+                      onClick={handleEnablePerFace}
+                      disabled={disabled}
+                    >
+                      逐面设置
+                    </button>
+                  )}
+                </div>
+                {collider?.faces && (
+                  <div className="space-y-1.5">
+                    {collider.faces.map((face) =>
+                      disabled ? (
+                        <div key={face.id} className="flex items-center justify-between py-0.5">
+                          <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>{face.label}</span>
+                          <span className="text-xs font-mono" style={{ color: 'var(--text-dim)' }}>
+                            {face.pinned ? '固定' : face.friction.toFixed(2)}
+                          </span>
+                        </div>
+                      ) : (
+                        <div key={face.id} className="flex items-center gap-2">
+                          <span className="text-xs w-14 shrink-0" style={{ color: 'var(--muted-foreground)' }}>
+                            {face.label}
+                          </span>
+                          <Slider
+                            value={[face.friction]}
+                            min={0}
+                            max={2}
+                            step={0.05}
+                            className="flex-1"
+                            onValueChange={([v]) => handleFaceChange(face.id, { friction: v })}
+                          />
+                          <span className="text-xs font-mono w-8 text-right" style={{ color: 'var(--text-dim)' }}>
+                            {face.friction.toFixed(2)}
+                          </span>
+                          <label
+                            className="flex items-center gap-1 text-xs shrink-0 cursor-pointer"
+                            style={{ color: face.pinned ? 'var(--holo)' : 'var(--muted-foreground)' }}
+                            title="固定面：与其他物体接触时不发生相对滑动"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={face.pinned}
+                              onChange={(e) => handleFaceChange(face.id, { pinned: e.target.checked })}
+                            />
+                            固定
+                          </label>
+                        </div>
+                      ),
+                    )}
+                  </div>
+                )}
+                {!collider?.faces && (
+                  <p className="text-xs" style={{ color: 'var(--text-dim)' }}>
+                    当前为统一摩擦（{rigidBody?.friction.toFixed(2) ?? '0.30'}）；开启逐面设置后可单独调整每个面的摩擦系数或固定某面。
+                  </p>
+                )}
               </div>
 
               <Separator className="bg-white/[0.06]" />
@@ -973,17 +1423,54 @@ export default function PropertyPanel() {
 
               <Separator className="bg-white/[0.06]" />
 
+              {/* 电流源 — Phase 8：实体等效为无限长直导线，产生环形磁场使带电粒子绕转 */}
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>电流源（直导线）</span>
+                  <Switch
+                    checked={!!currentSource}
+                    onCheckedChange={handleToggleCurrentSource}
+                    disabled={disabled}
+                  />
+                </div>
+                {currentSource && (
+                  <div className="space-y-1.5 mt-1.5">
+                    <PhysicsField
+                      label="电流"
+                      value={currentSource.magnitude}
+                      unit="A"
+                      min={-100}
+                      max={100}
+                      step={0.5}
+                      disabled={disabled}
+                      onChange={handleCurrentMagnitudeChange}
+                    />
+                    <Vector3Field
+                      label="电流方向"
+                      value={currentSource.direction}
+                      min={-1}
+                      max={1}
+                      step={0.1}
+                      disabled={disabled}
+                      onChange={handleCurrentDirectionChange}
+                    />
+                  </div>
+                )}
+              </div>
+
+              <Separator className="bg-white/[0.06]" />
+
               {/* 颜色 */}
               <div>
-                <span className="block text-sm mb-1.5" style={{ color: '#a0a0a0' }}>颜色</span>
+                <span className="block text-sm mb-1.5" style={{ color: 'var(--muted-foreground)' }}>颜色</span>
                 {disabled ? (
                   <div className="flex items-center gap-2 py-1">
                     <span
                       className="inline-block w-4 h-4 rounded"
-                      style={{ backgroundColor: material?.color ?? '#888' }}
+                      style={{ backgroundColor: material?.color ?? 'var(--muted-foreground)' }}
                     />
-                    <span className="text-sm font-mono" style={{ color: '#666' }}>
-                      {material?.color ?? '#888'}
+                    <span className="text-sm font-mono" style={{ color: 'var(--text-dim)' }}>
+                      {material?.color ?? 'var(--muted-foreground)'}
                     </span>
                   </div>
                 ) : (
@@ -995,7 +1482,7 @@ export default function PropertyPanel() {
                         className="w-7 h-7 rounded-full transition-transform hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
                         style={{
                           backgroundColor: color,
-                          border: material?.color === color ? '2px solid #fff' : '2px solid transparent',
+                          border: material?.color === color ? '2px solid var(--foreground)' : '2px solid transparent',
                           transform: material?.color === color ? 'scale(1.15)' : undefined,
                         }}
                         onClick={() => handleColorChange(color)}

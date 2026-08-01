@@ -31,7 +31,9 @@ import type {
 } from './types';
 
 const EPS_DIRECTION = 1e-6; // 方向向量归一化阈值（无量纲）
-const EPS_DISTANCE = 0.001; // 物理距离下限（小于则视为重合，力为 0）
+export const SOFTENING = 0.5;     // Plummer 软化长度（m）— 防止 1/r² 奇点在 r→0 时力趋于无穷
+export const COULOMB_K = 1000;   // 库仑缩放常数（N·m²/C²）— 使电场力在场景距离（1-20m）可见
+                                  // 真实物理 k=8.99×10⁹，此处缩小以使仿真电荷产生合理力
 
 type Vec3 = { x: number; y: number; z: number };
 
@@ -63,18 +65,19 @@ function uniform(field: UniformFieldComponent): Vec3 {
 
 function gravity(field: GravityFieldComponent, pos: Vec3): Vec3 {
   // r_vec = field.pos - body.pos —— 从 body 指向场源；吸引力沿 +r_vec 方向。
-  // 注：PLAN 公式写作 "F = -strength * r_vec / r^3"，但要让方向"指向场源"（Test 2/3 期望），
-  //     当 r_vec = field - body 时正确系数是 +strength（不是 -strength）。
   const rx = field.position[0] - pos.x;
   const ry = field.position[1] - pos.y;
   const rz = field.position[2] - pos.z;
   const r = Math.hypot(rx, ry, rz);
 
-  if (r > field.range || r < EPS_DISTANCE) return ZERO;
+  if (r > field.range) return ZERO;
 
   if (field.decay) {
-    // |F| = strength / r^2; 方向 = r_hat（指向场源）
-    const k = field.strength / (r * r * r);
+    // Plummer 软化: |F| = strength / (r² + ε²); 方向 = r_hat
+    // 防止 r→0 时力爆炸（1/r² 奇点）
+    const rSoft2 = r * r + SOFTENING * SOFTENING;
+    const inv_rSoft3 = 1 / (rSoft2 * Math.sqrt(rSoft2));
+    const k = field.strength * inv_rSoft3;
     return { x: rx * k, y: ry * k, z: rz * k };
   } else {
     // |F| = strength（恒定）；方向 = r_hat
@@ -84,26 +87,29 @@ function gravity(field: GravityFieldComponent, pos: Vec3): Vec3 {
 }
 
 function electric(field: ElectricFieldComponent, pos: Vec3, bodyCharge: number): Vec3 {
-  // r_vec = field.pos - body.pos
-  const rx = field.position[0] - pos.x;
-  const ry = field.position[1] - pos.y;
-  const rz = field.position[2] - pos.z;
+  // r_vec = pos - field.position — 从场源指向物体
+  // Plummer 软化库仑定律: E = Q * r_vec / (r² + ε²)^(3/2)
+  // F = q * E — 同号排斥(力沿 r_vec 方向)，异号吸引(力沿 -r_vec 方向)
+  const rx = pos.x - field.position[0];
+  const ry = pos.y - field.position[1];
+  const rz = pos.z - field.position[2];
   const r = Math.hypot(rx, ry, rz);
 
-  if (r > field.range || r < EPS_DISTANCE) return ZERO;
+  if (r > field.range) return ZERO;
 
-  // 严格遵循 PLAN 公式：E = Q * r_vec / r^3, F = q * E（k=1 数值缩放）。
-  // 注：r_vec 指向场源，这与教科书库仑公式（E 从源指向场点）方向相反；
-  //     符号约定影响相互作用方向，但 |F| 大小不变。Test 5 验证大小 + 翻转 q 后方向相反，符合 PLAN。
-  const inv_r3 = 1 / (r * r * r);
-  const Ex = field.charge * rx * inv_r3;
-  const Ey = field.charge * ry * inv_r3;
-  const Ez = field.charge * rz * inv_r3;
+  // Plummer 软化: E = Q * r_vec / (r² + ε²)^(3/2)
+  // 在 r >> ε 时退化为标准库仑 E = Q * r_vec / r³
+  // 在 r ≈ 0 时 E → Q * r_vec / ε³（有限值，不会爆炸）
+  const rSoft2 = r * r + SOFTENING * SOFTENING;
+  const inv_rSoft3 = 1 / (rSoft2 * Math.sqrt(rSoft2));
+  const Ex = field.charge * rx * inv_rSoft3;
+  const Ey = field.charge * ry * inv_rSoft3;
+  const Ez = field.charge * rz * inv_rSoft3;
 
   return {
-    x: bodyCharge * Ex,
-    y: bodyCharge * Ey,
-    z: bodyCharge * Ez,
+    x: COULOMB_K * bodyCharge * Ex,
+    y: COULOMB_K * bodyCharge * Ey,
+    z: COULOMB_K * bodyCharge * Ez,
   };
 }
 
@@ -196,5 +202,122 @@ export function computeTotalForce(
 
   const out: Vec3 = { x: sx, y: sy, z: sz };
   if (!isFiniteVec(out)) return ZERO;
+  return out;
+}
+
+/**
+ * 多力场矢量叠加（排除磁场）。
+ * 用于力注入路径（ForceFieldSystem 中以 applyImpulse(F·dt) 施加）——磁场力通过
+ * 罗德里格斯旋转单独施加，不能与常规力混合，否则会导致双重施加和能量不守恒。
+ */
+export function computeNonMagneticForce(
+  fields: ForceFieldComponent[],
+  bodyPos: Vec3,
+  bodyCharge: number,
+): Vec3 {
+  let sx = 0;
+  let sy = 0;
+  let sz = 0;
+
+  for (const field of fields) {
+    // 跳过磁场——磁场力由 rotateVelocityByMagneticField 单独处理
+    if (field.kind === 'magnetic') continue;
+    // 磁场外其余三种力场（uniform/gravity/electric）均不依赖速度，vel 传零向量即可
+    const f = computeFieldForce(field, bodyPos, ZERO, bodyCharge);
+    if (!isFiniteVec(f)) continue;
+    sx += f.x;
+    sy += f.y;
+    sz += f.z;
+  }
+
+  const out: Vec3 = { x: sx, y: sy, z: sz };
+  if (!isFiniteVec(out)) return ZERO;
+  return out;
+}
+
+// ─────────── 磁场能量守恒处理 — 罗德里格斯旋转 ───────────
+
+/**
+ * 计算所有磁场叠加后的总 B 向量（strength * normalize(direction) 之和）。
+ * 用于能量守恒的磁场处理（绕过 addForce，直接旋转速度）。
+ */
+export function computeTotalMagneticField(
+  fields: ForceFieldComponent[],
+  bodyCharge: number,
+): Vec3 {
+  if (bodyCharge === 0) return ZERO;
+
+  let bx = 0;
+  let by = 0;
+  let bz = 0;
+
+  for (const field of fields) {
+    if (field.kind !== 'magnetic') continue;
+    const dir = normalize3(field.direction);
+    bx += field.strength * dir[0];
+    by += field.strength * dir[1];
+    bz += field.strength * dir[2];
+  }
+
+  const out: Vec3 = { x: bx, y: by, z: bz };
+  if (!isFiniteVec(out)) return ZERO;
+  return out;
+}
+
+/**
+ * 用罗德里格斯旋转公式将速度向量绕磁场方向旋转，模拟洛伦兹力的能量守恒效果。
+ *
+ * 半隐式欧拉对速度相关力 F = q(v × B) 的显式处理会导致数值能量不守恒
+ * （v_{n+1}² = v_n² × (1 + (qB/m × dt)²)）。
+ * 这里直接旋转速度向量，保证 |v| 严格不变。
+ *
+ * @param vel   当前速度
+ * @param B     总磁场向量（已包含 strength）
+ * @param bodyCharge 物体电荷
+ * @param mass  物体质量
+ * @param dt    物理步长
+ */
+export function rotateVelocityByMagneticField(
+  vel: Vec3,
+  B: Vec3,
+  bodyCharge: number,
+  mass: number,
+  dt: number,
+): Vec3 {
+  if (bodyCharge === 0 || mass <= 0) return vel;
+
+  const Bmag = Math.hypot(B.x, B.y, B.z);
+  if (Bmag < EPS_DIRECTION) return vel;
+
+  // 角频率 ω = q|B|/m，旋转角度 θ = -ω × dt
+  // 注意负号：洛伦兹力 F = q(v × B)，即 dv/dt = (q/m)(v × B) = -(q/m)(B × v)，
+  // 所以速度是绕 k = B/|B| 以负角速度旋转。若漏掉负号，正电荷偏转方向会与
+  // q(v × B) 相反（手性翻转），且与 VectorRenderer 显示的受力箭头矛盾。
+  const omega = (bodyCharge * Bmag) / mass;
+  const theta = -omega * dt;
+
+  const cosT = Math.cos(theta);
+  const sinT = Math.sin(theta);
+
+  // k = B / |B|（单位向量）
+  const kx = B.x / Bmag;
+  const ky = B.y / Bmag;
+  const kz = B.z / Bmag;
+
+  // 罗德里格斯公式：v_rot = v·cos(θ) + (k × v)·sin(θ) + k·(k·v)·(1 − cos(θ))
+  // θ 带负号后，一阶项 ≈ -(q/m)|B|(k × v)·dt = (q/m)(v × B)·dt，与洛伦兹力一致。
+  const kdotv = kx * vel.x + ky * vel.y + kz * vel.z;
+
+  const crossX = ky * vel.z - kz * vel.y;
+  const crossY = kz * vel.x - kx * vel.z;
+  const crossZ = kx * vel.y - ky * vel.x;
+
+  const out: Vec3 = {
+    x: vel.x * cosT + crossX * sinT + kx * kdotv * (1 - cosT),
+    y: vel.y * cosT + crossY * sinT + ky * kdotv * (1 - cosT),
+    z: vel.z * cosT + crossZ * sinT + kz * kdotv * (1 - cosT),
+  };
+
+  if (!isFiniteVec(out)) return vel;
   return out;
 }

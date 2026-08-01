@@ -1,27 +1,25 @@
-import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
-import { PanelRight } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSimulationStore } from '../store';
-import Scene3D from './Scene3D';
 import Toolbar from './Toolbar';
-import Toolbox from './Toolbox';
-import PropertyPanel from './PropertyPanel';
-import CreationDialog from './CreationDialog';
-import EnvironmentPanel from './EnvironmentPanel';
-import SpringCreationBanner from './SpringCreationBanner';
-import SpringCreationDialog from './SpringCreationDialog';
+import ObjectBuilder from './ObjectBuilder';
+import TrackBuilder from './TrackBuilder';
+import FixedJointBanner from './FixedJointBanner';
+import FixedJointDialog from './FixedJointDialog';
 import ForceFieldDialog from './ForceFieldDialog';
+import CreationDock from './CreationDock';
 import LoadingScreen from './LoadingScreen';
 import ErrorFallback from './ErrorFallback';
 import type { ErrorType } from './ErrorFallback';
 // Phase 1: 持久化与场景库组件
 import MenuBar from './MenuBar';
-// Phase 2: 实时物理量图表
-import { ChartPanel } from './ChartPanel';
 import SnapshotManager from './SnapshotManager';
 import type { Snapshot } from '../store/snapshotSlice';
 import PresetSelector from './PresetSelector';
 import { SceneBanner, ConfirmDialogRoot, loadSceneWithConfirm, useSceneBanner } from './SceneLoader';
 import { deserializeScene } from '../utils/sceneSerializer';
+// Ticket 1: 停靠布局壳
+import { DockApiProvider, useDock } from './dock/DockApiContext';
+import DockShell from './dock/DockShell';
 
 /**
  * App — Phase 2 应用根组件
@@ -50,25 +48,9 @@ export default function App() {
   const [appState, setAppState] = useState<AppState>('loading');
   const [errorType, setErrorType] = useState<ErrorType | null>(null);
 
-  const toggle = useSimulationStore((s) => s.toggle);
-  const reset = useSimulationStore((s) => s.reset);
-  // Phase 2: 新增 store 访问器
-  const openDialog = useSimulationStore((s) => s.openDialog);
-  const openDeleteDialog = useSimulationStore((s) => s.openDeleteDialog);
-  const resetEntities = useSimulationStore((s) => s.resetEntities);
-  const selectedEntityId = useSimulationStore((s) => s.selectedEntityId);
-  const propertyPanelCollapsed = useSimulationStore((s) => s.propertyPanelCollapsed);
-  const togglePropertyPanel = useSimulationStore((s) => s.togglePropertyPanel);
-  // Phase 3: spring creation + environment
-  const enterSpringMode = useSimulationStore((s) => s.enterSpringMode);
-  const exitSpringMode = useSimulationStore((s) => s.exitSpringMode);
-  const springCreationStage = useSimulationStore((s) => s.springCreationStage);
-
   // Phase 1: 快照 Drawer + 预设 Dialog 开关状态
   const [snapshotDrawerOpen, setSnapshotDrawerOpen] = useState(false);
   const [presetSelectorOpen, setPresetSelectorOpen] = useState(false);
-  // Phase 2: 图表面板开关状态
-  const [chartPanelOpen, setChartPanelOpen] = useState(false);
 
   // ──── 步骤 1: WebGL 可用性检测 ────
   const checkWebGL = useCallback((): boolean => {
@@ -121,22 +103,10 @@ export default function App() {
           state.reset();
         }
         break;
-      // ── Phase 2: 创建对话框快捷键 (D-04) ──
+      // ── W8: 物体建造器快捷键（B = 打开建造器；形状在建造器内选择）──
       case 'KeyB':
         e.preventDefault();
-        useSimulationStore.getState().openDialog('sphere');
-        break;
-      case 'KeyN':
-        e.preventDefault();
-        useSimulationStore.getState().openDialog('box');
-        break;
-      case 'KeyC':
-        e.preventDefault();
-        useSimulationStore.getState().openDialog('cylinder');
-        break;
-      case 'KeyS':
-        e.preventDefault();
-        useSimulationStore.getState().openDialog('slope');
+        useSimulationStore.getState().openObjectBuilder();
         break;
       // ── Phase 2: 删除实体快捷键 (D-11) ──
       case 'Delete':
@@ -148,24 +118,24 @@ export default function App() {
         }
         break;
       }
-      // ── Phase 3: 弹簧模式快捷键 ──
+      // ── Phase 3: 连接模式快捷键（K）──
       case 'KeyK':
         e.preventDefault();
         {
-          const stage = useSimulationStore.getState().springCreationStage;
+          const stage = useSimulationStore.getState().fixedJointStage;
           if (stage === 'idle') {
-            useSimulationStore.getState().enterSpringMode();
+            useSimulationStore.getState().enterFixedJointMode();
           } else {
-            useSimulationStore.getState().exitSpringMode();
+            useSimulationStore.getState().exitFixedJointMode();
           }
         }
         break;
       case 'Escape':
         {
-          const stage = useSimulationStore.getState().springCreationStage;
-          if (stage !== 'idle') {
+          const jointStage = useSimulationStore.getState().fixedJointStage;
+          if (jointStage !== 'idle') {
             e.preventDefault();
-            useSimulationStore.getState().exitSpringMode();
+            useSimulationStore.getState().exitFixedJointMode();
           }
         }
         break;
@@ -232,10 +202,10 @@ export default function App() {
     return <LoadingScreen />;
   }
 
-  // appState === 'ready' — 3D 场景 + 工具栏
-  // CR-01 fix: Suspense 边界捕获 @react-three/rapier 的 WASM 加载挂起状态
+  // appState === 'ready' — dock 停靠布局壳（Scene3D 为中央视口面板）
+  // CR-01 fix: Suspense 边界捕获 @react-three/rapier 的 WASM 加载挂起状态（Scene3D 在 dock 视口面板内）
   return (
-    <>
+    <DockApiProvider>
       {/* Phase 1: MenuBar — 固定在页面顶部 z-50 */}
       <MenuBar
         onOpenSnapshots={() => setSnapshotDrawerOpen(true)}
@@ -279,47 +249,50 @@ export default function App() {
         onOpenChange={setPresetSelectorOpen}
       />
 
-      <Scene3D />
-      <Toolbar
-        chartPanelOpen={chartPanelOpen}
-        onToggleChartPanel={() => setChartPanelOpen((v) => !v)}
-      />
-      <Toolbox />
-      {!propertyPanelCollapsed && <PropertyPanel />}
+      {/* Ticket 1: 停靠布局壳 — Scene3D/Toolbox/PropertyPanel/EntityList/EnvironmentPanel/ChartPanel 全部迁入 */}
+      <DockShell />
 
-      {/* Phase 2: 实时物理量图表面板 */}
-      <ChartPanel
-        open={chartPanelOpen}
-        onClose={() => setChartPanelOpen(false)}
-      />
-      {propertyPanelCollapsed && (
-        <button
-          type="button"
-          onClick={togglePropertyPanel}
-          aria-label="展开属性面板"
-          title="展开属性面板"
-          className="fixed z-40 flex items-center justify-center w-10 h-10 rounded-xl
-            text-[#a0a0a0] hover:bg-[rgba(59,130,246,0.15)] hover:text-[#3b82f6]
-            active:bg-[rgba(59,130,246,0.3)] active:scale-95
-            transition-all duration-150"
-          style={{
-            right: '16px',
-            top: '80px',
-            background: 'rgba(26, 26, 26, 0.85)',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            boxShadow: '0 4px 24px rgba(0, 0, 0, 0.4)',
-          }}
-        >
-          <PanelRight size={16} strokeWidth={2} />
-        </button>
-      )}
-      <CreationDialog />
-      <EnvironmentPanel />
-      <SpringCreationBanner />
-      <SpringCreationDialog />
+      {/* Toolbar 保持浮层；图表面板开关桥接 dock */}
+      <ChartToolbarBridge />
+
+      <ObjectBuilder />
+      <TrackBuilder />
+      <FixedJointBanner />
+      <FixedJointDialog />
       <ForceFieldDialog />
-    </>
+      <CreationDock />
+      <PlacementHint />
+    </DockApiProvider>
+  );
+}
+
+/** F3: 虚影放置模式提示条（placement 激活时悬浮在视口底部） */
+function PlacementHint() {
+  const active = useSimulationStore((s) => s.placement !== null);
+  if (!active) return null;
+  return (
+    <div
+      className="fixed bottom-16 left-1/2 -translate-x-1/2 z-40 px-4 py-1.5 rounded-full text-xs pointer-events-none"
+      style={{
+        background: 'var(--glass-bg)',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid var(--holo-a30)',
+        color: 'var(--holo)',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
+      }}
+    >
+      移动鼠标吸附表面 · 滚轮调高度 · 左键放置 · Esc 取消
+    </div>
+  );
+}
+
+/** Toolbar 桥接：图表面板的开关状态 = dock 中 chart 面板的存在性 */
+function ChartToolbarBridge() {
+  const dock = useDock();
+  return (
+    <Toolbar
+      chartPanelOpen={dock?.hasPanel('chart') ?? false}
+      onToggleChartPanel={() => dock?.togglePanel('chart')}
+    />
   );
 }

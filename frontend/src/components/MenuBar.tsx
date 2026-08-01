@@ -19,13 +19,13 @@ import {
   LayoutGrid,
   Bug,
   Monitor,
-  Wrench,
   Settings,
   Wind,
   Keyboard,
   Info,
 } from 'lucide-react';
 import { useSimulationStore } from '../store';
+import { useDock } from './dock/DockApiContext';
 import {
   exportSceneToFile,
   importSceneFromFile,
@@ -39,7 +39,6 @@ import {
   DropdownMenuItem,
   DropdownMenuCheckboxItem,
   DropdownMenuSeparator,
-  DropdownMenuLabel,
 } from './ui/dropdown-menu';
 import {
   Dialog,
@@ -76,12 +75,12 @@ export default function MenuBar({ onOpenSnapshots, onOpenPresets }: MenuBarProps
   // Store bindings
   const showDebug = useSimulationStore((s) => s.showDebug);
   const setShowDebug = useSimulationStore((s) => s.setShowDebug);
-  const toolboxCollapsed = useSimulationStore((s) => s.toolboxCollapsed);
-  const toggleToolbox = useSimulationStore((s) => s.toggleToolbox);
   const propertyPanelCollapsed = useSimulationStore((s) => s.propertyPanelCollapsed);
   const togglePropertyPanel = useSimulationStore((s) => s.togglePropertyPanel);
   const environmentPanelOpen = useSimulationStore((s) => s.environmentPanelOpen);
   const toggleEnvironmentPanel = useSimulationStore((s) => s.toggleEnvironmentPanel);
+  // Ticket 1: dock 布局壳 — 有 dock 时面板开关走 dock api，uiSlice 字段回退为遗留路径
+  const dock = useDock();
 
   // ── Import Handler ──
 
@@ -136,9 +135,9 @@ export default function MenuBar({ onOpenSnapshots, onOpenPresets }: MenuBarProps
   // ── Menu Button Style ──
 
   const menuButtonClass =
-    'px-3 py-1 text-sm text-[#a0a0a0] hover:bg-[rgba(59,130,246,0.12)] hover:text-[#e0e0e0] rounded transition-colors duration-150 cursor-default select-none';
+    'px-3 py-1 text-sm text-[var(--muted-foreground)] hover:bg-[var(--holo-a15)] hover:text-[var(--foreground)] rounded transition-colors duration-150 cursor-default select-none';
 
-  const menuItemIconClass = 'size-3.5 text-[#888]';
+  const menuItemIconClass = 'size-3.5 text-[var(--muted-foreground)]';
 
   // ── Render ──
 
@@ -157,10 +156,10 @@ export default function MenuBar({ onOpenSnapshots, onOpenPresets }: MenuBarProps
       <div
         className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between h-9 px-2"
         style={{
-          background: 'rgba(26, 26, 26, 0.92)',
+          background: 'var(--glass-bg)',
           backdropFilter: 'blur(12px)',
           WebkitBackdropFilter: 'blur(12px)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
+          borderBottom: '1px solid var(--glass-border)',
         }}
       >
         {/* Left: Menu items */}
@@ -213,25 +212,26 @@ export default function MenuBar({ onOpenSnapshots, onOpenPresets }: MenuBarProps
               </DropdownMenuCheckboxItem>
               <DropdownMenuSeparator />
               <DropdownMenuCheckboxItem
-                checked={!toolboxCollapsed}
-                onCheckedChange={() => toggleToolbox()}
-              >
-                <Wrench className={menuItemIconClass} />
-                <span>工具箱</span>
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={!propertyPanelCollapsed}
-                onCheckedChange={() => togglePropertyPanel()}
+                checked={dock?.hasPanel('property') ?? !propertyPanelCollapsed}
+                onCheckedChange={() => (dock ? dock.togglePanel('property') : togglePropertyPanel())}
               >
                 <Settings className={menuItemIconClass} />
                 <span>属性面板</span>
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
-                checked={environmentPanelOpen}
-                onCheckedChange={() => toggleEnvironmentPanel()}
+                checked={dock?.hasPanel('environment') ?? environmentPanelOpen}
+                onCheckedChange={() => (dock ? dock.togglePanel('environment') : toggleEnvironmentPanel())}
               >
                 <Wind className={menuItemIconClass} />
                 <span>环境面板</span>
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={dock?.hasPanel('entityList') ?? false}
+                onCheckedChange={() => dock?.togglePanel('entityList')}
+                disabled={!dock}
+              >
+                <LayoutGrid className={menuItemIconClass} />
+                <span>实体列表</span>
               </DropdownMenuCheckboxItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -255,7 +255,7 @@ export default function MenuBar({ onOpenSnapshots, onOpenPresets }: MenuBarProps
         </div>
 
         {/* Right: App name */}
-        <span className="text-xs text-[#666] select-none pr-2">Physis</span>
+        <span className="text-xs text-[var(--text-dim)] select-none pr-2">Physis</span>
       </div>
 
       {/* ── 快捷键帮助 Dialog ── */}
@@ -305,7 +305,7 @@ export default function MenuBar({ onOpenSnapshots, onOpenPresets }: MenuBarProps
               基于组件化自由组合架构，允许用户搭建任意物理模拟场景。
               支持刚体、弹簧约束、力场、轨迹追踪和实时物理量分析。
             </p>
-            <p className="text-xs text-[#666]">
+            <p className="text-xs text-[var(--text-dim)]">
               技术栈：React + Three.js + Rapier 物理引擎
             </p>
           </div>

@@ -1,5 +1,6 @@
 import type { StateCreator } from 'zustand';
 import type { ForceFieldKind } from '../ecs/types';
+import type { BuilderState, PlacementSnapshot } from '../components/objectFactory';
 
 /**
  * UI 状态切片
@@ -8,28 +9,31 @@ import type { ForceFieldKind } from '../ecs/types';
  * 不与实体数据耦合——entitySlice 持有实体 CRUD 逻辑。
  */
 
-export type ShapeType = 'sphere' | 'box' | 'cylinder' | 'slope';
 export type SpringCreationStage = 'idle' | 'pendingA' | 'pendingB' | 'dialog';
 
 export interface UiSlice {
-  /** 左侧工具箱是否折叠 */
-  toolboxCollapsed: boolean;
-  /** 创建对话框是否打开 */
-  dialogOpen: boolean;
-  /** 创建对话框预选形状 (D-05: 点击工具箱按钮设置) */
-  dialogDefaultShape: ShapeType;
   /** 删除确认对话框是否打开 */
   deleteDialogOpen: boolean;
   /** 右侧属性面板是否折叠 */
   propertyPanelCollapsed: boolean;
 
-  // ── Phase 3: 弹簧创建状态机 + 环境面板 ──
+  // ── W8: 建造器对话框（物体/轨道）──
+  objectBuilderOpen: boolean;
+  trackBuilderOpen: boolean;
 
-  springCreationStage: SpringCreationStage;
-  springEntityAId: string | null;
-  springEntityBId: string | null;
-  springDialogOpen: boolean;
+  // ── F3: 虚影放置（ObjectBuilder → 场景吸附放置）──
+  /** 非 null 时处于放置模式：主场景显示虚影，鼠标吸附表面，滚轮调高度，左键落位，Esc 取消 */
+  placement: PlacementSnapshot | null;
+
+  // ── Phase 3: 环境面板 ──
+
   environmentPanelOpen: boolean;
+
+  // ── W4: 固定连接创建状态机（与弹簧同构）──
+  fixedJointStage: SpringCreationStage;
+  fixedJointEntityAId: string | null;
+  fixedJointEntityBId: string | null;
+  fixedJointDialogOpen: boolean;
 
   // ── Phase 3 (03-03): 力场创建对话框 (D-03-04 / D-03-05) ──
   /** 力场创建对话框是否打开 */
@@ -39,22 +43,30 @@ export interface UiSlice {
 
   // ── Actions ──
 
-  toggleToolbox: () => void;
-  openDialog: (shape: ShapeType) => void;
-  closeDialog: () => void;
   openDeleteDialog: () => void;
   closeDeleteDialog: () => void;
   /** 切换属性面板折叠状态 */
   togglePropertyPanel: () => void;
 
-  // ── Spring Creation Actions ──
+  // ── W8 Builder Dialogs ──
+  openObjectBuilder: () => void;
+  closeObjectBuilder: () => void;
+  openTrackBuilder: () => void;
+  closeTrackBuilder: () => void;
 
-  enterSpringMode: () => void;
-  exitSpringMode: () => void;
-  selectSpringEndpointA: (id: string | null) => void;
-  selectSpringEndpointB: (id: string) => void;
-  openSpringDialog: () => void;
-  closeSpringDialog: () => void;
+  // ── F3 Placement Actions ──
+  /** 进入虚影放置模式（关闭建造器对话框后由 PlacementGhost 接管） */
+  startPlacement: (cfg: PlacementSnapshot) => void;
+  /** 退出放置模式（落位确认或 Esc 取消后调用） */
+  cancelPlacement: () => void;
+
+  // ── Spring Creation Actions（已并入连接对话框，见 Fixed Joint Actions）──
+
+  enterFixedJointMode: () => void;
+  exitFixedJointMode: () => void;
+  selectFixedJointEndpointA: (id: string | null) => void;
+  selectFixedJointEndpointB: (id: string) => void;
+  closeFixedJointDialog: () => void;
 
   // ── Environment Panel Actions ──
 
@@ -70,38 +82,50 @@ export interface UiSlice {
 export type UiStore = UiSlice;
 
 export const createUiSlice: StateCreator<UiSlice, [], [], UiSlice> = (set) => ({
-  toolboxCollapsed: false,    // 默认展开 — 空场景引导用户使用
-  dialogOpen: false,
-  dialogDefaultShape: 'sphere',
   deleteDialogOpen: false,
   propertyPanelCollapsed: false,    // 默认展开 — 引导用户使用属性编辑
 
-  // Phase 3 弹簧 + 环境
-  springCreationStage: 'idle',
-  springEntityAId: null,
-  springEntityBId: null,
-  springDialogOpen: false,
+  // W8 建造器对话框
+  objectBuilderOpen: false,
+  trackBuilderOpen: false,
+
+  // F3 虚影放置
+  placement: null,
+
+  // Phase 3 环境面板
   environmentPanelOpen: false,
+
+  // W4 固定连接
+  fixedJointStage: 'idle',
+  fixedJointEntityAId: null,
+  fixedJointEntityBId: null,
+  fixedJointDialogOpen: false,
 
   // Phase 3 (03-03): 力场对话框
   forceFieldDialogOpen: false,
   forceFieldDialogKind: null,
 
-  toggleToolbox: () => set((s) => ({ toolboxCollapsed: !s.toolboxCollapsed })),
-  openDialog: (shape: ShapeType) => set({ dialogOpen: true, dialogDefaultShape: shape }),
-  closeDialog: () => set({ dialogOpen: false }),
   openDeleteDialog: () => set({ deleteDialogOpen: true }),
   closeDeleteDialog: () => set({ deleteDialogOpen: false }),
   togglePropertyPanel: () => set((s) => ({ propertyPanelCollapsed: !s.propertyPanelCollapsed })),
 
-  // ── Spring Creation Actions ──
+  // ── W8 Builder Dialogs ──
+  openObjectBuilder: () => set({ objectBuilderOpen: true }),
+  closeObjectBuilder: () => set({ objectBuilderOpen: false }),
+  openTrackBuilder: () => set({ trackBuilderOpen: true }),
+  closeTrackBuilder: () => set({ trackBuilderOpen: false }),
 
-  enterSpringMode: () => set({ springCreationStage: 'pendingA', springEntityAId: null, springEntityBId: null }),
-  exitSpringMode: () => set({ springCreationStage: 'idle', springEntityAId: null, springEntityBId: null }),
-  selectSpringEndpointA: (id) => set(id === null ? { springCreationStage: 'idle', springEntityAId: null } : { springCreationStage: 'pendingB', springEntityAId: id }),
-  selectSpringEndpointB: (id) => set({ springCreationStage: 'dialog', springEntityBId: id, springDialogOpen: true }),
-  openSpringDialog: () => set({ springDialogOpen: true }),
-  closeSpringDialog: () => set({ springDialogOpen: false, springCreationStage: 'idle', springEntityAId: null, springEntityBId: null }),
+  // ── F3 Placement Actions ──
+  startPlacement: (cfg) => set({ placement: cfg, objectBuilderOpen: false }),
+  cancelPlacement: () => set({ placement: null }),
+
+  // ── Fixed Joint Creation Actions (W4；弹簧/轻绳/轻杆同流程) ──
+
+  enterFixedJointMode: () => set({ fixedJointStage: 'pendingA', fixedJointEntityAId: null, fixedJointEntityBId: null }),
+  exitFixedJointMode: () => set({ fixedJointStage: 'idle', fixedJointEntityAId: null, fixedJointEntityBId: null }),
+  selectFixedJointEndpointA: (id) => set(id === null ? { fixedJointStage: 'idle', fixedJointEntityAId: null } : { fixedJointStage: 'pendingB', fixedJointEntityAId: id }),
+  selectFixedJointEndpointB: (id) => set({ fixedJointStage: 'dialog', fixedJointEntityBId: id, fixedJointDialogOpen: true }),
+  closeFixedJointDialog: () => set({ fixedJointDialogOpen: false, fixedJointStage: 'idle', fixedJointEntityAId: null, fixedJointEntityBId: null }),
 
   // ── Environment Panel Actions ──
 

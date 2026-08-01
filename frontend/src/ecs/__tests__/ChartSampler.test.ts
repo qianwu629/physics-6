@@ -98,8 +98,8 @@ describe('chartBuffer + store integration', () => {
     expect(buf.getCount()).toBe(0);
   });
 
-  // ──── Test 4: 12 指标索引 — 0-2 位置, 3-5 速度, 6-8 加速度, 9-11 能量 ────
-  it('should store 12 metrics with correct indices (position/velocity/acceleration/energy)', () => {
+  // ──── Test 4: 15 指标索引 — 0-2 位置, 3-5 速度, 6-8 加速度, 9-11 能量, 12-14 动量 ────
+  it('should store 15 metrics with correct indices (position/velocity/acceleration/energy/momentum)', () => {
     const entityId = 'entity-1';
     const buf = getOrCreateBuffer(entityId);
 
@@ -123,6 +123,10 @@ describe('chartBuffer + store integration', () => {
     metrics[9] = 10.1;  // KE
     metrics[10] = 11.2; // PE (gravity + spring)
     metrics[11] = 12.3; // total energy
+    // 12-14: momentum (px, py, pz)
+    metrics[12] = 13.4;
+    metrics[13] = 14.5;
+    metrics[14] = 15.6;
 
     buf.push(now, metrics);
 
@@ -139,6 +143,9 @@ describe('chartBuffer + store integration', () => {
     const ke   = buf.getSeriesData(9, now - 1, now + 1);
     const pe   = buf.getSeriesData(10, now - 1, now + 1);
     const total = buf.getSeriesData(11, now - 1, now + 1);
+    const px = buf.getSeriesData(12, now - 1, now + 1);
+    const py = buf.getSeriesData(13, now - 1, now + 1);
+    const pz = buf.getSeriesData(14, now - 1, now + 1);
 
     // Verify each metric returns correct value
     expect(posX[0].value).toBeCloseTo(1.1, 5);
@@ -153,9 +160,12 @@ describe('chartBuffer + store integration', () => {
     expect(ke[0].value).toBeCloseTo(10.1, 5);
     expect(pe[0].value).toBeCloseTo(11.2, 5);
     expect(total[0].value).toBeCloseTo(12.3, 5);
+    expect(px[0].value).toBeCloseTo(13.4, 5);
+    expect(py[0].value).toBeCloseTo(14.5, 5);
+    expect(pz[0].value).toBeCloseTo(15.6, 5);
 
     // Verify METRICS_PER_ENTITY constant
-    expect(METRICS_PER_ENTITY).toBe(12);
+    expect(METRICS_PER_ENTITY).toBe(15);
   });
 
   // ──── Test 5: 多实体同时追踪时各自独立缓冲 ────

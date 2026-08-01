@@ -77,72 +77,71 @@ export function computeEnergy(
 }
 
 /**
- * 加速度 SMA(5) 平滑器
+ * 加速度平滑器（最小二乘拟合）
  *
- * 存储最近 N 帧速度，通过差分计算加速度后取移动平均。
- * 解决数值微分噪声放大问题（Pitfall #4: 60Hz 下速度差分会放大噪声）。
+ * 旧实现：固定 dt=1/60 的相邻样本差分——采样时刻抖动（rAF ±数 ms）直接
+ * 转成加速度抖动，且 5 样本（≈83ms）窗口过短，放大 120Hz 物理接触噪声。
  *
- * SMA 窗口 = 5（推荐值，RESEARCH.md Pitfall #4）
+ * 新实现：存 (时刻, 速度) 样本，窗口内对每个分量做最小二乘直线拟合，
+ * 斜率即加速度。真实时间戳消除 dt 失配；~0.25s 窗口压平接触噪声混叠。
  */
 export class AccelerationSmoother {
-  private velHistory: Float64Array;
-  private idx = 0;
-  private filled = false;
+  private samples: { t: number; v: [number, number, number] }[] = [];
 
   /**
-   * @param windowSize — SMA 窗口大小，默认 5
+   * @param windowSize — 窗口样本容量，默认 16（60Hz 采样下 ≈0.27s）
    */
-  constructor(private windowSize: number = 5) {
-    // 每个速度分量存 3 个值（vx, vy, vz）
-    this.velHistory = new Float64Array(windowSize * 3);
-  }
+  constructor(private windowSize: number = 16) {}
 
   /**
    * 记录一帧速度
+   * @param t — 采样时刻（秒，与 ChartSampler 同一时钟 nowSeconds()）
    * @param vx, vy, vz — 当前帧速度分量 (m/s)
    */
-  push(vx: number, vy: number, vz: number): void {
-    const i = this.idx * 3;
-    this.velHistory[i] = vx;
-    this.velHistory[i + 1] = vy;
-    this.velHistory[i + 2] = vz;
-    this.idx = (this.idx + 1) % this.windowSize;
-    if (this.idx === 0) this.filled = true;
+  push(t: number, vx: number, vy: number, vz: number): void {
+    this.samples.push({ t, v: [vx, vy, vz] });
+    if (this.samples.length > this.windowSize) {
+      this.samples.shift();
+    }
   }
 
   /**
-   * 计算 SMA 平滑后的加速度
-   *
-   * 算法：遍历窗口内相邻速度对的差分，取平均值
-   * a = avg( (v_i - v_{i-1}) / dt ) for i = head-1 .. head-(N-1)
-   *
-   * @param dt — 帧间隔时间 (s)
-   * @returns [ax, ay, az] 平滑后的加速度分量 (m/s²)
+   * 最小二乘直线拟合求斜率：slope = Σ(t−t̄)(v−v̄) / Σ(t−t̄)²
+   * @returns [ax, ay, az] 平滑后的加速度分量 (m/s²)；样本不足返回 [0,0,0]
    */
-  getSmoothedAcceleration(dt: number): [number, number, number] {
-    const n = this.filled ? this.windowSize : this.idx;
+  getSmoothedAcceleration(): [number, number, number] {
+    const n = this.samples.length;
     if (n < 2) return [0, 0, 0];
 
-    let sumAx = 0;
-    let sumAy = 0;
-    let sumAz = 0;
-    const count = n - 1;
-
-    for (let i = 0; i < count; i++) {
-      const currIdx = ((this.idx - 1 - i + this.windowSize) % this.windowSize) * 3;
-      const prevIdx = ((this.idx - 2 - i + this.windowSize) % this.windowSize) * 3;
-
-      sumAx += (this.velHistory[currIdx] - this.velHistory[prevIdx]) / dt;
-      sumAy += (this.velHistory[currIdx + 1] - this.velHistory[prevIdx + 1]) / dt;
-      sumAz += (this.velHistory[currIdx + 2] - this.velHistory[prevIdx + 2]) / dt;
+    let meanT = 0;
+    const meanV = [0, 0, 0];
+    for (const s of this.samples) {
+      meanT += s.t;
+      meanV[0] += s.v[0];
+      meanV[1] += s.v[1];
+      meanV[2] += s.v[2];
     }
+    meanT /= n;
+    meanV[0] /= n;
+    meanV[1] /= n;
+    meanV[2] /= n;
 
-    return [sumAx / count, sumAy / count, sumAz / count];
+    let denom = 0;
+    const numer = [0, 0, 0];
+    for (const s of this.samples) {
+      const dt = s.t - meanT;
+      denom += dt * dt;
+      numer[0] += dt * (s.v[0] - meanV[0]);
+      numer[1] += dt * (s.v[1] - meanV[1]);
+      numer[2] += dt * (s.v[2] - meanV[2]);
+    }
+    if (denom < 1e-12) return [0, 0, 0]; // 所有样本同一时刻（理论防御）
+
+    return [numer[0] / denom, numer[1] / denom, numer[2] / denom];
   }
 
   /** 重置平滑器状态 */
   reset(): void {
-    this.idx = 0;
-    this.filled = false;
+    this.samples = [];
   }
 }

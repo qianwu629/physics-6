@@ -129,8 +129,8 @@ describe('ChartDataBuffer', () => {
     });
   });
 
-  describe('12 metrics per entity', () => {
-    it('stores and retrieves all 12 metrics correctly', () => {
+  describe('15 metrics per entity', () => {
+    it('stores and retrieves all 15 metrics correctly', () => {
       const buf = new ChartDataBuffer();
       const metrics = new Float64Array(METRICS_PER_ENTITY);
       for (let i = 0; i < METRICS_PER_ENTITY; i++) {
@@ -148,7 +148,7 @@ describe('ChartDataBuffer', () => {
     it('throws on wrong metrics length', () => {
       const buf = new ChartDataBuffer();
       const badMetrics = new Float64Array(5);
-      expect(() => buf.push(1.0, badMetrics)).toThrow('metrics length must be 12');
+      expect(() => buf.push(1.0, badMetrics)).toThrow('metrics length must be 15');
     });
   });
 

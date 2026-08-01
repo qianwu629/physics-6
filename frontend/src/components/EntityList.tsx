@@ -22,9 +22,9 @@ function getShapeFromEntity(entity: Entity): string {
 }
 
 function getColorFromEntity(entity: Entity): string {
-  if (isSpringEntity(entity)) return '#888888';
+  if (isSpringEntity(entity)) return 'var(--muted-foreground)';
   const material = entity.components.get('material') as MaterialComponent | undefined;
-  return material?.color ?? '#888888';
+  return material?.color ?? 'var(--muted-foreground)';
 }
 
 function getShapeIcon(shape: string) {
@@ -74,12 +74,12 @@ export default function EntityList() {
               style={{
                 ...(isSelected
                   ? {
-                      borderLeftColor: '#3b82f6',
-                      backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                      color: '#ffffff',
+                      borderLeftColor: 'var(--holo)',
+                      backgroundColor: 'var(--holo-a10)',
+                      color: 'var(--foreground)',
                     }
                   : {
-                      color: '#e0e0e0',
+                      color: 'var(--foreground)',
                     }),
               }}
               onMouseEnter={(e) => {
@@ -89,7 +89,7 @@ export default function EntityList() {
                 if (!isSelected) e.currentTarget.style.backgroundColor = 'transparent';
               }}
             >
-              <Icon size={14} strokeWidth={2} style={{ color: '#a0a0a0', flexShrink: 0 }} />
+              <Icon size={14} strokeWidth={2} style={{ color: 'var(--muted-foreground)', flexShrink: 0 }} />
               <span className="truncate flex-1">{name}</span>
               <span
                 className="w-2 h-2 rounded-full flex-shrink-0"

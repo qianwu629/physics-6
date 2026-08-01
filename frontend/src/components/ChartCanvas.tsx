@@ -17,6 +17,7 @@ const METRIC_COLORS: Record<MetricType, string[]> = {
   velocity: ['#22c55e', '#4ade80', '#86efac', '#84cc16', '#facc15', '#eab308'],     // 绿/黄系
   acceleration: ['#f97316', '#fb923c', '#fdba74', '#ef4444', '#dc2626', '#f43f5e'], // 橙/红系
   energy: ['#a855f7', '#c084fc', '#d8b4fe', '#ec4899', '#f472b6', '#6366f1'],       // 紫/粉/靛系
+  momentum: ['#eab308', '#facc15', '#fde047', '#ca8a04', '#a16207', '#854d0e'],     // 金/琥珀系
 };
 
 const METRIC_NAMES: Record<MetricType, string[]> = {
@@ -24,6 +25,7 @@ const METRIC_NAMES: Record<MetricType, string[]> = {
   velocity: ['vx', 'vy', 'vz'],
   acceleration: ['ax', 'ay', 'az'],
   energy: ['KE', 'PE', 'E'],
+  momentum: ['px', 'py', 'pz'],
 };
 
 const METRIC_INDICES: Record<MetricType, number[]> = {
@@ -31,6 +33,7 @@ const METRIC_INDICES: Record<MetricType, number[]> = {
   velocity: [3, 4, 5],
   acceleration: [6, 7, 8],
   energy: [9, 10, 11],
+  momentum: [12, 13, 14],
 };
 
 /** 生成 series key: entityId + metric + axis */

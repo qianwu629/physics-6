@@ -13,6 +13,7 @@ import type {
   GravityFieldComponent,
   ElectricFieldComponent,
   MagneticFieldComponent,
+  CurrentSourceComponent,
 } from '../types';
 
 describe('ECS Component Types', () => {
@@ -190,5 +191,18 @@ describe('ForceFieldComponent — discriminated union (D-03-03)', () => {
   it('ComponentType union includes forceField', () => {
     const ct: ComponentType = 'forceField';
     expect(ct).toBe('forceField');
+  });
+
+  it('CurrentSourceComponent has magnitude + direction (Phase 8)', () => {
+    const c: CurrentSourceComponent = {
+      type: 'currentSource',
+      magnitude: 10,
+      direction: [0, 0, 1],
+    };
+    expect(c.type).toBe('currentSource');
+    expect(c.magnitude).toBe(10);
+    expect(c.direction).toEqual([0, 0, 1]);
+    const ct: ComponentType = 'currentSource';
+    expect(ct).toBe('currentSource');
   });
 });

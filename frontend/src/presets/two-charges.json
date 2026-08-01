@@ -1,0 +1,88 @@
+{
+  "schemaVersion": "1.0",
+  "savedAt": "2026-07-27T00:00:00Z",
+  "simulation": {
+    "environment": {
+      "gravity": [0, 0, 0],
+      "frictionScale": 1.0,
+      "restitutionScale": 1.0,
+      "drag": 0,
+      "peReferenceY": 0
+    },
+    "entities": [
+      {
+        "id": "charge-ball-positive",
+        "name": "正电荷球",
+        "components": {
+          "transform": {
+            "type": "transform",
+            "position": [-4, 3, 0],
+            "rotation": [0, 0, 0],
+            "scale": [1, 1, 1]
+          },
+          "rigidBody": {
+            "type": "rigidBody",
+            "kind": "dynamic",
+            "mass": 1,
+            "restitution": 0.3,
+            "friction": 0.3,
+            "charge": 1
+          },
+          "collider": {
+            "type": "collider",
+            "shape": "sphere",
+            "params": { "radius": 0.5 }
+          },
+          "material": {
+            "type": "material",
+            "color": "#ff4444",
+            "roughness": 0.6,
+            "metalness": 0.1
+          },
+          "velocity": {
+            "type": "velocity",
+            "linearVelocity": [0, 0, 0],
+            "angularVelocity": [0, 0, 0]
+          }
+        }
+      },
+      {
+        "id": "charge-ball-negative",
+        "name": "负电荷球",
+        "components": {
+          "transform": {
+            "type": "transform",
+            "position": [4, 3, 0],
+            "rotation": [0, 0, 0],
+            "scale": [1, 1, 1]
+          },
+          "rigidBody": {
+            "type": "rigidBody",
+            "kind": "dynamic",
+            "mass": 1,
+            "restitution": 0.3,
+            "friction": 0.3,
+            "charge": -1
+          },
+          "collider": {
+            "type": "collider",
+            "shape": "sphere",
+            "params": { "radius": 0.5 }
+          },
+          "material": {
+            "type": "material",
+            "color": "#4444ff",
+            "roughness": 0.6,
+            "metalness": 0.1
+          },
+          "velocity": {
+            "type": "velocity",
+            "linearVelocity": [0, 0, 0],
+            "angularVelocity": [0, 0, 0]
+          }
+        }
+      }
+    ],
+    "constraints": []
+  }
+}

@@ -172,7 +172,7 @@ Phases execute in numeric order: 1 → 01.1 → 2 → 3 → 3.5 → 4 → 5 → 
 | 4. 表达式驱动外加力            | 0/0 | Blocked     | -          |
 | 5. 自由飞行摄像机 + 2D 模式    | 0/0 | Not started | -          |
 | 6. 弹簧选中 + 稳定性 + 性能    | 0/0 | Not started | -          |
-| 8. 电磁学增强                | 0/6 | Planned     | -          |
+| 8. 电磁学增强                | 0/7 | Planned     | -          |
 
 ## See Also
 
@@ -208,7 +208,7 @@ Plans:
 **Goal:** 在 Rapier 上增强自定义力场层，实现场-源关系（电荷产生电场、电流产生磁场）、时变电磁场简化模型、空间哈希性能优化；保持与 Phase 3 预设力场的向后兼容。
 **Requirements**: FIELD-01, FIELD-02, FIELD-03, FIELD-04
 **Depends on:** Phase 7
-**Plans:** 6 plans in 4 waves
+**Plans:** 7 plans in 4 waves
 **UI hint:** yes
 
 Plans:
@@ -218,8 +218,9 @@ Plans:
 - [ ] 08-04-PLAN.md — 空间哈希 + 序列化: spatialHash.ts + sceneSerializer fieldSource 支持 (Wave 3)
 - [ ] 08-05-PLAN.md — UI: PropertyPanel 场源控制面板 (Wave 4)
 - [ ] 08-06-PLAN.md — 集成验证: 空间哈希可选集成 + 全量测试 + 性能基准 (Wave 4)
+- [ ] 08-07-PLAN.md — 场源力线可视化: 电荷电场线 + 电流磁感线 + toggle 控制 (Wave 3)
 
 **Wave dependency notes:**
 - **Wave 2** *(blocked on Wave 1 completion — 依赖 FieldSourceComponent 类型定义和 fieldSourceCalc 计算引擎)*
-- **Wave 3** *(blocked on Wave 1+2 completion — 依赖 ForceFieldSystem 改造完成)*
+- **Wave 3** *(blocked on Wave 1+2 completion — 依赖 ForceFieldSystem 改造完成；08-07 场源力线可视化依赖 08-02 计算引擎)*
 - **Wave 4** *(blocked on Wave 1-3 completion — 依赖核心功能就绪)*

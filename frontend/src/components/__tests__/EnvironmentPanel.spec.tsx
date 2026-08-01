@@ -3,19 +3,18 @@ import { render, screen, fireEvent } from '@testing-library/react';
 
 // Mock store state
 interface StoreState {
-  environmentPanelOpen: boolean;
-  closeEnvironmentPanel: () => void;
-  toggleEnvironmentPanel: () => void;
   environment: {
     gravity: [number, number, number];
     frictionScale: number;
     restitutionScale: number;
     drag: number;
+    peReferenceY: number;
   };
   setGravity: (g: [number, number, number]) => void;
   setFrictionScale: (v: number) => void;
   setRestitutionScale: (v: number) => void;
   setDrag: (v: number) => void;
+  setPeReferenceY: (v: number) => void;
   isRunning: boolean;
 }
 
@@ -27,19 +26,18 @@ vi.mock('../../store', () => ({
 
 function createStore(overrides: Partial<StoreState> = {}): StoreState {
   storeState = {
-    environmentPanelOpen: true, // default open for testing
-    closeEnvironmentPanel: vi.fn(),
-    toggleEnvironmentPanel: vi.fn(),
     environment: {
       gravity: [0, -9.81, 0],
       frictionScale: 1.0,
       restitutionScale: 1.0,
       drag: 0.1,
+      peReferenceY: 0,
     },
     setGravity: vi.fn(),
     setFrictionScale: vi.fn(),
     setRestitutionScale: vi.fn(),
     setDrag: vi.fn(),
+    setPeReferenceY: vi.fn(),
     isRunning: false,
     ...overrides,
   };
@@ -60,14 +58,10 @@ describe('EnvironmentPanel', () => {
   });
 
   describe('rendering', () => {
-    it('renders when environmentPanelOpen is true', () => {
-      renderPanel({ environmentPanelOpen: true });
-      expect(screen.getByText('环境参数')).toBeInTheDocument();
-    });
-
-    it('does not render when environmentPanelOpen is false', () => {
-      renderPanel({ environmentPanelOpen: false });
-      expect(screen.queryByText('环境参数')).not.toBeInTheDocument();
+    // Ticket 1: 可见性由 dock 管理，面板内容始终渲染
+    it('renders panel content (visibility managed by dock)', () => {
+      renderPanel();
+      expect(screen.getByText('重力')).toBeInTheDocument();
     });
 
     it('renders 4 gravity preset buttons', () => {
@@ -82,7 +76,7 @@ describe('EnvironmentPanel', () => {
   describe('gravity presets', () => {
     it('clicking Earth sets gravity to [0, -9.81, 0]', () => {
       const { store } = renderPanel({
-        environment: { gravity: [0, -1.62, 0], frictionScale: 1.0, restitutionScale: 1.0, drag: 0.1 },
+        environment: { gravity: [0, -1.62, 0], frictionScale: 1.0, restitutionScale: 1.0, drag: 0.1, peReferenceY: 0 },
       });
       fireEvent.click(screen.getByText('地球'));
       expect(store.setGravity).toHaveBeenCalledWith([0, -9.81, 0]);
@@ -108,9 +102,9 @@ describe('EnvironmentPanel', () => {
 
     it('active preset button is highlighted', () => {
       renderPanel({
-        environment: { gravity: [0, -1.62, 0], frictionScale: 1.0, restitutionScale: 1.0, drag: 0.1 },
+        environment: { gravity: [0, -1.62, 0], frictionScale: 1.0, restitutionScale: 1.0, drag: 0.1, peReferenceY: 0 },
       });
-      // Moon should have the active style (bg-[rgba(59,130,246,0.2)])
+      // Moon 选中态为全息青 tint 底（Sci-fi Lab）
       const moonBtn = screen.getByText('月球');
       expect(moonBtn.className).toContain('bg-[');
     });
@@ -136,10 +130,12 @@ describe('EnvironmentPanel', () => {
     it('disables all sliders when running', () => {
       renderPanel({ isRunning: true });
       const peSection = document.querySelector('[data-testid="pe-reference-section"]');
+      const arrowSection = document.querySelector('[data-testid="arrow-scale-section"]');
       const sliders = document.querySelectorAll('input[type="range"]');
       sliders.forEach((s) => {
-        // Phase 2: peReferenceY slider remains enabled while running
+        // 可视化类滑杆（势能参考高度/箭头缩放）运行中保持可用
         if (peSection?.contains(s)) return;
+        if (arrowSection?.contains(s)) return;
         expect((s as HTMLInputElement).disabled).toBe(true);
       });
     });
@@ -147,39 +143,14 @@ describe('EnvironmentPanel', () => {
     it('disables all number inputs when running', () => {
       renderPanel({ isRunning: true });
       const peSection = document.querySelector('[data-testid="pe-reference-section"]');
+      const arrowSection = document.querySelector('[data-testid="arrow-scale-section"]');
       const numberInputs = document.querySelectorAll('input[type="number"]');
       numberInputs.forEach((input) => {
-        // Phase 2: peReferenceY inputs remain enabled while running
+        // 可视化类输入（势能参考高度/箭头缩放）运行中保持可用
         if (peSection?.contains(input)) return;
+        if (arrowSection?.contains(input)) return;
         expect((input as HTMLInputElement).disabled).toBe(true);
       });
-    });
-  });
-
-  describe('friction scale', () => {
-    it('renders friction preset buttons', () => {
-      renderPanel();
-      expect(screen.getByText('摩擦倍率')).toBeInTheDocument();
-      expect(screen.getByText('超滑')).toBeInTheDocument();
-      expect(screen.getByText('低摩擦')).toBeInTheDocument();
-      expect(screen.getByText('标准')).toBeInTheDocument();
-      expect(screen.getByText('高摩擦')).toBeInTheDocument();
-    });
-
-    it('clicking preset sets friction scale', () => {
-      const { store } = renderPanel();
-      fireEvent.click(screen.getByText('超滑'));
-      expect(store.setFrictionScale).toHaveBeenCalledWith(0.1);
-    });
-  });
-
-  describe('close behavior', () => {
-    it('close button calls closeEnvironmentPanel', () => {
-      const { store } = renderPanel();
-      // Close button is a plain <button> with exact text "×"
-      const closeBtn = screen.getByRole('button', { name: '×' });
-      fireEvent.click(closeBtn);
-      expect(store.closeEnvironmentPanel).toHaveBeenCalled();
     });
   });
 

@@ -33,7 +33,7 @@ export default function ErrorFallback({ type }: { type: ErrorType }) {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#0a0a0a',
+        backgroundColor: 'var(--well)',
         zIndex: 200,
       }}
     >
@@ -44,17 +44,17 @@ export default function ErrorFallback({ type }: { type: ErrorType }) {
           alignItems: 'center',
           gap: '16px',
           padding: '40px 48px',
-          backgroundColor: '#1a1a1a',
+          backgroundColor: 'var(--background)',
           borderRadius: '12px',
           border: '1px solid rgba(239, 68, 68, 0.3)',
           maxWidth: '420px',
           textAlign: 'center',
         }}
       >
-        <AlertTriangle size={40} strokeWidth={1.5} color="#ef4444" />
+        <AlertTriangle size={40} strokeWidth={1.5} color="var(--destructive)" />
 
         <h2 style={{
-          color: '#fafafa',
+          color: 'var(--foreground)',
           fontSize: '20px',
           fontWeight: 600,
           fontFamily: 'var(--font-sans)',
@@ -64,7 +64,7 @@ export default function ErrorFallback({ type }: { type: ErrorType }) {
         </h2>
 
         <p style={{
-          color: '#888888',
+          color: 'var(--muted-foreground)',
           fontSize: '14px',
           fontWeight: 400,
           fontFamily: 'var(--font-sans)',
@@ -83,8 +83,8 @@ export default function ErrorFallback({ type }: { type: ErrorType }) {
             gap: '8px',
             padding: '8px 20px',
             marginTop: '8px',
-            backgroundColor: '#3b82f6',
-            color: '#ffffff',
+            backgroundColor: 'var(--holo)',
+            color: 'var(--primary-foreground)',
             border: 'none',
             borderRadius: '6px',
             fontSize: '14px',
@@ -94,7 +94,7 @@ export default function ErrorFallback({ type }: { type: ErrorType }) {
             transition: 'background-color 150ms',
           }}
           onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#2563eb'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#3b82f6'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--holo)'; }}
         >
           <RefreshCw size={16} strokeWidth={2} />
           刷新页面

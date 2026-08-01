@@ -136,7 +136,7 @@ status: Draft
 <deferred>
 ## Deferred Ideas
 
-- **更换底层物理引擎（Rapier → Cannon.js/Ammo.js/PhysX.js）** — 用户关切功能缺失（电磁学支持），但 Rapier 之上已构建自定义力场系统。物理引擎迁移是重大架构变更，需独立阶段评估（Phase 8+）。当前先优化 Rapier 集成层。
+- ~~更换底层物理引擎（Rapier → Cannon.js/Ammo.js/PhysX.js）~~ **[已解决 2026-07-27]** — 电磁学支持已通过 Rapier 上的自定义力场层实现，无需更换引擎：场-源关系（charge≠0 的实体自动成为库仑场源；currentSource 组件实体等效无限长直导线产生环形磁场），见 `frontend/src/ecs/fieldSourceCalc.ts` 与 `frontend/src/components/ForceFieldSystem.tsx`。旧 Phase 8 的 7 个 plan（基于已过时的 addForce 注入设计）已废弃，不执行。
 - **React 19 StrictMode 单例稳定性** — chartBuffers、contactForceMap 等模块级单例在 dev 双挂载下可能累积状态。属于稳定性阶段。
 - **Biome/ESLint 工具链引入** — 工程化阶段，不属于物理集成层。
 - **PropertyPanel 文件拆分** — UI 重构阶段（01.1 或后续）。

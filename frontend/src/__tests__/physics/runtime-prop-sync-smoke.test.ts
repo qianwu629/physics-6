@@ -31,31 +31,34 @@ describe('Runtime prop sync chain (REN-03 / Phase 5 smoke)', () => {
   });
 
   it('EntityRenderer 调用 Collider.setRestitution 同步 restitution', () => {
-    // 接受 inline 链式 (.collider(0).setRestitution) 或经局部变量 (const col = rb.collider(0); col.setRestitution)
-    const inline = /\.collider\s*\(\s*0\s*\)\s*\.setRestitution/;
+    // W3 多 collider（每面一个）循环同步：.collider(i) 任意索引形式均可
     const factored =
-      /\.collider\s*\(\s*0\s*\)[\s\S]{0,200}?\.setRestitution\s*\(/;
-    expect(inline.test(codeOnly) || factored.test(codeOnly)).toBe(true);
+      /\.collider\s*\(\s*\w+\s*\)[\s\S]{0,400}?\.setRestitution\s*\(/;
+    expect(factored.test(codeOnly)).toBe(true);
   });
 
   it('EntityRenderer 调用 Collider.setFriction 同步 friction', () => {
-    const inline = /\.collider\s*\(\s*0\s*\)\s*\.setFriction/;
     const factored =
-      /\.collider\s*\(\s*0\s*\)[\s\S]{0,400}?\.setFriction\s*\(/;
-    expect(inline.test(codeOnly) || factored.test(codeOnly)).toBe(true);
+      /\.collider\s*\(\s*\w+\s*\)[\s\S]{0,400}?\.setFriction\s*\(/;
+    expect(factored.test(codeOnly)).toBe(true);
   });
 
   it('EntityRenderer 调用 setLinearDamping 同步 drag', () => {
     expect(codeOnly).toMatch(/\.setLinearDamping\s*\(/);
   });
 
-  it('useEffect 依赖数组包含 mass/restitution/friction 与 environment scales', () => {
-    // 宽松断言：检查所有关键 token 都出现在代码中（不在注释里）
+  it('W3: 摩擦合并规则统一为 Multiply（接触摩擦 = 两面系数相乘）', () => {
+    expect(codeOnly).toMatch(/setFrictionCombineRule/);
+    expect(codeOnly).toMatch(/CoefficientCombineRule\.Multiply/);
+  });
+
+  it('useEffect 依赖数组覆盖 mass/restitution/friction、restitutionScale 与面配置', () => {
+    // W3 起全局 frictionScale 已移除（摩擦改为面级配置 collider.faces）
     expect(codeOnly).toMatch(/rigidBody[?.]\.?mass/);
     expect(codeOnly).toMatch(/rigidBody[?.]\.?restitution/);
     expect(codeOnly).toMatch(/rigidBody[?.]\.?friction/);
     expect(codeOnly).toMatch(/restitutionScale/);
-    expect(codeOnly).toMatch(/frictionScale/);
+    expect(codeOnly).toMatch(/collider\?\.faces/);
   });
 
   it('保留首次挂载的 RigidBody props（不破坏初始化）', () => {

@@ -9,6 +9,9 @@
 
 @import "@fontsource-variable/geist";
 
+/* dockview 停靠布局壳 — vendor CSS 放在 tailwind 之后，便于后续 tokens 覆盖 */
+@import "dockview-react/dist/styles/dockview.css";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme {
@@ -16,43 +19,140 @@
   --font-mono: 'Geist Mono', 'Geist Mono Fallback', 'Consolas', monospace;
 }
 
-/* 全局暗色主题 — 对应 UI-SPEC 颜色合同 */
+/* ═══════════════════════════════════════════════════════════
+   Sci-fi Lab 主题 tokens（Ticket 2）
+   全局恒暗色：tokens 写 :root，.dark 块同步保留（shadcn dark: variant）
+   主强调色：全息青 oklch(0.85 0.14 195)
+   ═══════════════════════════════════════════════════════════ */
 :root {
   color-scheme: dark;
-  background-color: #0a0a0a;
-  color: #fafafa;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+
+  /* ── 基础色板：深空基调 ── */
+  --background: oklch(0.16 0.02 260);
+  --foreground: oklch(0.95 0.01 200);
+  --card: oklch(0.19 0.02 260);
+  --card-foreground: oklch(0.95 0.01 200);
+  --popover: oklch(0.17 0.02 260);
+  --popover-foreground: oklch(0.95 0.01 200);
+  --primary: oklch(0.85 0.14 195);
+  --primary-foreground: oklch(0.16 0.02 260);
+  --secondary: oklch(0.24 0.02 260);
+  --secondary-foreground: oklch(0.95 0.01 200);
+  --muted: oklch(0.24 0.02 260);
+  --muted-foreground: oklch(0.65 0.03 220);
+  --accent: oklch(0.85 0.14 195 / 0.16);
+  --accent-foreground: oklch(0.95 0.01 200);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(0.85 0.14 195 / 0.14);
+  --input: oklch(0.85 0.14 195 / 0.18);
+  --ring: oklch(0.85 0.14 195);
+
+  /* ── 图表：霓虹五色 ── */
+  --chart-1: oklch(0.85 0.14 195);
+  --chart-2: oklch(0.75 0.2 330);
+  --chart-3: oklch(0.9 0.16 100);
+  --chart-4: oklch(0.82 0.18 150);
+  --chart-5: oklch(0.78 0.18 40);
+
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+
+  --sidebar: oklch(0.19 0.02 260);
+  --sidebar-foreground: oklch(0.95 0.01 200);
+  --sidebar-primary: oklch(0.85 0.14 195);
+  --sidebar-primary-foreground: oklch(0.16 0.02 260);
+  --sidebar-accent: oklch(0.24 0.02 260);
+  --sidebar-accent-foreground: oklch(0.95 0.01 200);
+  --sidebar-border: oklch(0.85 0.14 195 / 0.14);
+  --sidebar-ring: oklch(0.85 0.14 195);
+
+  /* ── Sci-fi Lab 语义 tokens ── */
+  /* 全息青主色与弱化版 */
+  --holo: oklch(0.85 0.14 195);
+  --holo-dim: oklch(0.65 0.1 195);
+  /* 全息青 alpha 变体（hover/focus/选中态底色） */
+  --holo-a10: oklch(0.85 0.14 195 / 0.1);
+  --holo-a15: oklch(0.85 0.14 195 / 0.15);
+  --holo-a20: oklch(0.85 0.14 195 / 0.2);
+  --holo-a30: oklch(0.85 0.14 195 / 0.3);
+  /* 文字层级：foreground > muted-foreground > text-dim */
+  --text-dim: oklch(0.55 0.02 220);
+  /* 玻璃拟态参数（Ticket 3 面板换皮使用） */
+  --glass-bg: oklch(0.19 0.02 260 / 0.72);
+  --glass-border: oklch(0.85 0.14 195 / 0.22);
+  --glass-blur: 12px;
+  /* 深井底色（输入框等凹陷区域） */
+  --well: oklch(0.13 0.02 260);
+  /* 发光阴影梯度（hover/focus/active 态使用） */
+  --glow-sm: 0 0 6px oklch(0.85 0.14 195 / 0.35);
+  --glow-md: 0 0 12px oklch(0.85 0.14 195 / 0.45);
+  --glow-lg: 0 0 24px oklch(0.85 0.14 195 / 0.5);
+}
+
+/* ── Sci-fi Lab 共享类（Ticket 3） ── */
+@layer components {
+  /* 玻璃拟态面板壳 */
+  .glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 8px 32px rgb(0 0 0 / 0.4), var(--glow-sm);
+  }
+  /* 面板标题栏底边 */
+  .glass-header {
+    border-bottom: 1px solid var(--glass-border);
+  }
+  /* 分隔线 */
+  .sci-divider {
+    background: var(--glass-border);
+  }
+  /* 手搓按钮的 hover/focus 发光态 */
+  .sci-hover {
+    transition: all 150ms;
+  }
+  .sci-hover:hover {
+    background: var(--holo-a15);
+    color: var(--holo);
+    box-shadow: var(--glow-sm);
+  }
+  .sci-hover:active {
+    background: var(--holo-a30);
+  }
+}
+
+/* .dark 同步块：shadcn dark: variant 备用（当前应用恒暗色，.dark 未挂载） */
+.dark {
+  --background: oklch(0.16 0.02 260);
+  --foreground: oklch(0.95 0.01 200);
+  --card: oklch(0.19 0.02 260);
+  --card-foreground: oklch(0.95 0.01 200);
+  --popover: oklch(0.17 0.02 260);
+  --popover-foreground: oklch(0.95 0.01 200);
+  --primary: oklch(0.85 0.14 195);
+  --primary-foreground: oklch(0.16 0.02 260);
+  --secondary: oklch(0.24 0.02 260);
+  --secondary-foreground: oklch(0.95 0.01 200);
+  --muted: oklch(0.24 0.02 260);
+  --muted-foreground: oklch(0.65 0.03 220);
+  --accent: oklch(0.85 0.14 195 / 0.16);
+  --accent-foreground: oklch(0.95 0.01 200);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(0.85 0.14 195 / 0.14);
+  --input: oklch(0.85 0.14 195 / 0.18);
+  --ring: oklch(0.85 0.14 195);
+  --chart-1: oklch(0.85 0.14 195);
+  --chart-2: oklch(0.75 0.2 330);
+  --chart-3: oklch(0.9 0.16 100);
+  --chart-4: oklch(0.82 0.18 150);
+  --chart-5: oklch(0.78 0.18 40);
+  --sidebar: oklch(0.19 0.02 260);
+  --sidebar-foreground: oklch(0.95 0.01 200);
+  --sidebar-primary: oklch(0.85 0.14 195);
+  --sidebar-primary-foreground: oklch(0.16 0.02 260);
+  --sidebar-accent: oklch(0.24 0.02 260);
+  --sidebar-accent-foreground: oklch(0.95 0.01 200);
+  --sidebar-border: oklch(0.85 0.14 195 / 0.14);
+  --sidebar-ring: oklch(0.85 0.14 195);
 }
 
 * {
@@ -68,22 +168,33 @@ html, body, #root {
   font-family: var(--font-sans);
 }
 
+/* 深空底色：极弱径向渐变叠在深空蓝黑上 */
+body {
+  background:
+    radial-gradient(1200px 800px at 70% -10%, oklch(0.22 0.04 250 / 0.5), transparent 60%),
+    var(--background);
+  color: var(--foreground);
+}
+
 /* 禁止文本选中（沙盒模式 UI 不需要文本选择） */
 body {
   user-select: none;
   -webkit-user-select: none;
 }
 
-/* 滚动条暗色主题 */
+/* 滚动条深空主题 */
 ::-webkit-scrollbar {
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0a0a0a;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #333;
+  background: oklch(0.35 0.03 240);
   border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--holo-dim);
 }
 
 @theme inline {
@@ -120,6 +231,12 @@ body {
   --color-card: var(--card);
   --color-foreground: var(--foreground);
   --color-background: var(--background);
+  /* Sci-fi Lab 语义色 → utility（text-holo / bg-glass-bg / border-glass-border 等） */
+  --color-holo: var(--holo);
+  --color-holo-dim: var(--holo-dim);
+  --color-text-dim: var(--text-dim);
+  --color-glass-bg: var(--glass-bg);
+  --color-glass-border: var(--glass-border);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -129,46 +246,9 @@ body {
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
-}
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
   }
   html {
     @apply font-sans;

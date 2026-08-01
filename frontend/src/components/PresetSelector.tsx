@@ -1,5 +1,5 @@
 import React from 'react';
-import { Target, Triangle, Layers, Waves, GitBranch, Zap } from 'lucide-react';
+import { Target, Triangle, Layers, Waves, GitBranch, Zap, Magnet, Orbit } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -30,7 +30,7 @@ const PRESET_DEFINITIONS: PresetDefinition[] = [
     title: '抛体运动',
     description: '球体以初速度斜向上发射，观察抛物线轨迹',
     icon: 'Target',
-    color: '#3b82f6',
+    color: 'var(--holo)',
   },
   {
     id: 'inclined-plane',
@@ -58,7 +58,7 @@ const PRESET_DEFINITIONS: PresetDefinition[] = [
     title: '双弹簧链',
     description: '3 个质量块 + 4 根弹簧串联，多自由度振动',
     icon: 'GitBranch',
-    color: '#ef4444',
+    color: 'var(--destructive)',
   },
   {
     id: 'point-charge',
@@ -66,6 +66,20 @@ const PRESET_DEFINITIONS: PresetDefinition[] = [
     description: '两个带电球体在点电荷电场中相互作用，观察库仑力效应',
     icon: 'Zap',
     color: '#f59e0b',
+  },
+  {
+    id: 'two-charges',
+    title: '双电荷相互作用',
+    description: '正/负带电小球通过库仑力互相吸引，无需外加力场',
+    icon: 'Magnet',
+    color: '#22d3ee',
+  },
+  {
+    id: 'current-wire',
+    title: '载流导线与带电粒子',
+    description: '直导线电流产生环形磁场，带电粒子被磁场束缚绕导线螺旋回旋',
+    icon: 'Orbit',
+    color: '#a78bfa',
   },
 ];
 
@@ -76,6 +90,8 @@ const PRESET_MODULES: Record<string, () => Promise<any>> = {
   'spring-oscillator': () => import('../presets/spring-oscillator.json'),
   'double-spring': () => import('../presets/double-spring.json'),
   'point-charge': () => import('../presets/point-charge.json'),
+  'two-charges': () => import('../presets/two-charges.json'),
+  'current-wire': () => import('../presets/current-wire.json'),
 };
 
 const ALLOWED_PRESETS = new Set(PRESET_DEFINITIONS.map(p => p.id));
@@ -87,6 +103,8 @@ const ICON_MAP: Record<string, React.ComponentType<{ size?: number }>> = {
   'spring-oscillator': Waves,
   'double-spring': GitBranch,
   'point-charge': Zap,
+  'two-charges': Magnet,
+  'current-wire': Orbit,
 };
 
 /**
@@ -145,7 +163,7 @@ export default function PresetSelector({
         <DialogHeader>
           <DialogTitle>预设场景库</DialogTitle>
           <DialogDescription>
-            选择一个预设场景一键加载（共 6 个）
+            选择一个预设场景一键加载（共 8 个）
           </DialogDescription>
         </DialogHeader>
         <div className="grid grid-cols-2 gap-3 py-4">
@@ -169,12 +187,12 @@ export default function PresetSelector({
                 }}
                 className={[
                   'bg-[rgba(255,255,255,0.04)]',
-                  'border border-[rgba(255,255,255,0.06)]',
+                  'border border-[var(--glass-border)]',
                   'rounded-lg',
                   'p-4',
                   'cursor-pointer',
-                  'hover:bg-[rgba(59,130,246,0.08)]',
-                  'hover:border-[rgba(59,130,246,0.3)]',
+                  'hover:bg-[var(--holo-a10)]',
+                  'hover:border-[var(--holo-a30)]',
                   'transition-all duration-200',
                   isLoading ? 'opacity-50 pointer-events-none' : '',
                 ].join(' ')}
@@ -187,10 +205,10 @@ export default function PresetSelector({
                     <IconComponent size={20} style={{ color: preset.color }} />
                   )}
                 </div>
-                <div className="text-sm font-medium text-[#e0e0e0]">
+                <div className="text-sm font-medium text-[var(--foreground)]">
                   {preset.title}
                 </div>
-                <div className="text-xs text-[#a0a0a0] mt-1 line-clamp-2">
+                <div className="text-xs text-[var(--muted-foreground)] mt-1 line-clamp-2">
                   {preset.description}
                 </div>
               </div>

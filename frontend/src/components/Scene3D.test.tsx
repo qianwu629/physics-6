@@ -32,6 +32,12 @@ vi.mock('@react-three/drei', () => ({
   GizmoHelper: ({ children }: { children: React.ReactNode }) => <div data-testid="gizmo-helper">{children}</div>,
   GizmoViewport: () => <div data-testid="gizmo-viewport" />,
   Outlines: () => <div data-testid="outlines" />,
+  Stars: () => <div data-testid="stars" />,
+}));
+
+vi.mock('@react-three/postprocessing', () => ({
+  EffectComposer: ({ children }: { children: React.ReactNode }) => <div data-testid="effect-composer">{children}</div>,
+  Bloom: () => <div data-testid="bloom" />,
 }));
 
 vi.mock('three', async (importOriginal) => {
@@ -161,11 +167,19 @@ describe('Scene3D', () => {
       expect(container).toBeTruthy();
     });
 
-    it('should render Canvas with dark background (#0a0a0a)', async () => {
+    it('should render Canvas with deep-space background (Sci-fi Lab)', async () => {
       const { default: Scene3D } = await import('./Scene3D');
       const { getByTestId } = render(<Scene3D />);
       const canvas = getByTestId('r3f-canvas');
       expect(canvas).toBeDefined();
+    });
+
+    it('should render Sci-fi Lab visuals: Stars + Bloom (Ticket 4)', async () => {
+      const { default: Scene3D } = await import('./Scene3D');
+      const { getByTestId } = render(<Scene3D />);
+      expect(getByTestId('stars')).toBeDefined();
+      expect(getByTestId('effect-composer')).toBeDefined();
+      expect(getByTestId('bloom')).toBeDefined();
     });
 
     it('should render Physics world', async () => {

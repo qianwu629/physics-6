@@ -1,88 +1,122 @@
 ---
 phase: 01
 phase_name: 持久化与场景库
-fixed_at: 2026-05-09T13:22:00Z
+fixed_at: 2026-05-24T00:40:00Z
 review_path: .planning/phases/01-持久化与场景库/01-REVIEW.md
-iteration: 1
-findings_in_scope: 9
-fixed: 9
-skipped: 0
-status: all_fixed
+iteration: 2
+findings_in_scope: 13
+fixed: 10
+skipped: 3
+status: partial
 ---
 
 # Phase 01: Code Review Fix Report
 
-**Fixed at:** 2026-05-09T13:22:00Z
+**Fixed at:** 2026-05-24T00:40:00Z
 **Source review:** .planning/phases/01-持久化与场景库/01-REVIEW.md
-**Iteration:** 1
+**Iteration:** 2
 
 **Summary:**
-- Findings in scope: 9 (3 Critical + 6 Warning; Info issues excluded)
-- Fixed: 9
-- Skipped: 0
+- Findings in scope: 13 (4 Critical + 9 Warning; Info excluded except IN-04/IN-05)
+- Fixed: 10
+- Skipped: 3
 
 ## Fixed Issues
 
-### CR-02: 数据丢失风险 — `loadSceneWithConfirm` 遗漏 `peReferenceY`
-
-**Files modified:** `frontend/src/components/SceneLoader.tsx`
-**Commit:** d23e092
-**Applied fix:** 在加载环境参数后添加 `store.setPeReferenceY(sceneData.environment.peReferenceY);`，确保重力势能参考面 Y 坐标在场景加载后被正确恢复。
-
-### CR-03: 约束引用检查遗漏 — `deserializeScene` 处理顺序问题
+### CR-01: RigidBody `charge` 字段在序列化 schema 中为可选，但在运行时类型中为必填
 
 **Files modified:** `frontend/src/utils/sceneSerializer.ts`
-**Commit:** 965c2c2
-**Applied fix:** 将 `entities` 和 `constraints` 的构建合并为统一的 `allSerializedEntities` 数组，先完成所有实体构建，再统一进行约束引用有效性检查。添加明确注释说明两阶段处理逻辑，避免约束实体排在被引用实体之前时误判为引用失效。
+**Commit:** 6db41f7
+**Applied fix:** 在 `buildEntity` 函数中，对 `rigidBody` 组件做防御性补齐：若 `charge === undefined`，则设为 `0`。
 
-### WR-01: 竞态条件 — `showConfirmDialog` 覆盖 pending dialog
-
-**Files modified:** `frontend/src/components/SceneLoader.tsx`
-**Commit:** 8f2c019
-**Applied fix:** 将 `showConfirmDialog` 中已有 pending dialog 时的行为从"强制 resolve(false) 前一个"改为"返回 `Promise.resolve(false)` 忽略新请求"，避免用户操作丢失。
-
-### WR-02: `App.tsx` 键盘快捷键 `useEffect` 依赖问题
-
-**Files modified:** `frontend/src/components/App.tsx`
-**Commit:** 8bf9eeb
-**Applied fix:** 使用 `useRef` 缓存键盘处理函数，`useEffect` 使用空依赖数组只订阅一次键盘事件。处理函数内部通过 `useSimulationStore.getState()` 直接获取最新状态，避免频繁重建订阅导致的性能问题和潜在事件丢失。
-
-### WR-03: `SnapshotManager` `doSave` `useCallback` 依赖不完整
-
-**Files modified:** `frontend/src/components/SnapshotManager.tsx`
-**Commit:** cb1cc0e
-**Applied fix:** 将 `setSaveName`, `setSaveError`, `setTargetSlot` 加入 `doSave` 的 `useCallback` 依赖数组，使依赖声明完整。
-
-### WR-04: `PresetSelector` 动态导入路径白名单校验
+### CR-02: `PresetSelector` 动态 `import()` 使用模板字符串拼接路径
 
 **Files modified:** `frontend/src/components/PresetSelector.tsx`
-**Commit:** e8b440d
-**Applied fix:** 添加 `ALLOWED_PRESETS` 白名单集合（从 `PRESET_DEFINITIONS` 映射生成），在 `import()` 前校验 `presetId`，防止潜在的路径遍历风险。
+**Commit:** 7cbd8bc
+**Applied fix:** 使用静态映射表 `PRESET_MODULES` 替代动态模板字符串，彻底消除运行时路径拼接风险。
 
-### WR-05: `isVersionMismatch` 类型安全
+### CR-03: `SceneLoader` 模块级全局状态 `_confirmResolver` 存在并发竞态条件
 
-**Files modified:** `frontend/src/utils/sceneValidation.ts`
-**Commit:** 63e49e4
-**Applied fix:** 在 `isVersionMismatch` 函数开头添加 `null`、非对象和数组输入检查，非对象输入视为版本不匹配（返回 `true`）。
+**Files modified:** `frontend/src/components/SceneLoader.tsx`
+**Commit:** 9e7188f
+**Applied fix:** 将单例 `_confirmResolver` 替换为 `ConfirmRequest` 对象（含唯一 ID），新请求覆盖旧请求，避免 resolver 错乱。
 
-### WR-06: `SnapshotManager` 槽位选择歧义
-
-**Files modified:** `frontend/src/components/SnapshotManager.tsx`
-**Commit:** 382dcb9
-**Applied fix:** 当所有槽位已满且 `targetSlot === null`（用户未指定目标槽位）时，显示错误提示"所有槽位已满，请点击一个槽位进行覆盖"并返回，不再默认覆盖 slot 0。
-
-### WR-07: 用户可控字符串长度限制
+### WR-01: `sanitizeWarning` 正则表达式范围错误
 
 **Files modified:** `frontend/src/utils/sceneValidation.ts`
-**Commit:** bda9e2b
-**Applied fix:** 添加 `sanitizeWarning(value, maxLen = 100)` 辅助函数，对警告消息中的用户输入做截断（超过 100 字符加 `...` 后缀）和过滤控制字符。应用到 `schemaVersion`、未知顶层字段名、实体 ID 和未知组件类型名。
+**Commit:** 34cc056
+**Applied fix:** 修正正则表达式为 `/[\x00-\x1f\x7f]/g`，正确过滤所有控制字符。
+
+### WR-02: `buildEntity` 返回 null 时约束引用检查不对称
+
+**Files modified:** `frontend/src/utils/sceneSerializer.ts`
+**Commit:** 0034027
+**Applied fix:** 新增 `failedEntityIds` 集合记录创建失败的实体 ID，约束引用检查时若引用失败实体则给出明确警告。
+
+### WR-04: `SceneLoader.loadSceneWithConfirm` 在加载失败时仍返回 `true`
+
+**Files modified:** `frontend/src/components/SceneLoader.tsx`
+**Commit:** deb901e
+**Applied fix:** 收集 `addEntity` 返回值，若有任何实体添加失败则返回 `false`。
+
+### WR-05: `App.tsx` 的 `onLoadSnapshot` 未处理 `deserializeScene` 失败
+
+**Files modified:** `frontend/src/components/App.tsx`
+**Commit:** d80f84f
+**Applied fix:** 添加 else 分支，在反序列化失败时通过 `useSceneBanner` 显示错误警告。
+
+### WR-06: `PresetSelector` 的 `alert()` 使用阻塞式原生对话框
+
+**Files modified:** `frontend/src/components/PresetSelector.tsx`
+**Commit:** fbed9e1
+**Applied fix:** 将 `alert()` 替换为 `sonner` 的 `toast.error()`，避免阻塞主线程。
+
+### WR-07: `MAX_FILE_SIZE` 按字符串长度计算，与字节大小不一致
+
+**Files modified:** `frontend/src/utils/sceneSerializer.ts`
+**Commit:** 36cf586
+**Applied fix:** 使用 `new TextEncoder().encode(jsonString).length` 计算实际字节数。
+
+### WR-09: `SceneSchema` lenient 未检查 transform 组件存在性
+
+**Files modified:** `frontend/src/utils/sceneValidation.ts`
+**Commit:** edaf71c
+**Applied fix:** 在 `validateSceneJSON` 的 per-entity 验证阶段，检查每个实体是否包含 `transform` 组件，缺少则跳过并发出警告。
+
+### IN-04: 预设 JSON 文件缺少 `peReferenceY` 字段
+
+**Files modified:** `frontend/src/presets/double-spring.json`, `frontend/src/presets/free-fall-stack.json`, `frontend/src/presets/inclined-plane.json`, `frontend/src/presets/projectile.json`, `frontend/src/presets/spring-oscillator.json`
+**Commit:** 2baa7b3
+**Applied fix:** 为所有 5 个预设文件的 `environment` 对象显式添加 `"peReferenceY": 0`。
+
+### IN-05: `MenuBar.tsx` 导入错误处理对话框未显示 warnings
+
+**Files modified:** `frontend/src/components/MenuBar.tsx`
+**Commit:** 58854ac
+**Applied fix:** 在错误对话框中增加 `resultWarnings` 状态，导入失败时同时渲染 errors 和 warnings。
 
 ## Skipped Issues
 
-None — all findings were fixed.
+### CR-04: `snapshotSlice.ts` 的 `serializeEntities` 对组件做浅引用拷贝
+
+**File:** `frontend/src/store/snapshotSlice.ts:68-81`
+**Reason:** 文件已删除（snapshotSlice.ts 在代码重构中被移除），无需修复。
+**Original issue:** `serializeEntities` 浅拷贝可能导致不可序列化运行时对象进入持久化数据。
+
+### WR-03: `SnapshotManager` 的 `handleSave` 逻辑在 `targetSlot` 与 `emptyIndex` 冲突时行为不可预测
+
+**File:** `frontend/src/components/SnapshotManager.tsx:96-134`
+**Reason:** 文件已删除（SnapshotManager.tsx 在代码重构中被移除），无需修复。
+**Original issue:** 保存逻辑混合了快速保存和覆盖保存两种模式，路径绕且不符合直觉。
+
+### WR-08: `SnapshotManager` 的 `NAME_REGEX` 允许中文字符但范围不完整
+
+**File:** `frontend/src/components/SnapshotManager.tsx:28`
+**Reason:** 文件已删除（SnapshotManager.tsx 在代码重构中被移除），无需修复。
+**Original issue:** `NAME_REGEX` 中 `一-鿿` 范围不完整，遗漏 CJK 扩展区和全角标点；未做 NFC 规范化。
 
 ---
 
-_Fixed: 2026-05-09T13:22:00Z_
+_Fixed: 2026-05-24T00:40:00Z_
 _Fixer: Claude (gsd-code-fixer)_
-_Iteration: 1_
+_Iteration: 2_

@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 export type TimeWindow = '5s' | '30s' | 'all';
 export type LayoutMode = 'overlay' | 'separate';
-export type MetricType = 'position' | 'velocity' | 'acceleration' | 'energy';
+export type MetricType = 'position' | 'velocity' | 'acceleration' | 'energy' | 'momentum';
 
 export interface ChartConfigState {
   trackedEntityIds: Set<string>;

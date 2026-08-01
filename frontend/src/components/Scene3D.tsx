@@ -1,6 +1,7 @@
 import { Canvas, useThree } from '@react-three/fiber';
 import { Physics, RigidBody, CuboidCollider } from '@react-three/rapier';
-import { OrbitControls, Grid, GizmoHelper, GizmoViewport } from '@react-three/drei';
+import { OrbitControls, Grid, GizmoHelper, GizmoViewport, Stars } from '@react-three/drei';
+import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import { useRef, useEffect, useCallback } from 'react';
 import * as THREE from 'three';
 import { Box3, Vector3, type PerspectiveCamera } from 'three';
@@ -8,13 +9,17 @@ import { useSimulationStore } from '../store';
 import { useShallow } from 'zustand/react/shallow';
 import EntityRenderer from './EntityRenderer';
 import SpringRenderer from './SpringRenderer';
+import FixedJointRenderer from './FixedJointRenderer';
+import SpliceRenderer from './SpliceRenderer';
+import PlacementGhost from './PlacementGhost';
 import { TrajectoryRenderer } from './TrajectoryRenderer';
 import { VectorRenderer } from './VectorRenderer';
 import { ForceFieldSystem } from './ForceFieldSystem';
 import { ForceFieldRenderer } from './ForceFieldRenderer';
 import { ForceFieldLines } from './ForceFieldLines';
 import { ChartSampler } from '../ecs/ChartSampler';
-import { RigidBodyRefContext, type RigidBodyAPI } from './RigidBodyRefContext';
+import { RigidBodyRefContext, registerLiveBody, unregisterLiveBody, type RigidBodyAPI } from './RigidBodyRefContext';
+import type { ConstraintComponent } from '../ecs/types';
 
 // ──── 地面 (Phase 1 遗留 — 保持不变) ────
 // D-02: 地面是隐式基础设施——不属于"物体"，始终存在
@@ -23,14 +28,6 @@ function Ground({ friction, restitution }: { friction: number; restitution: numb
   return (
     <RigidBody type="fixed" position={[0, -0.5, 0]}>
       <CuboidCollider args={[50, 0.5, 50]} friction={friction} restitution={restitution} />
-      <mesh receiveShadow>
-        <boxGeometry args={[100, 1, 100]} />
-        <meshStandardMaterial
-          color="#1a1a1a"
-          roughness={0.9}
-          metalness={0.0}
-        />
-      </mesh>
     </RigidBody>
   );
 }
@@ -173,9 +170,7 @@ export default function Scene3D() {
   const showDebug = useSimulationStore((s) => s.showDebug);
   const resetCounter = useSimulationStore((s) => s.resetCounter);
   const gravity = useSimulationStore((s) => s.environment.gravity);
-  const frictionScale = useSimulationStore((s) => s.environment.frictionScale);
   const restitutionScale = useSimulationStore((s) => s.environment.restitutionScale);
-  const springCreationStage = useSimulationStore((s) => s.springCreationStage);
 
   // CR-02 fix v2: 不再使用 key 触发 Physics 重挂载。
   // 根因：key 变化导致 Rapier 同步卸载/挂载时，内部 jointRef 清理时序问题引发崩溃。
@@ -186,24 +181,25 @@ export default function Scene3D() {
   const entities = useSimulationStore((s) => s.entities);
   const selectedId = useSimulationStore((s) => s.selectedEntityId);
   const selectEntity = useSimulationStore((s) => s.selectEntity);
+  // F3: 虚影放置模式（禁用轨道控制器，避免左键/滚轮冲突）
+  const placementActive = useSimulationStore((s) => s.placement !== null);
   // 在 render 中转换 Map 为 Array——仅在 entities 变化时重建
   const entityEntries = Array.from(entities.entries());
 
-  // ── Spring Creation Click Dispatch (Phase 3) ──
+  // ── Joint Creation Click Dispatch (W4/W8) ──
   const handleEntitySelect = useCallback(
     (entityId: string) => {
       const uiStore = useSimulationStore.getState();
-      const stage = uiStore.springCreationStage;
-      const entityAId = uiStore.springEntityAId;
+      const jointStage = uiStore.fixedJointStage;
+      const jointEntityAId = uiStore.fixedJointEntityAId;
 
-      if (stage === 'pendingA') {
-        uiStore.selectSpringEndpointA(entityId);
-      } else if (stage === 'pendingB') {
-        if (entityId === entityAId) {
-          // Click same entity — cancel selection
-          uiStore.selectSpringEndpointA(null);
+      if (jointStage === 'pendingA') {
+        uiStore.selectFixedJointEndpointA(entityId);
+      } else if (jointStage === 'pendingB') {
+        if (entityId === jointEntityAId) {
+          uiStore.selectFixedJointEndpointA(null);
         } else {
-          uiStore.selectSpringEndpointB(entityId);
+          uiStore.selectFixedJointEndpointB(entityId);
         }
       } else {
         selectEntity(entityId); // idle → 正常选中
@@ -213,12 +209,15 @@ export default function Scene3D() {
   );
 
   // ── RigidBody Ref Registry — enables SpringRenderer to find entity refs ──
+  // 同步写入模块级注册表（liveBodies），供 Canvas 外组件（FixedJointDialog）读取活体位姿
   const rigidBodyRefMap = useRef<Map<string, React.RefObject<RigidBodyAPI | null>>>(new Map());
   const registerRef = useCallback((entityId: string, ref: React.RefObject<RigidBodyAPI | null>) => {
     rigidBodyRefMap.current.set(entityId, ref);
+    registerLiveBody(entityId, ref);
   }, []);
   const unregisterRef = useCallback((entityId: string) => {
     rigidBodyRefMap.current.delete(entityId);
+    unregisterLiveBody(entityId);
   }, []);
   const getRef = useCallback((entityId: string) => {
     return rigidBodyRefMap.current.get(entityId);
@@ -243,14 +242,15 @@ export default function Scene3D() {
         toneMappingExposure: 1.0,
       }}
       style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
         width: '100%',
-        height: '100%',                    // D-10: 全窗口自适应
-        background: '#0a0a0a',             // dominant 色（UI-SPEC）
+        height: '100%',                    // 填充 dock 视口面板（Ticket 1: 替代 fixed 全窗口）
+        background: '#050511',             // Sci-fi Lab 深空（Ticket 4）
       }}
     >
+      {/* ── Sci-fi Lab 深空背景与星空 (Ticket 4) ── */}
+      <color attach="background" args={['#050511']} />
+      <Stars radius={80} depth={40} count={3000} factor={3} fade speed={0.5} />
+
       {/* ── 调试与初始化 ── */}
       <FpsTracker />
       <SceneInitializer />
@@ -267,7 +267,7 @@ export default function Scene3D() {
       >
         <RigidBodyRefContext.Provider value={{ register: registerRef, unregister: unregisterRef, getRef }}>
           {/* 地面 — D-02: 隐式基础设施 */}
-          <Ground friction={0.5 * frictionScale} restitution={0.5 * restitutionScale} />
+          <Ground friction={0.5} restitution={0.5 * restitutionScale} />
 
           {/* ECS 驱动实体渲染 — 替代 INITIAL_SCENE_OBJECTS.map() */}
           {/* Phase 3: 约束实体 (spring) 跳过 EntityRenderer，由 SpringRenderer 渲染 */}
@@ -282,17 +282,40 @@ export default function Scene3D() {
               />
             ))}
 
-          {/* Phase 3: Spring 约束实体 — SpringRenderer */}
+          {/* Phase 3: 约束实体 — SpringRenderer (spring) / FixedJointRenderer (关节) / SpliceRenderer (拼接) */}
           {entityEntries
             .filter(([, entity]) => entity.components.has('constraint'))
-            .map(([id, entity]) => (
-              <SpringRenderer
-                key={id}
-                entity={entity}
-                isSelected={id === selectedId}
-                onSelect={handleEntitySelect}
-              />
-            ))}
+            .map(([id, entity]) => {
+              const c = entity.components.get('constraint') as ConstraintComponent;
+              if (c.kind === 'spring') {
+                return (
+                  <SpringRenderer
+                    key={id}
+                    entity={entity}
+                    isSelected={id === selectedId}
+                    onSelect={handleEntitySelect}
+                  />
+                );
+              }
+              if (c.kind === 'splice') {
+                return (
+                  <SpliceRenderer
+                    key={id}
+                    entity={entity}
+                    isSelected={id === selectedId}
+                    onSelect={handleEntitySelect}
+                  />
+                );
+              }
+              return (
+                <FixedJointRenderer
+                  key={id}
+                  entity={entity}
+                  isSelected={id === selectedId}
+                  onSelect={handleEntitySelect}
+                />
+              );
+            })}
 
           {/* Phase 4: 轨迹渲染 — TrajectoryRenderer */}
           <TrajectoryRenderer />
@@ -323,10 +346,14 @@ export default function Scene3D() {
       {/* Phase 3 (03-05): 力线可视化 — ForceFieldLines（Physics 外部） */}
       <ForceFieldLines />
 
+      {/* F3: 虚影放置（placement 激活时显示吸附虚影；Physics 外部） */}
+      <PlacementGhost />
+
       {/* ── 摄像机控制 (D-05) ── */}
       <OrbitControls
         ref={controlsRef}
         target={initialCameraTarget}
+        enabled={!placementActive}
         enableDamping={true}
         dampingFactor={0.1}
         minDistance={2}
@@ -339,15 +366,15 @@ export default function Scene3D() {
       {/* 参考网格 — 物理课堂风格 */}
       <Grid
         position={[0, 0.01, 0]}            // 略高于地面避免 z-fighting
-        args={[30, 30]}                    // 30x30 单位
+        args={[100, 100]}                  // 100x100 单位
         cellSize={1}                       // 1 单位 = 1 米
-        cellThickness={0.5}
-        cellColor="#333333"
+        cellThickness={1.0}
+        cellColor="#1a3a4a"                // Sci-fi Lab 暗青
         sectionSize={5}                    // 每 5 单位加粗线
-        sectionThickness={1.0}
-        sectionColor="#555555"
-        fadeDistance={60}
-        fadeStrength={1.5}
+        sectionThickness={2.5}
+        sectionColor="#29d3e8"             // Sci-fi Lab 全息青
+        fadeDistance={120}
+        fadeStrength={1.0}
         infiniteGrid={false}
       />
 
@@ -360,8 +387,8 @@ export default function Scene3D() {
       </GizmoHelper>
 
       {/* ── 光照与阴影 (D-06) ── */}
-      {/* 环境光 — 提供基础照明，防止阴影区域全黑 */}
-      <ambientLight intensity={0.4} />
+      {/* 环境光 — Sci-fi Lab 压暗基调 (0.4 → 0.25)，让发光元素凸显 */}
+      <ambientLight intensity={0.25} />
 
       {/* 主平行光 — 产生方向性阴影 */}
       <directionalLight
@@ -383,6 +410,12 @@ export default function Scene3D() {
         position={[-10, 8, -5]}
         intensity={0.2}
       />
+
+      {/* ── Sci-fi Lab bloom 后处理 (Ticket 4) ── */}
+      {/* luminanceThreshold=1：仅 HDR 亮度 >1 的 emissive 元素发光，普通漫反射不受影响 */}
+      <EffectComposer>
+        <Bloom mipmapBlur luminanceThreshold={1} intensity={0.6} />
+      </EffectComposer>
     </Canvas>
   );
 }

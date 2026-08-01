@@ -36,6 +36,8 @@ export interface EntitySlice {
   toggleTrailVisibility: (entityId: string, visible: boolean) => void;
   /** 切换矢量可见性 (Phase 4: 可视化控制) */
   toggleVectorVisibility: (entityId: string, visible: boolean) => void;
+  /** 设置/移除电流源组件 (Phase 8: 场-源关系；params=null 表示移除) */
+  setCurrentSource: (entityId: string, params: { magnitude: number; direction: [number, number, number] } | null) => void;
 }
 
 export type EntityStore = EntitySlice;
@@ -148,6 +150,27 @@ export const createEntitySlice: StateCreator<EntitySlice, [], [], EntitySlice> =
         showVelocity: visible,
         showForces: visible,
       });
+      const updated: Entity = { ...entity, components: newComponents };
+      const next = new Map(state.entities);
+      next.set(entityId, updated);
+      return { entities: next };
+    }),
+
+  setCurrentSource: (entityId: string, params: { magnitude: number; direction: [number, number, number] } | null) =>
+    set((state) => {
+      const entity = state.entities.get(entityId);
+      if (!entity) return state;
+      const newComponents = new Map(entity.components);
+      if (params) {
+        newComponents.set('currentSource', {
+          type: 'currentSource',
+          magnitude: params.magnitude,
+          direction: params.direction,
+        });
+      } else {
+        if (!newComponents.has('currentSource')) return state;
+        newComponents.delete('currentSource');
+      }
       const updated: Entity = { ...entity, components: newComponents };
       const next = new Map(state.entities);
       next.set(entityId, updated);

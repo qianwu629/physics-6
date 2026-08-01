@@ -19,23 +19,23 @@ expected: Toolbar 或快捷键可切换 OrbitControls 与 FPS 自由飞行模式
 result: pending
 
 ### 2. WSAD 平移
-expected: FPS 模式下，W/S 控制前后移动，A/D 控制左右平移，移动方向与当前视角方向一致。
+expected: FPS 模式下，W/S 控制前后移动，A/D 控制左右平移，移动方向与当前视角方向一致，qe控制视角左右旋转。
 result: pending
 
-### 3. QE 升降
-expected: FPS 模式下，Q/E 控制摄像机垂直升降。
+### 3. 空格ctrl 升降
+expected: FPS 模式下，空格/ctrl 控制摄像机垂直升降。
 result: pending
 
 ### 4. 鼠标拖拽旋转
 expected: FPS 模式下，鼠标拖拽控制视角旋转（pitch/yaw），滚轮调整移动速度。
 result: pending
 
-### 5. 触控摇杆 fallback
-expected: 移动设备/触控屏上，左侧虚拟摇杆控制平移，右侧拖拽控制视角旋转。
+### 5. 虚拟键盘 fallback
+expected: 移动设备/触控屏上，左侧虚拟键盘控制平移和视角旋转，右侧拖拽控制视角旋转。
 result: pending
 
 ### 6. 2D 模式切换
-expected: UI 中可一键切换 2D/3D 模式。切换后所有动态实体的 z 坐标和 z 速度锁定为 0。
+expected: UI 中可一键切换 2D/3D 模式。切换后所有动态实体的 z 坐标和 z 速度锁定为 0，并且视像头视角不可左右旋转和升降。
 result: pending
 
 ### 7. 2D 模式摄像机

@@ -121,7 +121,8 @@ Dark theme — physics sandbox standard:
 
 | Element | Copy |
 |---------|------|
-| Primary CTA | ▶ 播放 |
+| Primary CTA | ▶ 播放 |继续
+
 | Pause action | ⏸ 暂停 |
 | Resume action | ▶ 继续 |
 | Reset action | ↺ 重置 |

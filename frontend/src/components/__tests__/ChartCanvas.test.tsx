@@ -124,7 +124,7 @@ describe('ChartCanvas', () => {
 
     // Populate buffer with some data — use timestamp close to spied now
     const buf = new ChartDataBuffer();
-    const metrics = new Float64Array(12);
+    const metrics = new Float64Array(15);
     metrics[0] = 10; // x position
     metrics[1] = 20; // y position
     buf.push(FIXED_NOW - 5, metrics);

@@ -87,6 +87,12 @@ export type SerializedForceFieldComponent =
   | SerializedElectricFieldComponent
   | SerializedMagneticFieldComponent;
 
+export interface SerializedCurrentSourceComponent {
+  type: 'currentSource';
+  magnitude: number;
+  direction: [number, number, number];
+}
+
 export type SerializedComponent =
   | SerializedTransformComponent
   | SerializedRigidBodyComponent
@@ -94,7 +100,8 @@ export type SerializedComponent =
   | SerializedVelocityComponent
   | SerializedMaterialComponent
   | SerializedConstraintComponent
-  | SerializedForceFieldComponent;
+  | SerializedForceFieldComponent
+  | SerializedCurrentSourceComponent;
 
 export interface SerializedEntity {
   id: string;
@@ -155,13 +162,19 @@ const RigidBodySchema = z.object({
 
 const ColliderSchema = z.object({
   type: z.literal('collider'),
-  shape: z.enum(['sphere', 'cuboid', 'cylinder']),
+  shape: z.enum(['sphere', 'cuboid', 'cylinder', 'convexProfile', 'arc', 'doubleArc']),
   params: z.object({
     radius: z.number().optional(),
     halfWidth: z.number().optional(),
     halfHeight: z.number().optional(),
     halfDepth: z.number().optional(),
   }).passthrough(),
+  faces: z.array(z.object({
+    id: z.string(),
+    label: z.string(),
+    friction: z.number(),
+    pinned: z.boolean(),
+  })).optional(),
 });
 
 const VelocitySchema = z.object({
@@ -177,17 +190,88 @@ const MaterialSchema = z.object({
   metalness: z.number().min(0).max(1),
 });
 
-const ConstraintSchema = z.object({
-  type: z.literal('constraint'),
-  kind: z.literal('spring'),
-  entityAId: z.string().min(1),
-  entityBId: z.string().min(1),
-  params: z.object({
-    stiffness: z.number(),
-    restLength: z.number(),
-    damping: z.number(),
+const ConstraintSchema = z.discriminatedUnion('kind', [
+  z.object({
+    type: z.literal('constraint'),
+    kind: z.literal('spring'),
+    entityAId: z.string().min(1),
+    entityBId: z.string().min(1),
+    params: z.object({
+      stiffness: z.number(),
+      restLength: z.number(),
+      damping: z.number(),
+    }),
   }),
-});
+  // W4 固定连接
+  z.object({
+    type: z.literal('constraint'),
+    kind: z.literal('fixed'),
+    entityAId: z.string().min(1),
+    entityBId: z.string().min(1),
+    params: z.object({
+      anchorA: z.tuple([z.number(), z.number(), z.number()]),
+      anchorB: z.tuple([z.number(), z.number(), z.number()]),
+      frameB: z.tuple([z.number(), z.number(), z.number(), z.number()]),
+      showLink: z.boolean().optional(),
+    }),
+  }),
+  // 二期 铰链
+  z.object({
+    type: z.literal('constraint'),
+    kind: z.literal('revolute'),
+    entityAId: z.string().min(1),
+    entityBId: z.string().min(1),
+    params: z.object({
+      anchorA: z.tuple([z.number(), z.number(), z.number()]),
+      anchorB: z.tuple([z.number(), z.number(), z.number()]),
+      axisA: z.tuple([z.number(), z.number(), z.number()]),
+      axisB: z.tuple([z.number(), z.number(), z.number()]),
+      showLink: z.boolean().optional(),
+    }),
+  }),
+  // 二期 球窝
+  z.object({
+    type: z.literal('constraint'),
+    kind: z.literal('spherical'),
+    entityAId: z.string().min(1),
+    entityBId: z.string().min(1),
+    params: z.object({
+      anchorA: z.tuple([z.number(), z.number(), z.number()]),
+      anchorB: z.tuple([z.number(), z.number(), z.number()]),
+      showLink: z.boolean().optional(),
+    }),
+  }),
+  // W8 轻绳
+  z.object({
+    type: z.literal('constraint'),
+    kind: z.literal('rope'),
+    entityAId: z.string().min(1),
+    entityBId: z.string().min(1),
+    params: z.object({
+      anchorA: z.tuple([z.number(), z.number(), z.number()]),
+      anchorB: z.tuple([z.number(), z.number(), z.number()]),
+      length: z.number().min(0),
+      showLink: z.boolean().optional(),
+    }),
+  }),
+  // P5 轨道拼接
+  z.object({
+    type: z.literal('constraint'),
+    kind: z.literal('splice'),
+    entityAId: z.string().min(1),
+    entityBId: z.string().min(1),
+    params: z.object({
+      faceId: z.string(),
+      center: z.tuple([z.number(), z.number(), z.number()]),
+      normal: z.tuple([z.number(), z.number(), z.number()]),
+      halfExtents: z.tuple([z.number(), z.number(), z.number()]),
+      quaternion: z.tuple([z.number(), z.number(), z.number(), z.number()]),
+      lossType: z.enum(['value', 'percent']),
+      loss: z.number().min(0),
+      showLink: z.boolean().optional(),
+    }),
+  }),
+]);
 
 const UniformFieldSchema = z.object({
   type: z.literal('forceField'),
@@ -225,6 +309,12 @@ const MagneticFieldSchema = z.object({
   strength: z.number(),
 });
 
+const CurrentSourceSchema = z.object({
+  type: z.literal('currentSource'),
+  magnitude: z.number(),
+  direction: z.tuple([z.number(), z.number(), z.number()]),
+});
+
 const BaseComponentSchema = z.discriminatedUnion('type', [
   TransformSchema,
   RigidBodySchema,
@@ -232,6 +322,7 @@ const BaseComponentSchema = z.discriminatedUnion('type', [
   VelocitySchema,
   MaterialSchema,
   ConstraintSchema,
+  CurrentSourceSchema,
 ]);
 
 const ForceFieldSchema = z.discriminatedUnion('kind', [
@@ -245,7 +336,7 @@ const ForceFieldSchema = z.discriminatedUnion('kind', [
 const ComponentSchema = z.union([BaseComponentSchema, ForceFieldSchema]);
 
 // Known component type keys for filtering
-const KNOWN_COMPONENT_TYPES = new Set(['transform', 'rigidBody', 'collider', 'velocity', 'material', 'constraint', 'forceField']);
+const KNOWN_COMPONENT_TYPES = new Set(['transform', 'rigidBody', 'collider', 'velocity', 'material', 'constraint', 'forceField', 'currentSource']);
 
 // Lenient entity schema used inside SceneSchema (accepts any components)
 const _SceneEntitySchema = z.object({
@@ -377,8 +468,10 @@ export function validateSceneJSON(json: unknown): ValidationResult {
   }
 
   for (const entity of data.simulation.constraints) {
-    if (!entity.components || !('transform' in entity.components)) {
-      warnings.push(`约束实体 "${sanitizeWarning(entity.id)}" 缺少 transform 组件，已跳过`);
+    // 约束实体（如弹簧）按设计只有 constraint 组件、没有 transform（位置由两端实体决定），
+    // 因此这里校验 constraint 组件是否存在，而不是 transform（WR-09 的 transform 校验仅适用于常规实体）。
+    if (!entity.components || !('constraint' in entity.components)) {
+      warnings.push(`约束实体 "${sanitizeWarning(entity.id)}" 缺少 constraint 组件，已跳过`);
       continue;
     }
     if (entity.components && typeof entity.components === 'object') {

@@ -1,0 +1,54 @@
+/**
+ * Sci-fi Lab dockview 主题（Ticket 2）
+ *
+ * 只覆盖 --dv-* CSS 变量，不改库内类名。
+ * 配色全部引用 index.css 的 Sci-fi Lab tokens。
+ */
+
+.dockview-theme-scifi {
+  /* ── 壳与分组背景 ── */
+  --dv-background-color: var(--background);
+  --dv-group-view-background-color: var(--card);
+
+  /* ── tab 条 ── */
+  --dv-tabs-and-actions-container-background-color: oklch(0.13 0.02 260);
+  --dv-tabs-and-actions-container-height: 32px;
+  --dv-tabs-and-actions-container-font-size: 12px;
+
+  /* active group：当前 tab = 青 tint 底 + 全息青文字 */
+  --dv-activegroup-visiblepanel-tab-background-color: oklch(0.85 0.14 195 / 0.14);
+  --dv-activegroup-visiblepanel-tab-color: var(--holo);
+  --dv-activegroup-hiddenpanel-tab-background-color: transparent;
+  --dv-activegroup-hiddenpanel-tab-color: var(--muted-foreground);
+
+  /* inactive group：弱一档 */
+  --dv-inactivegroup-visiblepanel-tab-background-color: oklch(0.85 0.14 195 / 0.06);
+  --dv-inactivegroup-visiblepanel-tab-color: var(--holo-dim);
+  --dv-inactivegroup-hiddenpanel-tab-background-color: transparent;
+  --dv-inactivegroup-hiddenpanel-tab-color: var(--muted-foreground);
+
+  --dv-tab-divider-color: var(--glass-border);
+  --dv-tab-group-color: var(--holo);
+
+  /* ── 分割条（sash） ── */
+  --dv-sash-color: transparent;
+  --dv-active-sash-color: var(--holo);
+  --dv-sash-border-radius: 0;
+
+  /* ── 拖拽指示 ── */
+  --dv-drag-over-background-color: oklch(0.85 0.14 195 / 0.12);
+  --dv-drag-over-border-color: var(--holo);
+
+  /* ── 边线与圆角：Blender 式直角贴合 ── */
+  --dv-separator-border: var(--glass-border);
+  --dv-paneview-header-border-color: var(--glass-border);
+  --dv-border-radius: 0;
+  --dv-tab-border-radius: 0;
+
+  /* ── 浮动组 ── */
+  --dv-floating-box-shadow: 0 8px 32px oklch(0 0 0 / 0.5), var(--glow-sm);
+
+  /* ── 图标与滚动条 ── */
+  --dv-icon-hover-background-color: oklch(0.85 0.14 195 / 0.12);
+  --dv-scrollbar-background-color: oklch(0.35 0.03 240);
+}

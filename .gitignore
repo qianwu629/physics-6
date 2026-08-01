@@ -45,3 +45,7 @@ vector-test-snapshot.yml
 
 # Windows accidental redirect artifact
 nul
+
+# Playwright (Ticket 5)
+playwright-report/
+test-results/

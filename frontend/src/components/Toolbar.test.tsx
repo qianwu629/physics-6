@@ -39,6 +39,11 @@ vi.mock('../lib/utils', () => ({
   cn: (...args: unknown[]) => args.filter(Boolean).join(' '),
 }));
 
+// Mock dock context — 独立渲染 Toolbar（无 dock provider）时走遗留路径（useDock() → null）
+vi.mock('./dock/DockApiContext', () => ({
+  useDock: () => null,
+}));
+
 // Store state type
 interface StoreState {
   isRunning: boolean;
@@ -121,7 +126,7 @@ describe('Toolbar', () => {
     it('pause button has blue accent background', () => {
       renderToolbar({ isRunning: true });
       const btn = screen.getByRole('button', { name: '暂停仿真' });
-      expect(btn.style.backgroundColor).toBe('rgb(59, 130, 246)'); // #3b82f6
+      expect(btn.style.backgroundColor).toBe('var(--holo)'); // Sci-fi Lab 全息青
     });
 
     it('renders Pause icon (not Play) when running', () => {
@@ -154,7 +159,7 @@ describe('Toolbar', () => {
     it('shows active state when showDebug is true', () => {
       renderToolbar({ showDebug: true });
       const btn = screen.getByRole('button', { name: '关闭物理调试' });
-      expect(btn.style.backgroundColor).toBe('rgb(59, 130, 246)'); // #3b82f6
+      expect(btn.style.backgroundColor).toBe('var(--holo)'); // Sci-fi Lab 全息青
     });
 
     it('calls setShowDebug with true when clicked in inactive state', () => {

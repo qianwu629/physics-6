@@ -162,6 +162,9 @@ export default function ForceFieldDialog() {
 
   const handleConfirm = useCallback(
     (data: ForceFieldFormData) => {
+      // DEBUG: 诊断表单提交数据（验证 position 绑定修复）
+      console.log('[ForceFieldDialog] handleConfirm data:', JSON.stringify(data));
+
       let entity;
       switch (data.kind) {
         case 'uniform':
@@ -218,7 +221,7 @@ export default function ForceFieldDialog() {
         const numericValue = typeof field.value === 'number' ? field.value : 0;
         return (
           <div className="space-y-1.5">
-            <Label className="text-sm text-[#a0a0a0] font-semibold tracking-wider uppercase">
+            <Label className="text-sm text-[var(--muted-foreground)] font-semibold tracking-wider uppercase">
               {label} ({numericValue.toFixed(2)}{unit ? ` ${unit}` : ''})
             </Label>
             <div className="flex items-center gap-2">
@@ -236,9 +239,9 @@ export default function ForceFieldDialog() {
                 onChange={(e) => field.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
                 className="w-20 h-8 text-sm font-mono text-center"
                 style={{
-                  background: '#222',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  color: '#fafafa',
+                  background: 'var(--well)',
+                  border: '1px solid var(--glass-border)',
+                  color: 'var(--foreground)',
                 }}
               />
             </div>
@@ -252,37 +255,42 @@ export default function ForceFieldDialog() {
     name: 'position' | 'direction',
     label: string,
   ) => (
-    <div className="space-y-2">
-      <Label className="text-sm text-[#a0a0a0] font-semibold tracking-wider uppercase">{label}</Label>
-      <div className="grid grid-cols-3 gap-2">
-        {(['X', 'Y', 'Z'] as const).map((axis, i) => (
-          <Controller
-            key={axis}
-            name={`${name}.${i}` as never}
-            control={control}
-            render={({ field }) => (
-              <div className="space-y-1">
-                <Label className="text-xs text-[#666]">{axis}</Label>
-                <Input
-                  type="number"
-                  step={0.1}
-                  value={(field.value as number) ?? 0}
-                  onChange={(e) =>
-                    field.onChange(e.target.value === '' ? 0 : Number(e.target.value))
-                  }
-                  className="text-sm font-mono text-center"
-                  style={{
-                    background: '#222',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    color: '#fafafa',
-                  }}
-                />
-              </div>
-            )}
-          />
-        ))}
-      </div>
-    </div>
+    <Controller
+      name={name}
+      control={control}
+      render={({ field }) => {
+        const arr = (Array.isArray(field.value) ? field.value : [0, 0, 0]) as [number, number, number];
+        return (
+          <div className="space-y-2">
+            <Label className="text-sm text-[var(--muted-foreground)] font-semibold tracking-wider uppercase">{label}</Label>
+            <div className="grid grid-cols-3 gap-2">
+              {(['X', 'Y', 'Z'] as const).map((axis, i) => (
+                <div key={axis} className="space-y-1">
+                  <Label className="text-xs text-[var(--text-dim)]">{axis}</Label>
+                  <Input
+                    type="number"
+                    step={0.1}
+                    value={arr[i] ?? 0}
+                    onChange={(e) => {
+                      const val = e.target.value === '' ? 0 : Number(e.target.value);
+                      const next: [number, number, number] = [...arr];
+                      next[i] = val;
+                      field.onChange(next);
+                    }}
+                    className="text-sm font-mono text-center"
+                    style={{
+                      background: 'var(--well)',
+                      border: '1px solid var(--glass-border)',
+                      color: 'var(--foreground)',
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      }}
+    />
   );
 
   const isFormValid = formState.isValid && Object.keys(formState.errors).length === 0;
@@ -292,17 +300,17 @@ export default function ForceFieldDialog() {
       <DialogContent
         className="sm:max-w-[420px]"
         style={{
-          background: 'rgba(26, 26, 26, 0.95)',
+          background: 'var(--glass-bg)',
           backdropFilter: 'blur(8px)',
           WebkitBackdropFilter: 'blur(8px)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
+          border: '1px solid var(--glass-border)',
           borderRadius: '16px',
           boxShadow: '0 8px 40px rgba(0, 0, 0, 0.6)',
         }}
       >
         <DialogHeader>
-          <DialogTitle className="text-[#fafafa] text-lg">创建力场</DialogTitle>
-          <DialogDescription className="text-[#888] text-xs">
+          <DialogTitle className="text-[var(--foreground)] text-lg">创建力场</DialogTitle>
+          <DialogDescription className="text-[var(--muted-foreground)] text-xs">
             选择力场类型并配置参数，确认后将在场景中创建力场实体
           </DialogDescription>
         </DialogHeader>
@@ -310,7 +318,7 @@ export default function ForceFieldDialog() {
         <form onSubmit={rhfHandleSubmit(handleConfirm)} className="flex flex-col gap-6">
           {/* Section 1: 力场类型选择器 */}
           <div className="space-y-2">
-            <Label className="text-sm text-[#a0a0a0] font-semibold tracking-wider uppercase">
+            <Label className="text-sm text-[var(--muted-foreground)] font-semibold tracking-wider uppercase">
               力场类型
             </Label>
             <div className="grid grid-cols-4 gap-2">
@@ -322,15 +330,15 @@ export default function ForceFieldDialog() {
                   onClick={() => handleKindSelect(kind)}
                   className={cn(
                     'flex flex-col items-center justify-center gap-1 p-2 rounded-lg border transition-all duration-150',
-                    'text-[#a0a0a0] hover:bg-[rgba(59,130,246,0.08)] hover:text-[#3b82f6]',
+                    'text-[var(--muted-foreground)] hover:bg-[var(--holo-a10)] hover:text-[var(--holo)]',
                     'active:scale-95',
                   )}
                   style={{
                     borderColor:
-                      selectedKind === kind ? '#3b82f6' : 'rgba(255, 255, 255, 0.08)',
+                      selectedKind === kind ? 'var(--holo)' : 'var(--glass-border)',
                     backgroundColor:
-                      selectedKind === kind ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
-                    color: selectedKind === kind ? '#3b82f6' : undefined,
+                      selectedKind === kind ? 'var(--holo-a15)' : 'transparent',
+                    color: selectedKind === kind ? 'var(--holo)' : undefined,
                   }}
                 >
                   <Icon size={20} strokeWidth={2} />
@@ -342,7 +350,7 @@ export default function ForceFieldDialog() {
 
           {/* Section 2: 通用参数 — 位置 + 范围 */}
           <div className="space-y-3">
-            <Label className="text-sm text-[#a0a0a0] font-semibold tracking-wider uppercase">
+            <Label className="text-sm text-[var(--muted-foreground)] font-semibold tracking-wider uppercase">
               通用参数
             </Label>
             {renderVector3Field('position', '中心位置')}
@@ -351,7 +359,7 @@ export default function ForceFieldDialog() {
 
           {/* Section 3: 类型专用参数 */}
           <div className="space-y-3">
-            <Label className="text-sm text-[#a0a0a0] font-semibold tracking-wider uppercase">
+            <Label className="text-sm text-[var(--muted-foreground)] font-semibold tracking-wider uppercase">
               类型参数
             </Label>
 
@@ -370,7 +378,7 @@ export default function ForceFieldDialog() {
                   control={control}
                   render={({ field }) => (
                     <div className="flex items-center justify-between">
-                      <Label className="text-sm text-[#a0a0a0]">1/r² 衰减</Label>
+                      <Label className="text-sm text-[var(--muted-foreground)]">1/r² 衰减</Label>
                       <Switch
                         checked={!!field.value}
                         onCheckedChange={(v) => field.onChange(v)}
@@ -389,7 +397,7 @@ export default function ForceFieldDialog() {
                   control={control}
                   render={({ field }) => (
                     <div className="flex items-center justify-between">
-                      <Label className="text-sm text-[#a0a0a0]">1/r² 衰减</Label>
+                      <Label className="text-sm text-[var(--muted-foreground)]">1/r² 衰减</Label>
                       <Switch
                         checked={!!field.value}
                         onCheckedChange={(v) => field.onChange(v)}
@@ -410,18 +418,18 @@ export default function ForceFieldDialog() {
 
           {/* Root error (MAX_ENTITIES) */}
           {formState.errors.root && (
-            <p className="text-sm text-[#ef4444] text-center">
+            <p className="text-sm text-[var(--destructive)] text-center">
               {formState.errors.root.message}
             </p>
           )}
 
           {/* Button row */}
-          <DialogFooter className="-mx-6 -mb-6 px-6 pb-6 pt-4 border-t border-[rgba(255,255,255,0.06)]">
+          <DialogFooter className="-mx-6 -mb-6 px-6 pb-6 pt-4 border-t border-[var(--glass-border)]">
             <Button
               type="button"
               variant="ghost"
               onClick={closeDialog}
-              className="text-[#888] hover:text-[#a0a0a0]"
+              className="text-[var(--muted-foreground)] hover:text-[var(--muted-foreground)]"
             >
               取消
             </Button>
@@ -429,8 +437,8 @@ export default function ForceFieldDialog() {
               type="submit"
               disabled={!isFormValid}
               style={{
-                backgroundColor: isFormValid ? '#3b82f6' : '#333',
-                color: isFormValid ? '#ffffff' : '#666',
+                backgroundColor: isFormValid ? 'var(--holo)' : 'var(--text-dim)',
+                color: isFormValid ? 'var(--primary-foreground)' : 'var(--text-dim)',
               }}
             >
               确认创建

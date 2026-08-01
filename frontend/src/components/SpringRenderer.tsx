@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useSpringJoint } from '@react-three/rapier';
 import { useRigidBodyRefRegistry } from './RigidBodyRefContext';
-import type { Entity, ConstraintComponent } from '../ecs/types';
+import type { Entity, SpringConstraintComponent } from '../ecs/types';
 
 interface SpringRendererProps {
   entity: Entity;
@@ -67,7 +67,9 @@ function generateHelixPoints(
  * 4. 选中时高亮（蓝色 tube）
  */
 export default function SpringRenderer({ entity, isSelected, onSelect }: SpringRendererProps) {
-  const constraintComp = entity.components.get('constraint') as ConstraintComponent;
+  const constraintComp = entity.components.get('constraint') as SpringConstraintComponent;
+  // 防御：非 spring 约束（fixed/revolute/spherical）不应挂载本组件（Scene3D 按 kind 分发）
+  if (constraintComp.kind !== 'spring') return null;
   const { getRef } = useRigidBodyRefRegistry();
 
   const tubeRef = useRef<THREE.Mesh>(null);
@@ -163,7 +165,7 @@ export default function SpringRenderer({ entity, isSelected, onSelect }: SpringR
       geometry={new THREE.TubeGeometry(initialCurve, 64, 0.03, 8, false)}
     >
       <meshStandardMaterial
-        color={isSelected ? '#3299ff' : '#888888'}
+        color={isSelected ? '#29d3e8' : '#4a5a6a'}
         roughness={0.5}
         metalness={0.1}
       />

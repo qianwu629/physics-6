@@ -39,7 +39,7 @@ expected: 表达式支持 px/py/pz（位置）、vx/vy/vz（速度）、t（时�
 result: pending
 
 ### 7. 语法错误即时反馈
-expected: 输入无效表达式（如 "sin("、"px +"），输入框边框变红并显示错误提示；无效表达式不被启用，不影响仿真。
+expected: 输入无效表达式（如 "sin()"、"px +"），输入框边框变红并显示错误提示；无效表达式不被启用，不影响仿真。
 result: pending
 
 ### 8. 性能基准
